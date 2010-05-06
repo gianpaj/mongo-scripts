@@ -107,7 +107,7 @@ public class IncomingSCP implements Command, Runnable {
         int exitValue = 0;
         String exitMessage = "";
 
-        File root = new File( ROOT , shortDate() + "/" + _user + "/" + clean( _filePrefix ) + "/" );
+        File root = new File( ROOT , _user + "/" + shortDate() + "/" + clean( _filePrefix ) + "/" );
         
         try {
             if ( _mode == Mode.READ ){
