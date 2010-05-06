@@ -14,7 +14,7 @@ import _mysql
 
 db=_mysql.connect( user=settings.dbuser , passwd=settings.dbpass , db="mongousage")
 
-def updateData():
+def updateData( debug=False ):
 
     s3_line_logpats  = r'(\S+) (\S+) \[(.*?)\] (\S+) (\S+) ' \
         r'(\S+) (\S+) (\S+) "([^"]+)" ' \
@@ -67,16 +67,24 @@ def updateData():
                     continue
 
                 if data["user_agent"].find( "bot" ) >= 0:
-                    print( "BOT: " + line )
+                    if debug:
+                        print( "BOT: " + line )
                     continue
 
                 if line.find( " 200 " ) < 0:
                     continue
+                
+                if key == "-" or key.startswith( "log/" ):
+                    continue
 
-                if key.endswith( "tar.gz" ) or key.endswith( "tgz" ) or key.endswith( "zip" ):
+                if key.endswith( "Packages.gz" ) or key.endswith( ".gpg" ) or key.endswith( "Release" ):
+                    continue
+                
+                if key.endswith( "tar.gz" ) or key.endswith( "tgz" ) or key.endswith( "zip" ) or key.endswith( ".deb" ):
                     db.query( "INSERT INTO downloads VALUES( '%s' , '%s' , '%s' , '%s' , '%s' )" %
                               ( strftime( "%Y-%m-%d" , ts ) , data["ip"] , key.partition( "/" )[0] , key , line ) )
-
+                else:
+                    print( "skipping: " + key )
 
     def dayHash( y , m , d ):
         return ( int( y ) * 10000 ) + ( int( m ) * 100 ) + int( d )
@@ -196,7 +204,7 @@ def sendMail( debug=False ):
 
 if __name__ == "__main__":
     if len( sys.argv ) > 1:
-        sendMail( True )
+        sendMail( False )
     else:
         try:
             updateData()
