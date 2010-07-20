@@ -207,9 +207,9 @@ def doFetch( s , key ):
     err = None
     data = None
 
-    for x in range(5):
+    for x in range(10):
         try:
-            data = s.get(key,timeout=1).read()
+            data = s.get(key,timeout=2).read()
             break
         except Exception,e:
           err = e
