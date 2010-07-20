@@ -141,7 +141,7 @@ def skipLine( data ):
         return True
        
     key = data["uri-stem"]
-    if key == "-" or key.startswith( "log/" ):
+    if key == "-" or key.startswith( "log/" ) or key.startswith( "stats/" ):
         return True
 
     x = decide( key )
@@ -169,8 +169,11 @@ def doBucket( fileNameBuilder , parser , start ):
         print(filter)
         for (key, modify, etag, size) in s.listdir(prefix=filter):
             print( "\t" + key )
-            lineNumber = 0
+            if db.files.find_one( { "_id" : key } ):
+                continue
 
+            lineNumber = 0
+            
             data = s.get(key).read()
             if key.endswith( ".gz" ):
                 data = gzip.GzipFile('', 'rb', 9, StringIO.StringIO(data)).read()
@@ -192,7 +195,7 @@ def doBucket( fileNameBuilder , parser , start ):
                 p["os"] = p["uri-stem"].partition( "/" )[0]
                 db.downloads.insert( p )
 
-
+            db.files.insert( { "_id" : key , "when" : datetime.datetime.today() } )
 
 def normalFileNameBuilder(y,m,d):
     return "log/access_log-%d-%02d-%02d" % ( y , m + 1 , d + 1 )
