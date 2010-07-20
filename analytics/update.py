@@ -76,30 +76,39 @@ class W3CParser:
         return d
                            
 
-def getAllDays( start=(2009,0) ):
+def getAllDays( start=(2009,1) ):
     a = []
     y = start[0]
     today = datetime.datetime.today()
     while y <= today.year:
 
-        maxMonth = 12
+        maxMonth = 13
         if y == today.year:
-            maxMonth = today.month
+            maxMonth = today.month + 1
 
-        minMonth = 0
+        minMonth = 1
         if y == start[0]:
             minMonth = start[1]
 
         for m in range( minMonth , maxMonth ):
             for d in range( 31 ):
-                t = (y,m,d)
-                a.append( t )
-
+                try:
+                    datetime.datetime(y,m,d)
+                    t = (y,m,d)
+                    a.append( t )
+                except Exception,e:
+                    pass
+                
         y = y + 1
 
     return a
 
-allDays = getAllDays( (2009,1) )
+def getWeek( y,m,d ):
+    d = datetime.datetime(y,m,d)
+    delta = datetime.timedelta(d.weekday())
+    d = d - delta
+    return (d.year,d.month,d.day)
+
 
 def addGZ( n ):
     return [ n , n + ".gz" ]
@@ -158,6 +167,38 @@ def skipLine( data ):
 conn = pymongo.Connection()
 db = conn.mongousage
 
+def getReverse( ip ):
+    x = db.ips.find_one( { "_id" : ip } )
+    if not x:
+        x = { "_id" : ip }
+        try:
+            x["r"] = r = socket.gethostbyaddr( ip )[0]
+            db.ips.insert( x )
+        except Exception,e:
+            print( ip + "\t" + str(e) )
+            return None
+
+    return x["r"]
+
+def getReverseDomain( h ):
+    h = h.split(".")
+    h.reverse()
+    
+    max = 1
+
+    if len(h) > 1:
+        max = 2
+        
+    if len(h) > 2 and len(h[0]) <= 2:
+        max = 3
+        
+    s = h[0:max]
+    s.reverse()
+    s = ".".join(s)
+
+    print( str(h) + "\t" + s )
+    return s
+    
 
 def doBucket( fileNameBuilder , parser , start ):
 
@@ -188,22 +229,30 @@ def doBucket( fileNameBuilder , parser , start ):
                 if skipLine( p ):
                     continue;
 
-                p["_id"] = key + "-" + str(lineNumber)
+                id = key + "-" + str(lineNumber)
+                p["_id"] = id
                 p["raw"] = line
-                p["date"] = { "year" : y , "month" : m + 1 , "day" : d + 1 }
+                p["date"] = { "year" : y , "month" : m , "day" : d }
+                w = getWeek( y , m , d )
+                p["week"] = { "year" : w[0] , "month" : w[1] , "day" : w[2] }
                 p["fromFile"] = key
                 p["os"] = p["uri-stem"].partition( "/" )[0]
-                db.downloads.insert( p )
+                r = getReverse( p["ip"] )
+                if r:
+                    print( r )
+                    p["reverse"] = r
+                    p["reverseDomain"] = getReverseDomain( r )
+                db.downloads.update( { "_id" : id } , p , upsert=True )
 
             db.files.insert( { "_id" : key , "when" : datetime.datetime.today() } )
 
 def normalFileNameBuilder(y,m,d):
-    return "log/access_log-%d-%02d-%02d" % ( y , m + 1 , d + 1 )
+    return "log/access_log-%d-%02d-%02d" % ( y , m , d )
 
 def cloudfrontFileNameBuilder(y,m,d):
-    return "log-fast/E22IW8VK01O2RF.%d-%02d-%02d" % ( y , m + 1 , d + 1 )
+    return "log-fast/E22IW8VK01O2RF.%d-%02d-%02d" % ( y , m , d )
 
-doBucket( normalFileNameBuilder , normalParser , ( 2009 , 1 ) )
-doBucket( cloudfrontFileNameBuilder , W3CParser() , ( 2010 , 6 ) )
+doBucket( normalFileNameBuilder , normalParser , ( 2009 , 2 ) )
+doBucket( cloudfrontFileNameBuilder , W3CParser() , ( 2010 , 7 ) )
 
 
