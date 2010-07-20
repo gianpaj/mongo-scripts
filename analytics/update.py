@@ -100,8 +100,9 @@ def getAllDays( start=(2009,1) ):
                     pass
                 
         y = y + 1
-
+    a.reverse()
     return a
+
 
 def getWeek( y,m,d ):
     d = datetime.datetime(y,m,d)
