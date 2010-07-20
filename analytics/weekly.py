@@ -11,8 +11,38 @@ import smtplib
 from email.MIMEText import MIMEText
 
 import _mysql
+import memcache
 
 db=_mysql.connect( user=settings.dbuser , passwd=settings.dbpass , db="mongousage")
+mc = memcache.Client( [ "127.0.0.1:11211" ] )
+
+def addGZ( n ):
+    return [ n , n + ".gz" ]
+
+badEndings = []
+for x in [ "Packages" , "Packages.bz2" , "Release" , "Sources" , 
+           ".xml" , ".dsc" , ".md5" , ".gpg" 
+           , ".pdf" , ".html" , ".png" , ".conf" ]:
+    badEndings.append( x )
+    badEndings.append( x + ".gz" )
+
+badStrings = [ "misc/boost" ]
+
+goodEndings = [ ".tar.gz" , ".tgz" , ".zip" , ".deb" , ".rpm" ]
+
+
+# -1 bad, 0 unknown 1 good
+def decide( key ):
+    for e in badEndings:
+        if key.endswith( e ):
+            return -1
+    for e in badStrings:
+        if key.find( e ) >= 0:
+            return -1
+    for e in goodEndings:
+        if key.endswith( e ):
+            return 1
+    return 0
 
 def updateData( debug=False ):
 
@@ -51,10 +81,20 @@ def updateData( debug=False ):
     s = simples3.S3Bucket( settings.bucket , settings.id , settings.key )
     seen = 0
 
+    def fetch( key ):
+        mckey = "s3log-" + key
+        raw = mc.get( mckey )
+        if not raw:
+            raw = s.get( key ).read()
+            mc.set( mckey , raw )
+        return raw.splitlines()
+
     def go( filter ):
         for (key, modify, etag, size) in s.listdir(prefix=filter):
             print( "\t" + key )
-            for line in s.get( key ):
+            for line in fetch( key ):
+                #print( "\t\t" + line )
+
                 try:
                     data = parseLine( line )
                 except:
@@ -77,14 +117,13 @@ def updateData( debug=False ):
                 if key == "-" or key.startswith( "log/" ):
                     continue
 
-                if key.endswith( "Packages.gz" ) or key.endswith( ".gpg" ) or key.endswith( "Release" ):
-                    continue
-                
-                if key.endswith( "tar.gz" ) or key.endswith( "tgz" ) or key.endswith( "zip" ) or key.endswith( ".deb" ):
+
+                res = decide(key)
+                if res == 1:
                     db.query( "INSERT INTO downloads VALUES( '%s' , '%s' , '%s' , '%s' , '%s' )" %
                               ( strftime( "%Y-%m-%d" , ts ) , data["ip"] , key.partition( "/" )[0] , key , line ) )
-                else:
-                    print( "skipping: " + key )
+                elif res == 0:
+                    print( "skipping unknown: " + key )
 
     def dayHash( y , m , d ):
         return ( int( y ) * 10000 ) + ( int( m ) * 100 ) + int( d )
