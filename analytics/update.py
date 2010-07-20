@@ -123,11 +123,15 @@ for x in [ "Packages" , "Packages.bz2" , "Release" , "Sources" ,
 
 badStrings = [ "misc/boost" ]
 
+badStarts = [ "log/" , "stats/" , "log-fast/" ]
+
 goodEndings = [ ".tar.gz" , ".tgz" , ".zip" , ".deb" , ".rpm" ]
 
 
 # -1 bad, 0 unknown 1 good
 def decide( key ):
+    if key == "-":
+        return -1
     for e in badEndings:
         if key.endswith( e ):
             return -1
@@ -137,6 +141,9 @@ def decide( key ):
     for e in goodEndings:
         if key.endswith( e ):
             return 1
+    for e in badStarts:
+        if key.startswith( e ):
+            return -1
     return 0
 
 
@@ -151,8 +158,6 @@ def skipLine( data ):
         return True
        
     key = data["uri-stem"]
-    if key == "-" or key.startswith( "log/" ) or key.startswith( "stats/" ):
-        return True
 
     x = decide( key )
     if x < 0:
@@ -176,7 +181,6 @@ def getReverse( ip ):
             x["r"] = r = socket.gethostbyaddr( ip )[0]
             db.ips.insert( x )
         except Exception,e:
-            print( ip + "\t" + str(e) )
             return None
 
     return x["r"]
@@ -197,9 +201,27 @@ def getReverseDomain( h ):
     s.reverse()
     s = ".".join(s)
 
-    print( str(h) + "\t" + s )
     return s
-    
+
+def doFetch( s , key ):
+    err = None
+    data = None
+
+    for x in range(5):
+        try:
+            data = s.get(key,timeout=1).read()
+            break
+        except Exception,e:
+          err = e
+          print( key + "\t" + str(e) )
+
+    if not data:
+        raise err
+
+    if key.endswith( ".gz" ):
+        data = gzip.GzipFile('', 'rb', 9, StringIO.StringIO(data)).read()
+
+    return data
 
 def doBucket( fileNameBuilder , parser , start ):
 
@@ -216,9 +238,7 @@ def doBucket( fileNameBuilder , parser , start ):
 
             lineNumber = 0
             
-            data = s.get(key).read()
-            if key.endswith( ".gz" ):
-                data = gzip.GzipFile('', 'rb', 9, StringIO.StringIO(data)).read()
+            data = doFetch( s , key )
 
             for line in data.splitlines():
                 lineNumber = lineNumber + 1
@@ -240,11 +260,10 @@ def doBucket( fileNameBuilder , parser , start ):
                 p["os"] = p["uri-stem"].partition( "/" )[0]
                 r = getReverse( p["ip"] )
                 if r:
-                    print( r )
                     p["reverse"] = r
                     p["reverseDomain"] = getReverseDomain( r )
                 db.downloads.update( { "_id" : id } , p , upsert=True )
-
+            print( "\t\t" + str(lineNumber) )
             db.files.insert( { "_id" : key , "when" : datetime.datetime.today() } )
 
 def normalFileNameBuilder(y,m,d):
