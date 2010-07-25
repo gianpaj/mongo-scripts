@@ -8,6 +8,9 @@ import datetime
 import zlib,gzip
 import StringIO
 
+import threading
+import Queue
+
 import pymongo
 
 import simples3
@@ -209,7 +212,8 @@ def doFetch( s , key ):
 
     for x in range(10):
         try:
-            data = s.get(key,timeout=2).read()
+            #data = s.get(key,timeout=2).read()
+            data = s.get(key).read()
             break
         except Exception,e:
           err = e
@@ -223,48 +227,70 @@ def doFetch( s , key ):
 
     return data
 
-def doBucket( fileNameBuilder , parser , start ):
+def handleFile( s , parser , key , y , m , d ):
+    print( "\t" + key )
+    if db.files.find_one( { "_id" : key } ):
+        return
 
+    lineNumber = 0
+
+    data = doFetch( s , key )
+
+    for line in data.splitlines():
+        lineNumber = lineNumber + 1
+
+        p = parser.parse( line )
+        if not p:
+            continue
+
+        if skipLine( p ):
+            continue;
+
+        id = key + "-" + str(lineNumber)
+        p["_id"] = id
+        p["raw"] = line
+        p["date"] = { "year" : y , "month" : m , "day" : d }
+        w = getWeek( y , m , d )
+        p["week"] = { "year" : w[0] , "month" : w[1] , "day" : w[2] }
+        p["fromFile"] = key
+        p["os"] = p["uri-stem"].partition( "/" )[0]
+        r = getReverse( p["ip"] )
+        if r:
+            p["reverse"] = r
+            p["reverseDomain"] = getReverseDomain( r )
+        db.downloads.update( { "_id" : id } , p , upsert=True )
+    print( "\t\t" + str(lineNumber) )
+    db.files.insert( { "_id" : key , "when" : datetime.datetime.today() } )
+
+
+def workerThread( parser , q , threadNum ):
     s = simples3.S3Bucket( settings.bucket , settings.id , settings.key )
-    seen = 0
 
+    try:
+        while True:
+            filter,y,m,d = q.get_nowait()
+            for (key, modify, etag, size) in s.listdir(prefix=filter):
+                print( "thread:" + str(threadNum) + " " + key )
+                handleFile( s , parser , key , y , m , d )
+    except Queue.Empty,e:
+        pass
+
+
+def doBucket( fileNameBuilder , parser , start ):
+    q = Queue.Queue()
+    
     for y,m,d in getAllDays(start):
-        filter = fileNameBuilder( y , m , d )
-        print(filter)
-        for (key, modify, etag, size) in s.listdir(prefix=filter):
-            print( "\t" + key )
-            if db.files.find_one( { "_id" : key } ):
-                continue
+        q.put( (fileNameBuilder( y , m , d ),y,m,d) )
 
-            lineNumber = 0
-            
-            data = doFetch( s , key )
+    allThreads = []
+    for x in range(10):
+        allThreads.append( threading.Thread( target=workerThread , args=(parser,q,x) ) )
 
-            for line in data.splitlines():
-                lineNumber = lineNumber + 1
+    for t in allThreads:
+        t.start()
+    for t in allThreads:
+        t.join()
 
-                p = parser.parse( line )
-                if not p:
-                    continue
-
-                if skipLine( p ):
-                    continue;
-
-                id = key + "-" + str(lineNumber)
-                p["_id"] = id
-                p["raw"] = line
-                p["date"] = { "year" : y , "month" : m , "day" : d }
-                w = getWeek( y , m , d )
-                p["week"] = { "year" : w[0] , "month" : w[1] , "day" : w[2] }
-                p["fromFile"] = key
-                p["os"] = p["uri-stem"].partition( "/" )[0]
-                r = getReverse( p["ip"] )
-                if r:
-                    p["reverse"] = r
-                    p["reverseDomain"] = getReverseDomain( r )
-                db.downloads.update( { "_id" : id } , p , upsert=True )
-            print( "\t\t" + str(lineNumber) )
-            db.files.insert( { "_id" : key , "when" : datetime.datetime.today() } )
 
 def normalFileNameBuilder(y,m,d):
     return "log/access_log-%d-%02d-%02d" % ( y , m , d )
