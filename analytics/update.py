@@ -212,7 +212,6 @@ def doFetch( s , key ):
 
     for x in range(10):
         try:
-            #data = s.get(key,timeout=2).read()
             data = s.get(key).read()
             break
         except Exception,e:
@@ -228,10 +227,9 @@ def doFetch( s , key ):
     return data
 
 def handleFile( s , parser , key , y , m , d ):
-    print( "\t" + key )
     if db.files.find_one( { "_id" : key } ):
         return
-
+    print( "going to fetch: " + key )
     lineNumber = 0
 
     data = doFetch( s , key )
@@ -259,18 +257,19 @@ def handleFile( s , parser , key , y , m , d ):
             p["reverse"] = r
             p["reverseDomain"] = getReverseDomain( r )
         db.downloads.update( { "_id" : id } , p , upsert=True )
-    print( "\t\t" + str(lineNumber) )
+    print( "\t" + key + "\t" + str(lineNumber) )
     db.files.insert( { "_id" : key , "when" : datetime.datetime.today() } )
 
 
 def workerThread( parser , q , threadNum ):
     s = simples3.S3Bucket( settings.bucket , settings.id , settings.key )
+    s.timeout = 2
 
     try:
         while True:
             filter,y,m,d = q.get_nowait()
+            print( str(y) + "-" + str(m) + "-" + str(d) )
             for (key, modify, etag, size) in s.listdir(prefix=filter):
-                print( "thread:" + str(threadNum) + " " + key )
                 handleFile( s , parser , key , y , m , d )
     except Queue.Empty,e:
         pass
@@ -283,7 +282,7 @@ def doBucket( fileNameBuilder , parser , start ):
         q.put( (fileNameBuilder( y , m , d ),y,m,d) )
 
     allThreads = []
-    for x in range(10):
+    for x in range(50):
         allThreads.append( threading.Thread( target=workerThread , args=(parser,q,x) ) )
 
     for t in allThreads:
