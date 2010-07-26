@@ -298,7 +298,8 @@ def normalFileNameBuilder(y,m,d):
 def cloudfrontFileNameBuilder(y,m,d):
     return "log-fast/E22IW8VK01O2RF.%d-%02d-%02d" % ( y , m , d )
 
-doBucket( normalFileNameBuilder , normalParser , ( 2009 , 2 ) )
 doBucket( cloudfrontFileNameBuilder , W3CParser() , ( 2010 , 7 ) )
+doBucket( normalFileNameBuilder , normalParser , ( 2009 , 2 ) )
+
 
 
