@@ -246,6 +246,7 @@ def handleFile( s , parser , key , y , m , d ):
 
         id = key + "-" + str(lineNumber)
         p["_id"] = id
+        p["day"] = datetime.datetime( y , m , d )
         p["raw"] = line
         p["date"] = { "year" : y , "month" : m , "day" : d }
         w = getWeek( y , m , d )
