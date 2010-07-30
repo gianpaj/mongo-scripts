@@ -18,12 +18,31 @@ function getMonth(x){
     return x.date.year + '-' + twoLetter( x.date.month );
 }
 
+function firstPiece(x){
+    if ( ! x )
+        return "";
+    var idx = x.indexOf( "/" );
+    if ( idx == 0 ){
+        x = x.substring(1);
+        idx = x.indexOf( "/" );;
+    }
+    if ( idx < 0 ){
+        return x;
+    }
+    return x.substring( 0 , idx );
+}
+
+assert.eq( "foo" , firstPiece( "/foo/asd" ) )
+assert.eq( "foo" , firstPiece( "foo/asd" ) )
+assert.eq( "foo" , firstPiece( "/foo/" ) )
+
 assert.eq( "05" , twoLetter( "5" ) , "test1a" )
 assert.eq( "05" , twoLetter( "05" ) , "tes1b")
 
-db.system.js.update( { _id : "twoLetter" } , { value : twoLetter } , true );
-db.system.js.update( { _id : "getWeek" } , { value : getWeek } , true );
-db.system.js.update( { _id : "getMonth" } , { value : getMonth } , true );
+db.system.js.save( { _id : "twoLetter" , value : twoLetter } );
+db.system.js.save( { _id : "getWeek" ,  value : getWeek }  );
+db.system.js.save( { _id : "getMonth" , value : getMonth } );
+db.system.js.save( { _id : "firstPiece" , value : firstPiece } );
 
 db.downloads.ensureIndex( { day : 1 } )
 
@@ -33,6 +52,7 @@ simpleSum = function(k,values){
     return Array.sum( values ); 
 }
 
+assert.eq( 5 , simpleSum( "x" , [ 1 , 4 ] ) )
 
 function downloadSummary(){
 
@@ -81,7 +101,7 @@ function doDomains( numDays ){
             day : { $gt : since } 
         }
     
-    print( "since: " + since + " \t" + db.downloads.find( q ).count() +  " / " + db.downloads.find( { day : { $gt : since } } ).count() )
+    print( "top domains since: " + since + " \t" + db.downloads.find( q ).count() +  " / " + db.downloads.find( { day : { $gt : since } } ).count() )
 
     var coll = "gen.domains.day" + numDays;
     db.downloads.mapReduce( function(){ emit( this.reverseDomain , 1 ); } ,
@@ -90,11 +110,43 @@ function doDomains( numDays ){
     db[coll].ensureIndex( { value : 1 } )
 }
 
+// top files 
+function topFiles( numDays ){
+    var since = new Date( new Date().getTime() - ( 86400 * 1000 * numDays ) )
+    print( "topFiles since: " + since )
+    
+    var q = { day : { $gt : since } }
+
+    var coll = "gen.files.day" + numDays;
+    db.downloads.mapReduce( function(){ emit( this["uri-stem"] , 1 ); } ,
+                            simpleSum , 
+                            { out : coll , query : q } );
+    db[coll].ensureIndex( { value : 1 } )
+}
 
 
+function topPieces( numDays ){
+    var since = new Date( new Date().getTime() - ( 86400 * 1000 * numDays ) )
+    print( "topPieces since: " + since )
 
-downloadSummary();
-doDomains( 7 )
-doDomains( 15 )
-doDomains( 30 )
+    var q = { day : { $gt : since } }
 
+    var coll = "gen.firstPiece.day" + numDays;
+    db.downloads.mapReduce( function(){ emit( firstPiece( this["uri-stem"] ) , 1 ); } ,
+                            simpleSum ,
+                            { out : coll , query : q } );
+    db[coll].ensureIndex( { value : 1 } )
+}
+
+
+//downloadSummary();
+
+function doGroups( numDays ){
+    doDomains( numDays )
+    topFiles( numDays )
+    topPieces( numDays );
+}
+
+doGroups( 7 )
+doGroups( 15 )
+doGroups( 30 )
