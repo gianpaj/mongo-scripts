@@ -139,7 +139,7 @@ function topPieces( numDays ){
 }
 
 
-//downloadSummary();
+downloadSummary();
 
 function doGroups( numDays ){
     doDomains( numDays )
