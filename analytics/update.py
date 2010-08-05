@@ -262,21 +262,33 @@ def handleFile( s , parser , key , y , m , d ):
     db.files.insert( { "_id" : key , "when" : datetime.datetime.today() } )
 
 
-def workerThread( parser , q , threadNum ):
+def findFilesThread( parser , q , threadNum , files ):
     s = simples3.S3Bucket( settings.bucket , settings.id , settings.key )
-    s.timeout = 2
+    s.timeout = 5
 
     try:
         while True:
             filter,y,m,d = q.get_nowait()
             print( str(y) + "-" + str(m) + "-" + str(d) )
-            for (key, modify, etag, size) in s.listdir(prefix=filter):
-                handleFile( s , parser , key , y , m , d )
+
+            while True:
+                try:
+                    for (key, modify, etag, size) in s.listdir(prefix=filter):
+                        if db.files.find_one( { "_id" : key } ):
+                            continue
+                        files.put( ( s , parser , key , y , m , d ) )
+                        #handleFile( s , parser , key , y , m , d )
+                    print( "file queue length: " + str(files.qsize()) )
+                    break
+
+                except Exception,e:
+                    print( "can't list: " + filter + " retrying "  + str(e) )
+
     except Queue.Empty,e:
         pass
 
 
-def doBucket( fileNameBuilder , parser , start ):
+def findFilesFromBucket( fileNameBuilder , parser , start , files ):
     q = Queue.Queue()
     
     for y,m,d in getAllDays(start):
@@ -284,13 +296,37 @@ def doBucket( fileNameBuilder , parser , start ):
 
     allThreads = []
     for x in range(50):
-        allThreads.append( threading.Thread( target=workerThread , args=(parser,q,x) ) )
+        allThreads.append( threading.Thread( target=findFilesThread , args=(parser,q,x,files) ) )
 
     for t in allThreads:
         t.start()
     for t in allThreads:
         t.join()
 
+    
+def doFiles( files ):
+    def fileThread(files,n):
+        s = simples3.S3Bucket( settings.bucket , settings.id , settings.key )
+        s.timeout = 5
+        
+        try:
+            while True:
+                print( "files left: " + str(files.qsize()) )
+                s , parser , key , y , m , d = files.get_nowait()
+                handleFile( s , parser , key , y , m , d )
+        except Queue.Empty,e:
+            pass
+
+    allThreads = []
+    for x in range(50):
+        allThreads.append( threading.Thread( target=fileThread , args=(files,x) ) )
+
+    for t in allThreads:
+        t.start()
+    for t in allThreads:
+        t.join()
+    
+    
 
 def normalFileNameBuilder(y,m,d):
     return "log/access_log-%d-%02d-%02d" % ( y , m , d )
@@ -298,8 +334,16 @@ def normalFileNameBuilder(y,m,d):
 def cloudfrontFileNameBuilder(y,m,d):
     return "log-fast/E22IW8VK01O2RF.%d-%02d-%02d" % ( y , m , d )
 
-doBucket( cloudfrontFileNameBuilder , W3CParser() , ( 2010 , 7 ) )
-doBucket( normalFileNameBuilder , normalParser , ( 2009 , 2 ) )
+files = Queue.Queue()
+
+findFilesFromBucket( cloudfrontFileNameBuilder , W3CParser() , ( 2010 , 7 ) , files )
+findFilesFromBucket( normalFileNameBuilder , normalParser , ( 2009 , 2 ) , files )
+
+doFiles( files )
+
+
+    
+
 
 
 
