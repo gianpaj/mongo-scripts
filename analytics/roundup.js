@@ -32,6 +32,20 @@ function firstPiece(x){
     return x.substring( 0 , idx );
 }
 
+function parseVersion( file ){
+    if ( ! file )
+        return null;
+    
+    if ( typeof ( myre ) == "undefined" ){
+        myre = new RegExp( /(\d+\.\d+\.\d+)/ )
+    }
+    
+    x = myre.exec( file )
+    if ( ! x )
+        return null;
+    return x[1]
+}
+
 assert.eq( "foo" , firstPiece( "/foo/asd" ) )
 assert.eq( "foo" , firstPiece( "foo/asd" ) )
 assert.eq( "foo" , firstPiece( "/foo/" ) )
@@ -39,10 +53,13 @@ assert.eq( "foo" , firstPiece( "/foo/" ) )
 assert.eq( "05" , twoLetter( "5" ) , "test1a" )
 assert.eq( "05" , twoLetter( "05" ) , "tes1b")
 
+assert.eq( "1.4.4" , parseVersion( "/win32/mongodb-win32-i386-1.4.4.zip"  ) )
+
 db.system.js.save( { _id : "twoLetter" , value : twoLetter } );
 db.system.js.save( { _id : "getWeek" ,  value : getWeek }  );
 db.system.js.save( { _id : "getMonth" , value : getMonth } );
 db.system.js.save( { _id : "firstPiece" , value : firstPiece } );
+db.system.js.save( { _id : "parseVersion" , value : parseVersion } );
 
 db.downloads.ensureIndex( { day : 1 } )
 
@@ -139,7 +156,7 @@ function topPieces( numDays ){
 }
 
 
-downloadSummary();
+
 
 function doGroups( numDays ){
     doDomains( numDays )
@@ -147,6 +164,23 @@ function doGroups( numDays ){
     topPieces( numDays );
 }
 
+function doVersions(){
+    res = db.downloads.mapReduce( 
+        function(){ 
+            v = parseVersion( this["uri-stem"] );
+            if ( v )
+                emit( v , 1 );
+        } , simpleSum , { out : "gen.versions" } );
+    res.find().sort( { _id : -1 } ).forEach( printjson );
+        
+}
+
+/*
+downloadSummary();
 doGroups( 7 )
 doGroups( 15 )
 doGroups( 30 )
+*/
+
+
+doVersions()

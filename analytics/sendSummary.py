@@ -4,7 +4,7 @@ from email.MIMEText import MIMEText
 
 import pymongo
 
-conn = pymongo.Connection()
+conn = pymongo.Connection("jira-e.10gen.cc")
 db = conn.mongousage
 
 def genBody():
@@ -19,7 +19,11 @@ def genBody():
     body += "Week    \tTotal\tUnique\n";
     for x in db["gen.weekly"].find().sort( "_id" , pymongo.DESCENDING ):
         body += "%s\t%d\t%d\n" % ( x["_id"] , int(x["value"]["total"]) , int(x["value"]["unique"] ) )
-
+        
+    body += "\n\n"
+    body += "Versions\n"
+    for x in db["gen.versions"].find().sort( "_id" , pymongo.DESCENDING ):
+        body += "%s\t%d\n" % ( x["_id"] , int(x["value"]) )
         
     return body
 
@@ -35,4 +39,5 @@ def sendEmail():
     print s.quit()
 
 
-sendEmail()
+if __name__ == "__main__":
+    sendEmail()
