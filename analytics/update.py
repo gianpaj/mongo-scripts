@@ -338,13 +338,13 @@ def cloudfrontFileNameBuilder(y,m,d):
     return "log-fast/E22IW8VK01O2RF.%d-%02d-%02d" % ( y , m , d )
 
 files = Queue.Queue()
+doFiles( files )
 
 findFilesFromBucket( cloudfrontFileNameBuilder , W3CParser() , ( 2010 , 7 ) , files )
 findFilesFromBucket( normalFileNameBuilder , normalParser , ( 2009 , 2 ) , files )
 
 allDone = True
 
-doFiles( files )
 
 
     
