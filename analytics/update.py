@@ -304,18 +304,21 @@ def findFilesFromBucket( fileNameBuilder , parser , start , files ):
         t.join()
 
     
+allDone = False;
+
 def doFiles( files ):
     def fileThread(files,n):
         s = simples3.S3Bucket( settings.bucket , settings.id , settings.key )
         s.timeout = 5
         
-        try:
-            while True:
-                print( "files left: " + str(files.qsize()) )
-                s , parser , key , y , m , d = files.get_nowait()
+        while not allDone:
+            try:
+                print( "files to do: " + str(files.qsize()) )
+                s , parser , key , y , m , d = files.get(true,2)
                 handleFile( s , parser , key , y , m , d )
-        except Queue.Empty,e:
-            pass
+            except Queue.Empty,e:
+                if allDone:
+                    return
 
     allThreads = []
     for x in range(50):
@@ -338,6 +341,8 @@ files = Queue.Queue()
 
 findFilesFromBucket( cloudfrontFileNameBuilder , W3CParser() , ( 2010 , 7 ) , files )
 findFilesFromBucket( normalFileNameBuilder , normalParser , ( 2009 , 2 ) , files )
+
+allDone = True
 
 doFiles( files )
 

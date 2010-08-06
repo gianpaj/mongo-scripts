@@ -175,12 +175,9 @@ function doVersions(){
         
 }
 
-/*
 downloadSummary();
 doGroups( 7 )
 doGroups( 15 )
 doGroups( 30 )
-*/
-
 
 doVersions()
