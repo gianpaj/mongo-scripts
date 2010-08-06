@@ -311,7 +311,7 @@ def doFiles( files ):
         s = simples3.S3Bucket( settings.bucket , settings.id , settings.key )
         s.timeout = 5
         
-        while not allDone:
+        while True:
             try:
                 print( "files to do: " + str(files.qsize()) )
                 s , parser , key , y , m , d = files.get(true,2)
