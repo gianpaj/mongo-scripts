@@ -314,7 +314,7 @@ def doFiles( files ):
         while True:
             try:
                 print( "files to do: " + str(files.qsize()) )
-                s , parser , key , y , m , d = files.get(true,2)
+                s , parser , key , y , m , d = files.get(True,2)
                 handleFile( s , parser , key , y , m , d )
             except Queue.Empty,e:
                 if allDone:
