@@ -29,6 +29,8 @@ class LineParser:
             return None
 
         result = [m.group(1+n) for n in range(len(self._names))]
+        if len(result) != len(self._names):
+            print( "bad line ??? : " + line )
 
         d = {}
         for ( name , val ) in zip( self._names , result ):
@@ -313,9 +315,9 @@ def doFiles( files ):
         
         while True:
             try:
-                print( "files to do: " + str(files.qsize()) )
                 s , parser , key , y , m , d = files.get(True,2)
                 handleFile( s , parser , key , y , m , d )
+                print( "files to do: " + str(files.qsize()) )
             except Queue.Empty,e:
                 if allDone:
                     return
