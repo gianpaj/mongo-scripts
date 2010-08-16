@@ -4,7 +4,7 @@ from email.MIMEText import MIMEText
 
 import pymongo
 
-conn = pymongo.Connection("jira-e.10gen.cc")
+conn = pymongo.Connection()
 db = conn.mongousage
 
 def genBody():
