@@ -15,11 +15,11 @@ import web
 import pymongo
 from suds.client import Client
 
-import settings
-
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(here)
+
+import settings
 
 # setup web env
 env = jinja2.Environment(loader=jinja2.PackageLoader("www", "templates"))
