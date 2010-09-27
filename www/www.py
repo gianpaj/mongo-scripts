@@ -13,8 +13,9 @@ import jinja2
 import web
 
 from pymongo import Connection
-
 from suds.client import Client
+
+import settings
 
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
@@ -26,19 +27,17 @@ web.config.debug = False
 app = web.auto_application()
 
 
-
-crowd = Client("http://crowd.10gen.com/crowd/services/SecurityServer?wsdl")
-
-
-class CorpHome(app.page):
-    path="/(?:index.html)?"
-
-    def GET(self):
-        web.header('Content-type','text/html')
-        return env.get_template("index.html").render()
+#setup crowd
+url='file://' + here + '/crowd-fixed.wsdl'
+client = Client(url)
+auth_context = client.factory.create('ns1:ApplicationAuthenticationContext')
+auth_context.name = settings.crowdAppUser
+auth_context.credential.credential = settings.crowdAppPassword
+appToken = client.service.authenticateApplication(auth_context)
 
 
-class MongoFavicon(app.page):
+
+class CorpFavicon(app.page):
     path="/favicon.ico"
 
     def GET(self):
@@ -48,9 +47,38 @@ class MongoFavicon(app.page):
 class CorpNormal(app.page):
     path = "/(.*)"
 
+    def checkAuth(self):
+        res = { "ok" : False }
+
+        c = web.webapi.cookies()
+
+        if "auth_user" not in c:
+            return res
+        if "auth_token" not in c:
+            return res
+        
+        res["user"] = c["auth_user"]
+
+        if client.service.isValidPrincipalToken( appToken , c["auth_token"] , client.factory.create( "ns1:ArrayOfValidationFactor" ) ):
+            res["ok"] = True
+            return res
+        
+        return False
+
+    def POST(self,p):
+        blah
+
     def GET(self,p):
+        
+        authResult = self.checkAuth()
+        if not authResult["ok"]:
+            return env.get_template( "login.html" , authResult ).render( authResult )
+
         web.header('Content-type','text/html')
         
+        web.webapi.setcookie( "a" , "b" )
+        print( web.webapi.cookies() )
+
         if p == "":
             p = "index.html"
         
