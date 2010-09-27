@@ -93,6 +93,7 @@ class CorpNormal(app.page):
         return self.GET(p)
 
     def GET(self,p):
+        web.header('Content-type','text/html')
         
         pageParams = self.checkAuth( p=="logout")
         if not pageParams["ok"]:
@@ -106,8 +107,6 @@ class CorpNormal(app.page):
 
         print( pageParams )
             
-        web.header('Content-type','text/html')
-        
         #fix path
         if p == "":
             p = "index.html"
