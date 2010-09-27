@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Company name</th>
+    <th>Email</th>
+    <th>Jira</th>
+    <th>Phone</th>
+    <th>Address</th>
+    <th>Plan</th>
+  </tr>
+  {% for order in orders %}
+  <tr>
+    <td>
+      {{ order['full_name'] }}
+    </td>
+    <td>
+      {{ order['company_name'] or '-'}}
+    </td>
+    <td>
+      <a href="mailto:{{ order['email'] }}">{{ order['email'] }}</a>
+    </td>
+    <td>
+      <a href="http://jira.mongodb.org/secure/ViewProfile.jspa?name={{ order['jira_username'] }}">{{ order['jira_username'] }}</a>
+    </td>
+    <td>
+      {{ order['phone_number'] }}
+    </td>
+    <td>
+      {{ order['postal_address'] }}
+    </td>
+    <td>
+      {{ order['plan'] }}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

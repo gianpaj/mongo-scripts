@@ -1,22 +1,25 @@
-{% extends "base.html" %}
+<html>
+  <body>
+    Login for 10gen corp system<br>
+    Unauthorized access prohibited<br>
+    
+    Login
+    
+    <br>
+    
+    <form method="POST">
+      <table >
+        <tr>
+          <td>Username</td>
+          <td><input name="user"></td>
+        </tr>
+        <tr>
+          <td>Password</td>
+          <td><input name="pwd" type="password"></td>
+        </tr>
+      </table>
+      <input type="submit" action="login">
+    </form>
 
-{% block content %}
-Login
-
-<br>
-
-<form method="POST">
-  <table >
-    <tr>
-      <td>Username</td>
-      <td><input name="user"></td>
-    </tr>
-    <tr>
-      <td>Password</td>
-      <td><input name="pwd" type="password"></td>
-    </tr>
-  </table>
-  <input type="submit" action="login">
-</form>
-
-{% endblock %}
+  </body>
+</html>

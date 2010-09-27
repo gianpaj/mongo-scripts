@@ -12,7 +12,7 @@ import urllib2
 import jinja2
 import web
 
-from pymongo import Connection
+import pymongo
 from suds.client import Client
 
 import settings
@@ -36,6 +36,9 @@ auth_context.credential.credential = settings.crowdAppPassword
 appToken = client.service.authenticateApplication(auth_context)
 
 
+#setup dbs
+wwwdb = pymongo.Connection( settings.wwwdb_host ).www
+usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
 
 class CorpFavicon(app.page):
     path="/favicon.ico"
@@ -98,6 +101,11 @@ class CorpNormal(app.page):
         if p == "logout":
             return web.redirect( "/" )
         
+        if p in dir(self):
+            getattr(self,p)(pageParams)
+
+        print( pageParams )
+            
         web.header('Content-type','text/html')
         
         #fix path
@@ -112,6 +120,19 @@ class CorpNormal(app.page):
         t = env.get_template( p )
         return t.render(**pageParams)
 
+
+    def dlDomains(self,pp):
+        days = 7
+        try:
+            days = int(web.input()["days"])
+        except:
+            pass
+
+        pp["days"] = days
+        pp["domains"] = usagedb["gen.domains.day" + str(days)].find().sort('value', pymongo.DESCENDING)
+
+    def csSignups(self,pp):
+        pp["orders"] = wwwdb.orders.find()
 
 if __name__ == "__main__":
     app.run()

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+<h3>Domains with the most downloads in the last {{ days }}</h3>
+
+<p>
+  <b>Change # of dayus: </b>
+  {% for x in [ 7 , 15 , 30 ] %}
+  <a href="/dlDomains?days={{ x }}">{{ x }}</a>&nbsp;
+  {% endfor %}
+</p>
+
+<table>
+  <tr>
+    <th>domain</th>
+    <th>ndownloads</th>
+  </tr>
+  {% for d in domains %}
+  <tr>
+    <td>
+      {{ d['_id'] }}
+    </td>
+    <td>
+      {{ d['value'] | int }}
+    </td>
+      </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
