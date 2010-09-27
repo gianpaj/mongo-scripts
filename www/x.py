@@ -19,10 +19,12 @@ url='file://' + here + '/crowd-fixed.wsdl'
 
 
 client = suds.client.Client(url)
-auth_context = client.factory.create('ns1:ApplicationAuthenticationContext')
+
 # crowd application name and password
+auth_context = client.factory.create('ns1:ApplicationAuthenticationContext')
 auth_context.name = 'corp'
 auth_context.credential.credential = 'eng718corp'
+
 token = client.service.authenticateApplication(auth_context)
 
 # print a user's groups
@@ -35,6 +37,7 @@ if len(groups) > 0:
 else:
     print "  <none>"
 
+# try to authenticate
 z = client.service.authenticatePrincipalSimple( token , "josh", "josh7" )
 try:
     print( client.service.isValidPrincipalToken( token , z , client.factory.create( "ns1:ArrayOfValidationFactor" ) ) )

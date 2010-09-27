@@ -47,46 +47,70 @@ class CorpFavicon(app.page):
 class CorpNormal(app.page):
     path = "/(.*)"
 
-    def checkAuth(self):
+    def checkAuth(self,isLogout):
         res = { "ok" : False }
 
         c = web.webapi.cookies()
+        if "auth_user" in c and "auth_token" in c:
+            res["user"] = c["auth_user"]
 
-        if "auth_user" not in c:
-            return res
-        if "auth_token" not in c:
-            return res
+            if client.service.isValidPrincipalToken( appToken , c["auth_token"] , client.factory.create( "ns1:ArrayOfValidationFactor" ) ):
+                if isLogout:
+                    client.service.invalidatePrincipalToken( appToken , c["auth_token"] )
+                else:
+                    res["ok"] = True
+                return res
         
-        res["user"] = c["auth_user"]
+        params = web.input()
+        if "user" in params and "pwd" in params:
+            username = params["user"]
+            password = params["pwd"]
 
-        if client.service.isValidPrincipalToken( appToken , c["auth_token"] , client.factory.create( "ns1:ArrayOfValidationFactor" ) ):
+            if username is None or password is None:
+                return res
+            
+            try:
+                token = client.service.authenticatePrincipalSimple( appToken , username , password )
+            except Exception,e:
+                res["err"] = str(e)
+                return res;
+
+            if not token:
+                res["err"] = "bad username/password"
+                return res
+            
+            web.webapi.setcookie( "auth_user" , username )
+            web.webapi.setcookie( "auth_token" , token )
             res["ok"] = True
             return res
         
-        return False
+        return res
 
     def POST(self,p):
-        blah
+        return self.GET(p)
 
     def GET(self,p):
         
-        authResult = self.checkAuth()
-        if not authResult["ok"]:
-            return env.get_template( "login.html" , authResult ).render( authResult )
+        pageParams = self.checkAuth( p=="logout")
+        if not pageParams["ok"]:
+            return env.get_template( "login.html" , pageParams ).render( pageParams )
 
+        if p == "logout":
+            return web.redirect( "/" )
+        
         web.header('Content-type','text/html')
         
-        web.webapi.setcookie( "a" , "b" )
-        print( web.webapi.cookies() )
-
+        #fix path
         if p == "":
             p = "index.html"
         
         if not p.endswith( ".html" ):
             p = p + ".html"
+    
+        pageParams["path"] = p
 
         t = env.get_template( p )
-        return t.render(path=p)
+        return t.render(**pageParams)
 
 
 if __name__ == "__main__":
