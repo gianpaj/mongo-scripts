@@ -1,0 +1,31 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<table>
+  
+  <tr>
+    <th>Name</th>
+    <th>github_username</th>
+    <th>company_name</th>
+    <th>email</th>
+    <th>signed</th>
+    <th>address</th>
+    <th>phone #</th>
+  </tr>
+  
+  {% for c in contributors %}
+  <tr>
+    <td>{{ c.full_name }}</td>
+    <td>{{ c.github_username }}</td>
+    <td>{{ c.github_username }}</td>
+    <td>{{ c.company_name }}</td>
+    <td>{{ c.email }}</td>
+    <td>{{ c.signed }}</td>
+    <td>{{ c.phone_number }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

@@ -133,6 +133,9 @@ class CorpNormal(app.page):
     def csSignups(self,pp):
         pp["orders"] = wwwdb.orders.find()
 
+    def contributors(self,pp):
+        pp["contributors"] = wwwdb.contributors.find()
+
 if __name__ == "__main__":
     app.run()
 else:
