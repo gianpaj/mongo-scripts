@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+<h3>Download Events</h3>
+
+<table>
+  <tr>
+    {% for f in fields %}
+    <th>{{ f }}</th>
+    {% endfor %}
+  </tr>
+  {% for e in events %}
+  <tr>
+    {% for f in fields %}
+    <td>
+      {{ e.get(f) }}
+    </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
