@@ -19,6 +19,18 @@ def genBody():
     body += "Week    \tTotal\tUnique\n";
     for x in db["gen.weekly"].find().sort( "_id" , pymongo.DESCENDING ):
         body += "%s\t%d\t%d\n" % ( x["_id"] , int(x["value"]["total"]) , int(x["value"]["unique"] ) )
+
+    body += "\n\n"
+    body += "OS version last week\n"
+    for x in db["gen.firstPiece.day7"].find().sort( "value" , pymongo.DESCENDING ):
+        bad = False 
+        for j in [ "." , "-" , "log" , "stats" ]:
+            if x["_id"].find( j ) >= 0:
+                bad = True
+                break
+        if bad:
+            continue
+        body += "%s\t%d\n" % ( x["_id"] , x["value"] )
         
     body += "\n\n"
     body += "Versions\n"
@@ -40,4 +52,5 @@ def sendEmail():
 
 
 if __name__ == "__main__":
-    sendEmail()
+    print( genBody() )
+    #sendEmail()
