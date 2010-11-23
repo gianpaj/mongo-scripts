@@ -52,5 +52,5 @@ def sendEmail():
 
 
 if __name__ == "__main__":
-    print( genBody() )
-    #sendEmail()
+    #print( genBody() )
+    sendEmail()
