@@ -40,7 +40,7 @@ def genBody():
     return body
 
 def sendEmail():
-    to = [ "everyone@10gen.com" , "board@10gen.com" ]
+    to = [ "everyone@10gen.com" , "board@10gen.com" , "robles@sequoiacap.com" ]
     msg = MIMEText(genBody())
     msg['Subject'] = "Mongo Download Usage"
     msg['From']    = "eliot@10gen.com"
