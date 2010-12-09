@@ -133,7 +133,7 @@ class CorpNormal(app.page):
         pp["domains"] = usagedb["gen.domains.day" + str(days)].find().sort('value', pymongo.DESCENDING)
 
     def dlEvents(self,pp):
-        pp["fields"] = ("time", "email", "download", "ip", "ipinfo", "postroll", "processed", "sessionid", "useragent")
+        pp["fields"] = ("time", "email", "download", "ip", "ipinfo", "sessionid", "useragent")
         pp["events"] = mongowwwdb.download_events.find()
 
     def csSignups(self,pp):
