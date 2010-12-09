@@ -1,4 +1,5 @@
 *~
 *.pyc
 *.swp
-*settings.py
+www/settings_private.py
+www/devel

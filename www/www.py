@@ -17,7 +17,8 @@ from suds.client import Client
 
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(here)
+if here not in sys.path:
+    sys.path.append(here)
 
 import settings
 
@@ -39,6 +40,7 @@ appToken = client.service.authenticateApplication(auth_context)
 #setup dbs
 wwwdb = pymongo.Connection( settings.wwwdb_host ).www
 usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
+mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
 
 class CorpFavicon(app.page):
     path="/favicon.ico"
@@ -129,6 +131,10 @@ class CorpNormal(app.page):
 
         pp["days"] = days
         pp["domains"] = usagedb["gen.domains.day" + str(days)].find().sort('value', pymongo.DESCENDING)
+
+    def dlEvents(self,pp):
+        pp["fields"] = ("time", "email", "download", "ip", "ipinfo", "postroll", "processed", "sessionid", "useragent")
+        pp["events"] = mongowwwdb.download_events.find()
 
     def csSignups(self,pp):
         pp["orders"] = wwwdb.orders.find()
