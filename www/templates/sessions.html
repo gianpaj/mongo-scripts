@@ -9,28 +9,27 @@
 
 {% block content %}
     
-<h3>Download Events</h3>
+<h3>Sessions</h3>
 
 <table id="dltable" class="tablesorter">
 <thead>
   <tr>
-    <th>time</th>
-    <th>download</th>
+    <th>time last visit</th>
     <th>email</th>
     <th>nprompts</th>
+    <th>npageviews</th>
     <th>ip</th>
     <th>ipinfo</th>
     <th>useragent</th>
   </tr>
 </thead>
 <tbody>
-  {% for e in events %}
-  {% set s = sessions[e.sessionid] %}
+  {% for s in sessions %}
   <tr>
-    <td>{{ e.time }}</td>
-    <td>{{ e.download }}</td>
+    <td>{{ s.timelastvisit }}</td>
     <td>{{ s.email }}</td>
     <td>{{ s.nprompts }}</td>
+    <td>{{ s.npageviews }}</td>
     <td>{{ s.ip }}</td>
     <td>{{ ipinfo.find_one(s.ip).ipinfo }}</td>
     <td>{{ s.useragent }}</td>

@@ -137,16 +137,20 @@ class CorpNormal(app.page):
         pp["days"] = days
         pp["domains"] = usagedb["gen.domains.day" + str(days)].find().sort('value', pymongo.DESCENDING)
 
+    def sessions(self, pp):
+        pp.update(dict(
+            sessions=[sessionstore[i['_id']] for i in mongowwwdb.sessions.find()],
+            ipinfo=mongowwwdb.ipinfo,
+            ))
+
     def dlEvents(self,pp):
         events = list(mongowwwdb.download_events.find())
         sessions = {}
-        ipinfo = {}
         for e in events:
             sessionid = e['sessionid']
             session = sessionstore[sessionid]
             sessions[sessionid] = session
-            ipinfo[sessionid] = mongowwwdb.ipinfo.find_one(session['ip'])
-        pp.update(dict(events=events, sessions=sessions, ipinfo=ipinfo))
+        pp.update(dict(events=events, sessions=sessions, ipinfo=mongowwwdb.ipinfo))
 
     def csSignups(self,pp):
         pp["orders"] = wwwdb.orders.find()
