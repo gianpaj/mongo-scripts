@@ -15,6 +15,9 @@ import web
 import pymongo
 from suds.client import Client
 
+from webpy_mongodb_sessions.session import MongoStore
+
+
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
 if here not in sys.path:
@@ -41,6 +44,8 @@ appToken = client.service.authenticateApplication(auth_context)
 wwwdb = pymongo.Connection( settings.wwwdb_host ).www
 usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
 mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
+
+sessionstore = MongoStore(mongowwwdb, 'sessions')
 
 class CorpFavicon(app.page):
     path="/favicon.ico"
@@ -133,8 +138,15 @@ class CorpNormal(app.page):
         pp["domains"] = usagedb["gen.domains.day" + str(days)].find().sort('value', pymongo.DESCENDING)
 
     def dlEvents(self,pp):
-        pp["fields"] = ("time", "email", "download", "ip", "ipinfo", "sessionid", "useragent")
-        pp["events"] = mongowwwdb.download_events.find()
+        events = list(mongowwwdb.download_events.find())
+        sessions = {}
+        ipinfo = {}
+        for e in events:
+            sessionid = e['sessionid']
+            session = sessionstore[sessionid]
+            sessions[sessionid] = session
+            ipinfo[sessionid] = mongowwwdb.ipinfo.find_one(session['ip'])
+        pp.update(dict(events=events, sessions=sessions, ipinfo=ipinfo))
 
     def csSignups(self,pp):
         pp["orders"] = wwwdb.orders.find()

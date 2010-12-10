@@ -4,19 +4,25 @@
     
 <h3>Download Events</h3>
 
-<table>
+<table border="1">
   <tr>
-    {% for f in fields %}
-    <th>{{ f }}</th>
-    {% endfor %}
+    <th>time</th>
+    <th>download</th>
+    <th>email</th>
+    <th>nprompts</th>
+    <th>ip</th>
+    <th>ipinfo</th>
+    <th>useragent</th>
   </tr>
   {% for e in events %}
   <tr>
-    {% for f in fields %}
-    <td>
-      {{ e.get(f) }}
-    </td>
-    {% endfor %}
+    <td>{{ e.time }}</td>
+    <td>{{ e.download }}</td>
+    <td>{{ sessions[e.sessionid].email }}</td>
+    <td>{{ sessions[e.sessionid].nprompts }}</td>
+    <td>{{ sessions[e.sessionid].ip }}</td>
+    <td>{{ ipinfo[e.sessionid].ipinfo }}</td>
+    <td>{{ sessions[e.sessionid].useragent }}</td>
   </tr>
   {% endfor %}
 </table>
