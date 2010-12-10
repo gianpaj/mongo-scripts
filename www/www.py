@@ -112,7 +112,7 @@ class CorpNormal(app.page):
         if p in dir(self):
             getattr(self,p)(pageParams)
 
-        print( pageParams )
+        #print( pageParams )
             
         #fix path
         if p == "":

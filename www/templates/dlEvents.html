@@ -1,10 +1,18 @@
 {% extends "base.html" %}
 
+{% block extrahead %}
+<script src="/static/jquery-1.4.0.min.js"></script>
+<script src="/static/jquery.tablesorter.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/tablesortertheme/style.css">
+{% endblock %}
+
+
 {% block content %}
     
 <h3>Download Events</h3>
 
-<table border="1">
+<table id="dltable" class="tablesorter">
+<thead>
   <tr>
     <th>time</th>
     <th>download</th>
@@ -14,6 +22,8 @@
     <th>ipinfo</th>
     <th>useragent</th>
   </tr>
+</thead>
+<tbody>
   {% for e in events %}
   <tr>
     <td>{{ e.time }}</td>
@@ -25,6 +35,15 @@
     <td>{{ sessions[e.sessionid].useragent }}</td>
   </tr>
   {% endfor %}
+</tbody>
 </table>
 
+{% endblock %}
+
+{% block extrabody %}
+<script type="text/javascript">
+    $(document).ready(function() {
+      $("#dltable").tablesorter();
+    });
+</script>
 {% endblock %}
