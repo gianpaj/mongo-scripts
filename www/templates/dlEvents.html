@@ -14,6 +14,7 @@
 <table id="dltable" class="tablesorter">
 <thead>
   <tr>
+    <th>n</th>
     <th>time</th>
     <th>time last visited</th>
     <th>download</th>
@@ -29,6 +30,7 @@
   {% for e in events %}
   {% set s = sessions[e.sessionid] %}
   <tr>
+    <td>{{ loop.index }}</td>
     <td>{{ e.time }}</td>
     <td>{{ s.timelastvisit }}</td>
     <td>{{ e.download }}</td>
