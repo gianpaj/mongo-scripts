@@ -18,6 +18,7 @@
     <th>download</th>
     <th>email</th>
     <th>nprompts</th>
+    <th>npageviews</th>
     <th>ip</th>
     <th>ipinfo</th>
     <th>useragent</th>
@@ -31,8 +32,9 @@
     <td>{{ e.download }}</td>
     <td>{{ s.email }}</td>
     <td>{{ s.nprompts }}</td>
+    <td>{{ s.npageviews }}</td>
     <td>{{ s.ip }}</td>
-    <td>{{ ipinfo.find_one(s.ip).ipinfo }}</td>
+    <td><pre>{{ ipinfo.find_one(s.ip).ipinfo | pprint }}</pre></td>
     <td>{{ s.useragent }}</td>
   </tr>
   {% endfor %}
