@@ -15,6 +15,7 @@
 <thead>
   <tr>
     <th>time</th>
+    <th>time last visited</th>
     <th>download</th>
     <th>email</th>
     <th>nprompts</th>
@@ -29,6 +30,7 @@
   {% set s = sessions[e.sessionid] %}
   <tr>
     <td>{{ e.time }}</td>
+    <td>{{ s.timelastvisit }}</td>
     <td>{{ e.download }}</td>
     <td>{{ s.email }}</td>
     <td>{{ s.nprompts }}</td>
