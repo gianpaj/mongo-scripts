@@ -16,7 +16,7 @@ import pymongo
 from suds.client import Client
 
 from webpy_mongodb_sessions.session import MongoStore
-
+from itertools import islice
 
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
@@ -139,7 +139,7 @@ class CorpNormal(app.page):
 
     def sessions(self, pp):
         pp.update(dict(
-            sessions=[sessionstore[i['_id']] for i in mongowwwdb.sessions.find()],
+            sessions=[sessionstore[i['_id']] for i in islice(mongowwwdb.sessions.find(), 25)],
             ipinfo=mongowwwdb.ipinfo,
             ))
 
