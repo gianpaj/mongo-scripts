@@ -63,8 +63,8 @@ def main(verbose=False):
         state = country = ''
         if ipinfo:
             try:
-                state = ipinfo['Location']['StateData']['state_code']
-                country = ipinfo['Location']['CountryData']['country_code']
+                state = ipinfo['ipinfo']['Location']['StateData']['state_code']
+                country = ipinfo['ipinfo']['Location']['CountryData']['country_code']
             except KeyError:
                 pass
         stdout.write('%4d. Processing %s... ' % (ntotal, email))
