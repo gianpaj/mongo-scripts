@@ -16,7 +16,7 @@ import pymongo
 from suds.client import Client
 
 from webpy_mongodb_sessions.session import MongoStore
-from itertools import islice
+from itertools import ifilter, imap, islice
 
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
@@ -138,8 +138,9 @@ class CorpNormal(app.page):
         pp["domains"] = usagedb["gen.domains.day" + str(days)].find().sort('value', pymongo.DESCENDING)
 
     def newsletterSignups(self, pp):
-        pp.update(
-            sessions=mongowwwdb.sessions.find(
+        sessions = ifilter(lambda session: bool(session.get('email')), imap(
+            lambda doc: sessionstore[doc['_id']], mongowwwdb.sessions.find()))
+        pp.update(sessions=sessions, ipinfo=mongowwwdb.ipinfo)
 
     def sessions(self, pp):
         pp.update(
