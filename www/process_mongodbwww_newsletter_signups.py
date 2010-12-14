@@ -48,7 +48,12 @@ def main(verbose=False):
         docid = doc['_id']
         sessionid = doc['sessionid']
         session = sessionstore[sessionid]
-        email = session['email']
+        email = session.get('email')
+        if not email:
+            db.newsletter_signups.update({'_id': docid}, {'$set': {'processed':
+                'failed', 'exception': 'session missing email', 'timep':
+                utcnow()}}, safe=True)
+            continue
         ip = session['ip']
         ipinfo = db.ipinfo.find_one(ip)
         state = country = ''
