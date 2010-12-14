@@ -19,7 +19,6 @@ def create_lead(sfclient, email, state, country, campaignid=mongodb_download_cam
     lead.Email = email
     lead.State = state
     lead.Country = country
-    import pdb; pdb.set_trace()
     # XXX salesforce rejects if these are blank:
     lead.LastName = '[not specified]'
     lead.Company = '[not specified]'
