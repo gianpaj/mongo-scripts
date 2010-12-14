@@ -50,6 +50,10 @@ def main(verbose=False):
         session = sessionstore[sessionid]
         email = session.get('email')
         if not email:
+            nfail += 1
+            stdout.write('fail\n')
+            if verbose:
+                stdout.write('  missing email\n')
             db.newsletter_signups.update({'_id': docid}, {'$set': {'processed':
                 'failed', 'exception': 'session missing email', 'timep':
                 utcnow()}}, safe=True)
