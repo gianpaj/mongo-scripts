@@ -144,7 +144,7 @@ class CorpNormal(app.page):
             nsignups=mongowwwdb.newsletter_signups.count(),
             )
 
-    def dlEvents(self, pp, limit=3):
+    def dlEvents(self, pp, limit=100):
         input = web.input()
         try:
             skip = int(input.get('skip', 0))
