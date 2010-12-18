@@ -1,4 +1,9 @@
-from settings_private import *
+from settings_private import (
+    crowdAppUser,
+    crowdAppPassword,
+    smtp,
+    salesforce,
+    )
 
 import os
 here = os.path.dirname(os.path.abspath(__file__))
