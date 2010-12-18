@@ -9,12 +9,15 @@
 
 {% block content %}
     
-<h3>First 25 Sessions</h3>
+<h3>Newsletter Signups</h3>
 
 <table id="dltable" class="tablesorter">
 <thead>
   <tr>
-    <th>time last visit</th>
+    <th>n</th>
+    <th>time</th>
+    <th>time last visited</th>
+    <th>context</th>
     <th>email</th>
     <th>nprompts</th>
     <th>npageviews</th>
@@ -24,14 +27,20 @@
   </tr>
 </thead>
 <tbody>
-  {% for s in sessions %}
+  {% for n in newsletter_signups %}
+  {% set s = sessions.find_one(n.sessionid) %}
+  {% set s = s.data if s else {} %}
+  {% set i = ipinfo.find_one(s.ip).ipinfo if s else {} %}
   <tr>
+    <td>{{ nsignups - loop.index + 1 }}</td>
+    <td>{{ n.time }}</td>
     <td>{{ s.timelastvisit }}</td>
+    <td>{{ n.context }}</td>
     <td>{{ s.email }}</td>
     <td>{{ s.nprompts }}</td>
     <td>{{ s.npageviews }}</td>
     <td>{{ s.ip }}</td>
-    <td>{{ ipinfo.find_one(s.ip).ipinfo }}</td>
+    <td><pre>{{ i | pprint }}</pre></td>
     <td>{{ s.useragent }}</td>
   </tr>
   {% endfor %}

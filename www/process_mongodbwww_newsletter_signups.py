@@ -6,12 +6,10 @@ from datetime import datetime
 from sforce.enterprise import SforceEnterpriseClient
 from sys import stdout
 from traceback import print_exc
-from webpy_mongodb_sessions.session import MongoStore
 
 utcnow = datetime.utcnow
 
 db = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
-sessionstore = MongoStore(db, 'sessions')
 
 mongodb_download_campaign_id = '701A00000001Scg'
 def create_lead(sfclient, email, state, country, campaignid=mongodb_download_campaign_id):
@@ -39,26 +37,24 @@ def main(verbose=False):
         settings.salesforce['password'],
         settings.salesforce['security_token'])
     nsuccess = nfail = ntotal = 0
-    while True:
-        # look for an unprocessed doc
-        doc = db.newsletter_signups.find_one({'processed': False})
-        if not doc:
-            break
+    for doc in db.newsletter_signups.find({'processed': False}):
         ntotal += 1
         docid = doc['_id']
         sessionid = doc['sessionid']
-        session = sessionstore[sessionid]
+        session = db.sessions.find_one(sessionid)
+        session = session.get('data') if session else {}
         email = session.get('email')
-        if not email:
+        if not session or not email:
             nfail += 1
             stdout.write('fail\n')
+            exc = 'missing %s' % ('email' if session else 'session')
             if verbose:
-                stdout.write('  missing email\n')
+                stdout.write('  %s\n' % exc)
             db.newsletter_signups.update({'_id': docid}, {'$set': {'processed':
-                'failed', 'exception': 'session missing email', 'timep':
+                'failed', 'exception': exc, 'timep':
                 utcnow()}}, safe=True)
             continue
-        ip = session['ip']
+        ip = session.get('ip')
         ipinfo = db.ipinfo.find_one(ip)
         state = country = ''
         if ipinfo:

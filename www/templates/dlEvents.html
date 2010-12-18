@@ -11,6 +11,9 @@
     
 <h3>Download Events</h3>
 
+<a {% if prevskip is not none %}href="/dlEvents?skip={{ prevskip }}"{% endif %}>previous</a>
+<a {% if nextskip is not none %}href="/dlEvents?skip={{ nextskip }}"{% endif %}>next</a></a>
+
 <table id="dltable" class="tablesorter">
 <thead>
   <tr>
@@ -27,10 +30,12 @@
   </tr>
 </thead>
 <tbody>
-  {% for e in events %}
-  {% set s = sessions[e.sessionid] %}
+  {% for e in download_events %}
+  {% set s = sessions.find_one(e.sessionid) %}
+  {% set s = s.data if s else {} %}
+  {% set i = ipinfo.find_one(s.ip).ipinfo if s else {} %}
   <tr>
-    <td>{{ loop.index }}</td>
+    <td>{{ ndownloads - skip - loop.index + 1 }}</td>
     <td>{{ e.time }}</td>
     <td>{{ s.timelastvisit }}</td>
     <td>{{ e.download }}</td>
@@ -38,7 +43,7 @@
     <td>{{ s.nprompts }}</td>
     <td>{{ s.npageviews }}</td>
     <td>{{ s.ip }}</td>
-    <td><pre>{{ ipinfo.find_one(s.ip).ipinfo | pprint }}</pre></td>
+    <td><pre>{{ i | pprint }}</pre></td>
     <td>{{ s.useragent }}</td>
   </tr>
   {% endfor %}

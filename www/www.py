@@ -15,7 +15,6 @@ import web
 import pymongo
 from suds.client import Client
 
-from webpy_mongodb_sessions.session import MongoStore
 from itertools import ifilter, imap, islice
 
 # some path stuff
@@ -45,7 +44,6 @@ wwwdb = pymongo.Connection( settings.wwwdb_host ).www
 usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
 mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
 
-sessionstore = MongoStore(mongowwwdb, 'sessions')
 
 class CorpFavicon(app.page):
     path="/favicon.ico"
@@ -138,24 +136,37 @@ class CorpNormal(app.page):
         pp["domains"] = usagedb["gen.domains.day" + str(days)].find().sort('value', pymongo.DESCENDING)
 
     def newsletterSignups(self, pp):
-        sessions = ifilter(lambda session: bool(session.get('email')), imap(
-            lambda doc: sessionstore[doc['_id']], mongowwwdb.sessions.find()))
-        pp.update(sessions=sessions, ipinfo=mongowwwdb.ipinfo)
-
-    def sessions(self, pp):
         pp.update(
-            sessions=[sessionstore[i['_id']] for i in islice(mongowwwdb.sessions.find(), 25)],
+            newsletter_signups=mongowwwdb.newsletter_signups.find(
+                sort=[('time', pymongo.DESCENDING)]),
+            sessions=mongowwwdb.sessions,
             ipinfo=mongowwwdb.ipinfo,
+            nsignups=mongowwwdb.newsletter_signups.count(),
             )
 
-    def dlEvents(self,pp):
-        events = list(mongowwwdb.download_events.find())
-        sessions = {}
-        for e in events:
-            sessionid = e['sessionid']
-            session = sessionstore[sessionid]
-            sessions[sessionid] = session
-        pp.update(events=events, sessions=sessions, ipinfo=mongowwwdb.ipinfo)
+    def dlEvents(self, pp, limit=3):
+        input = web.input()
+        try:
+            skip = int(input.get('skip', 0))
+        except:
+            skip = 0
+        nextskip = prevskip = None
+        ndownloads = mongowwwdb.download_events.count()
+        if skip + limit < ndownloads:
+            prevskip = skip + limit
+        if skip - limit >= 0:
+            nextskip = skip - limit
+        pp.update(
+            download_events=mongowwwdb.download_events.find(
+                sort=[('time', pymongo.DESCENDING)]).skip(skip).limit(limit),
+            sessions=mongowwwdb.sessions,
+            ipinfo=mongowwwdb.ipinfo,
+            limit=limit,
+            prevskip=prevskip,
+            skip=skip,
+            nextskip=nextskip,
+            ndownloads=ndownloads,
+            )
 
     def csSignups(self,pp):
         pp["orders"] = wwwdb.orders.find()
