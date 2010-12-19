@@ -30,7 +30,7 @@
   {% for n in newsletter_signups %}
   {% set s = sessions.find_one(e.sessionid) or {} %}
   {% set s = s.get('data', {}) %}
-  {% set i = ipinfo.find_one(s.ip) if s.ip else {} %}
+  {% set i = ipinfo.find_one(s.ip) or {} if s.ip else {} %}
   {% set i = i.get('ipinfo', 'not yet available') %}
   <tr>
     <td>{{ nsignups - loop.index + 1 }}</td>
