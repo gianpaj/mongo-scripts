@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+import os
+here = os.path.dirname(os.path.abspath(__file__))
+if here not in sys.path:
+    sys.path.append(here)
+
 import pymongo
 import settings
 from datetime import datetime
