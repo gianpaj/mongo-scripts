@@ -31,7 +31,7 @@
   {% set s = sessions.find_one(n.sessionid) %}
   {% set s = s.data if s else {} %}
   {% set i = ipinfo.find_one(s.ip) if s else {} %}
-  {% set i = i.ipinfo if i else '' %}
+  {% set i = i.ipinfo if i else 'not yet available' %}
   <tr>
     <td>{{ nsignups - loop.index + 1 }}</td>
     <td>{{ n.time }}</td>

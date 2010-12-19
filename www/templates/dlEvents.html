@@ -33,7 +33,8 @@
   {% for e in download_events %}
   {% set s = sessions.find_one(e.sessionid) %}
   {% set s = s.data if s else {} %}
-  {% set i = ipinfo.find_one(s.ip).ipinfo if s else {} %}
+  {% set i = ipinfo.find_one(s.ip) if s else {} %}
+  {% set i = i.ipinfo if i else 'not yet available' %}
   <tr>
     <td>{{ ndownloads - skip - loop.index + 1 }}</td>
     <td>{{ e.time }}</td>
