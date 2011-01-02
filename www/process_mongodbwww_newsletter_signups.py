@@ -37,7 +37,7 @@ def create_lead(sfclient, email, state, country, campaignid=mongodb_download_cam
     assert result['success'], 'Failed to create salesforce campaign member object'
 
 def main(verbose=False):
-    sfclient = SforceEnterpriseClient('enterprise.wsdl.xml')
+    sfclient = SforceEnterpriseClient('file://' + here + '/enterprise.wsdl.xml')
     sfclient.login(
         settings.salesforce['username'],
         settings.salesforce['password'],
