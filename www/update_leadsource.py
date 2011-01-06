@@ -21,7 +21,7 @@ def main():
     for i in result.records:
         lead = sfclient.generateObject('lead')
         lead.Id = i.LeadId
-        lead.LeadSource = 'NewsletterSingup' # sic
+        lead.LeadSource = 'NewsletterSingup' # XXX sic
         sfclient.update(lead)
 
 if __name__ == '__main__':
