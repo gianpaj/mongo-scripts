@@ -17,8 +17,12 @@ utcnow = datetime.utcnow
 
 db = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
 
-mongodb_download_campaign_id = '701A00000001Scg'
-def create_lead(sfclient, email, state, country, campaignid=mongodb_download_campaign_id):
+nscampaignids = dict(
+    mongodborg='701A00000005z24',
+    mongodb_download='701A00000001Scg',
+    )
+
+def create_lead(sfclient, email, state, country, campaignid):
     lead = sfclient.generateObject('Lead')
     lead.Email = email
     lead.State = state
@@ -70,9 +74,11 @@ def main(verbose=False):
                 country = ipinfo['ipinfo']['Location']['CountryData']['country_code']
             except KeyError:
                 pass
+        campaignid = nscampaignids['mongodborg'
+            if doc.get('context') == '/index' else 'mongodb_download']
         stdout.write('%4d. Processing %s... ' % (ntotal, email))
         try:
-            create_lead(sfclient, email, state, country)
+            create_lead(sfclient, email, state, country, campaignid)
         except Exception, e:
             nfail += 1
             stdout.write('fail\n')
