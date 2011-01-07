@@ -24,6 +24,7 @@ nscampaignids = dict(
 
 def create_lead(sfclient, email, state, country, campaignid):
     lead = sfclient.generateObject('Lead')
+    lead.Newsletter_Opt_In__c = 1
     lead.Email = email
     lead.State = state
     lead.Country = country
