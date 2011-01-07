@@ -26,7 +26,7 @@ def create_lead(sfclient, email, state, country, campaignid=mongodb_download_cam
     # XXX salesforce rejects if these are blank:
     lead.LastName = '[not specified]'
     lead.Company = '[not specified]'
-    lead.LeadSource = 'Newsletter Singup' # XXX sic
+    lead.LeadSource = 'NewsletterSignup'
     result = sfclient.create(lead)
     assert result['success'], 'Failed to create salesforce lead object'
     # associate lead with campaign
