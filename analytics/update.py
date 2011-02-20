@@ -153,6 +153,10 @@ def decide( key ):
 
 
 def skipLine( data ):
+    if "ip" not in data:
+        print( "bad: " + str( data ) )
+        return True
+
     if data["ip"] == "64.70.120.90":
         return True
 
