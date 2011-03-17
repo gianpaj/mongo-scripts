@@ -37,13 +37,18 @@ function parseVersion( file ){
         return null;
     
     if ( typeof ( myre ) == "undefined" ){
-        myre = new RegExp( /(\d+\.\d+\.\d+)/ )
+        myre = new RegExp( /(\d+\.\d+\.\d+)(.*)/ )
     }
     
     x = myre.exec( file )
     if ( ! x )
         return null;
-    return x[1]
+    var v = x[1];
+    if ( x[2].indexOf( "-rc" ) == 0 ){
+        v += x[2].substring( 0 , x[2].indexOf( "." ) );
+    }
+
+    return v;
 }
 
 assert.eq( "foo" , firstPiece( "/foo/asd" ) )
@@ -54,6 +59,7 @@ assert.eq( "05" , twoLetter( "5" ) , "test1a" )
 assert.eq( "05" , twoLetter( "05" ) , "tes1b")
 
 assert.eq( "1.4.4" , parseVersion( "/win32/mongodb-win32-i386-1.4.4.zip"  ) )
+assert.eq( "1.4.4-rc2" , parseVersion( "/win32/mongodb-win32-i386-1.4.4-rc2.zip"  ) )
 
 db.system.js.save( { _id : "twoLetter" , value : twoLetter } );
 db.system.js.save( { _id : "getWeek" ,  value : getWeek }  );
