@@ -22,8 +22,8 @@ client = suds.client.Client(url)
 
 # crowd application name and password
 auth_context = client.factory.create('ns1:ApplicationAuthenticationContext')
-auth_context.name = 'corp'
-auth_context.credential.credential = 'eng718corp'
+auth_context.name = '10gen.com'
+auth_context.credential.credential = 'hab516'
 
 token = client.service.authenticateApplication(auth_context)
 
