@@ -72,14 +72,21 @@ class DU:
         sub = msg["headers"]["subject"]
         date = msg["headers"]["date"]
 
-        user = sub.split( "-" )[1].strip();
+        f = msg["headers"]["from"]
+        u = None
+        
+        if sub.find( "-" ) >= 0:
+            user = sub.split( "-" )[1].strip();
+            u = self.users.find_one( { "_id" : user } )
 
-        print( str(date) + "\t" + user )
-        print( msg["body"] )
-
-        if self.users.find_one( { "_id" : user } ) == None:
-            print( "can't find user: " + user )
-            return
+        if u == None and f.find( "<" ) >= 0:
+            f = f.partition( "<" )[2].partition( ">" )[0]
+            u = self.users.find_one( { "mail" : f } )
+            if u != None:
+                user = u["_id"]
+        
+        if u == None:
+            raise Exception( "can't find user subject[%s] from[%s]" % ( sub , f ) )
 
         self.users.update( { "_id" :user } , { "$set" : { "last_du" : date } } )
 
@@ -138,8 +145,10 @@ class DU:
         if body == "":
             print( "no summary to send" )
             return
-
+        
         print( body )
+        raise Exception( "testing" )
+
         self.gmail.send_simple( "eliot@10gen.com" , "DU Summary for %s" % datetime.date.today().strftime( "%D" ) , 
                                 body , replyto="dev@10gen.com" )
 
@@ -156,6 +165,7 @@ if __name__ == "__main__":
 
     # main commands
     if cmd == "send_summary":
+        du.fetch()
         du.send_summary();
     elif cmd == "send_reminders":
         du.send_reminders()

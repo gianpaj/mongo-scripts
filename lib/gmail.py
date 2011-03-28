@@ -77,8 +77,25 @@ class gmail:
         
         return value
 
-    def _convert_raw( self, txt ):
+    def _add_header( self , headers , line ):
+        line = line.rstrip()
+        if len(line) == 0:
+            return
 
+        name,temp,value = line.partition( ":" )
+
+        name = name.lower()
+        value = value.strip()
+        
+        value = self._cleanSingleHeader( name , value )
+
+        if name in headers:
+            headers[name].append( value )
+        else:
+            headers[name] = [ value ]
+        
+
+    def _convert_raw( self, txt ):
         headers = {}
         
         prev = ""
@@ -93,24 +110,27 @@ class gmail:
                 continue
             
             if len(prev) > 0:
-                name,temp,value = prev.partition( ":" )
-
-                name = name.lower()
-                value = value.strip()
-                
-                value = self._cleanSingleHeader( name , value )
-
-                if name in headers:
-                    headers[name].append( value )
-                else:
-                    headers[name] = [ value ]
+                self._add_header( headers , prev )
             prev = line
         
+        self._add_header( headers , prev )
+
         for x in headers:
             if len(headers[x]) == 1:
                 headers[x] = headers[x][0]
+
+        body = txt
                 
-        return { "headers" : headers , "body" : txt }
+        if "content-type" in headers:
+            ct = headers["content-type"]
+            if ct.find( "boundary=" ) > 0:
+                boundary = ct.partition( "boundary=" )[2]
+                pieces = body.split( "--" + boundary )
+                for x in pieces:
+                    print( "ELIOT ELIOT" )
+                    print( x )
+
+        return { "headers" : headers , "body" : body }
     
     def fetch(self,uid):
         key = self.emailaddr + "-" + self.folder + "-" + str(uid)
