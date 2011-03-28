@@ -30,3 +30,23 @@ class Crowd:
 
     def findGroupByName(self,group):
         return self.service.findGroupByName( self.token , group ).members[0]
+
+
+    def findPrincipalByName(self,name):
+        return self.service.findPrincipalByName( self.token , name )
+
+    def getUser(self,name):
+        p = self.findPrincipalByName( name )
+        if p == None:
+            return None
+        
+        m = { "username" : name }
+
+        for x in p.attributes[0]:
+            a = x.values[0]
+            if len(a) == 1:
+                m[x.name] = a[0]
+            else:
+                m[x.name] = a
+
+        return m

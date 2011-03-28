@@ -183,6 +183,7 @@ if __name__ == "__main__":
             x = crowd.findGroupByName( "10gen-eng" )
             for z in x:
                 print(z)
+                print( "\t" + str( crowd.getUser( z ) ) )
         else:
             print( "unknown www command: " + cmd )
 else:
