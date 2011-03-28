@@ -66,7 +66,7 @@ class DU:
     def send_reminders(self):
         for user in self.getUsers():
             print( "sending reminder to: %s \t %s " % ( user["_id"] , user["mail" ] ) )
-            #self.send_reminder( user )
+            self.send_reminder( user )
 
     def _store(self,msg):
         sub = msg["headers"]["subject"]
