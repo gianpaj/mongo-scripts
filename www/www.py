@@ -22,7 +22,13 @@ here = os.path.dirname(os.path.abspath(__file__))
 if here not in sys.path:
     sys.path.append(here)
 
+libpath = here.rpartition( "/" )[0] + "/lib"
+
+print( libpath )
+sys.path.append( libpath )
+
 import settings
+import crowd
 
 # setup web env
 env = jinja2.Environment(loader=jinja2.PackageLoader("www", "templates"))
@@ -31,13 +37,7 @@ app = web.auto_application()
 
 
 #setup crowd
-url='file://' + here + '/crowd-fixed.wsdl'
-client = Client(url)
-auth_context = client.factory.create('ns1:ApplicationAuthenticationContext')
-auth_context.name = settings.crowdAppUser
-auth_context.credential.credential = settings.crowdAppPassword
-appToken = client.service.authenticateApplication(auth_context)
-
+crowd = crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )
 
 #setup dbs
 wwwdb = pymongo.Connection( settings.wwwdb_host ).www
@@ -62,9 +62,9 @@ class CorpNormal(app.page):
         if "auth_user" in c and "auth_token" in c:
             res["user"] = c["auth_user"]
 
-            if client.service.isValidPrincipalToken( appToken , c["auth_token"] , client.factory.create( "ns1:ArrayOfValidationFactor" ) ):
+            if crowd.isValidPrincipalToken( c["auth_token"] ):
                 if isLogout:
-                    client.service.invalidatePrincipalToken( appToken , c["auth_token"] )
+                    crowd.invalidatePrincipalToken( c["auth_token"] )
                 else:
                     res["ok"] = True
                 return res
@@ -78,7 +78,7 @@ class CorpNormal(app.page):
                 return res
             
             try:
-                token = client.service.authenticatePrincipalSimple( appToken , username , password )
+                token = crowd.authenticatePrincipalSimple( username , password )
             except Exception,e:
                 res["err"] = str(e)
                 return res;
@@ -175,6 +175,15 @@ class CorpNormal(app.page):
         pp["contributors"] = wwwdb.contributors.find()
 
 if __name__ == "__main__":
-    app.run()
+    if len(sys.argv) == 1:
+        app.run()
+    else:
+        cmd = sys.argv[1]
+        if cmd == "crowdtest":
+            x = crowd.findGroupByName( "10gen-eng" )
+            for z in x:
+                print(z)
+        else:
+            print( "unknown www command: " + cmd )
 else:
     application = app.wsgifunc()
