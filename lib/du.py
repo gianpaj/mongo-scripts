@@ -21,7 +21,7 @@ class DU:
         self.gmail = gmail.gmail( settings.smtp["smtp_username"] , settings.smtp["smtp_password"] )
 
         # mongo
-        self.db = pymongo.Connection().du
+        self.db = pymongo.Connection( "www-c.10gen.cc" ).du
         self.dus = self.db.dus
         self.users = self.db.users
 
@@ -168,9 +168,8 @@ class DU:
             body += "\nmissing: " + " ".join( missing ) + "\n"
         body += "\n"
         print( body )
-        raise Exception( "testing" )
 
-        self.gmail.send_simple( "eliot@10gen.com" , "DU Summary for %s" % datetime.date.today().strftime( "%D" ) , 
+        self.gmail.send_simple( "dusummary@10gen.com" , "DU Summary for %s" % datetime.date.today().strftime( "%D" ) , 
                                 body , replyto="dev@10gen.com" )
 
         self.dus.update( { "_id" : { "$in" : ids } } , { "$set" : { "sent" : True } } , multi=True )
