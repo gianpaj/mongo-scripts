@@ -63,8 +63,12 @@ class DU:
 
         self.gmail.send_simple( user["mail"] , 
                                 "Time for your DU - %s - %s" % ( user["_id"] , datetime.date.today().strftime( "%D" ) ) , 
+                                "*** What did you today?\n" +
+                                "*** What are you planning on doing tomorrow?\n" +
+                                "*** What blockers do you have?\n" +
+                                "\n"
                                 "Please reply to this email with your DU\n" +
-                                "Should go to dus@10gen.com\n"
+                                "Should go only to dus@10gen.com, do not send to dev\n"
                                 , replyto="dus@10gen.com" )
 
         self.users.update( { "_id" : user["_id"] } , { "$set" : { "last_reminder" : datetime.datetime.now() } } )
@@ -171,7 +175,7 @@ class DU:
 
                 for l in b.split( "\n" ):
                     l = l.rstrip()
-                    if l.startswith( ">" ):
+                    if l.startswith( ">" ) and l.find( "***" ) < 0:
                         continue
                     if l.endswith( "wrote:" ):
                         continue
