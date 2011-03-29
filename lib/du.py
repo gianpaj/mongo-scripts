@@ -74,10 +74,11 @@ class DU:
 
         f = msg["headers"]["from"]
         u = None
-        
+        user = None
+
         if sub.find( "-" ) >= 0:
             user = sub.split( "-" )[1].strip();
-            u = self.users.find_one( { "_id" : user } )
+            u = self.getUser( user )
 
         if u == None and f.find( "<" ) >= 0:
             f = f.partition( "<" )[2].partition( ">" )[0]
@@ -86,7 +87,7 @@ class DU:
                 user = u["_id"]
         
         if u == None:
-            raise Exception( "can't find user subject[%s] from[%s]" % ( sub , f ) )
+            raise Exception( "can't find user subject [%s] from [%s] user [%s]" % ( sub , f , str(user) ) )
 
         self.users.update( { "_id" :user } , { "$set" : { "last_du" : date } } )
 
@@ -128,12 +129,23 @@ class DU:
 
         body = ""
 
+        usernames = []
         for user in messages:
+            usernames.append( user )
+
+        usernames.sort()
+
+        for user in usernames:
             lst = messages[user]
             body += "%s\n" % user
             for m in lst:
                 body += tab(1) + str(m["headers"]["date"]) + "\n"
-                for l in m["body"].split( "\n" ):
+                
+                b = m["body"]
+                if not isinstance( b , basestring ):
+                    b = b["text/plain"]["body"]
+
+                for l in b.split( "\n" ):
                     l = l.rstrip()
                     if l.startswith( ">" ):
                         continue

@@ -1,6 +1,5 @@
 
 import imaplib
-import keyring
 import getpass
 import rfc822
 import re
@@ -95,7 +94,7 @@ class gmail:
             headers[name] = [ value ]
         
 
-    def _convert_raw( self, txt ):
+    def _parse_headered( self , txt ):
         headers = {}
         
         prev = ""
@@ -119,16 +118,32 @@ class gmail:
             if len(headers[x]) == 1:
                 headers[x] = headers[x][0]
 
-        body = txt
-                
+        return ( headers , txt )
+
+    def _convert_raw( self, txt ):
+        headers , body = self._parse_headered( txt )
+
         if "content-type" in headers:
             ct = headers["content-type"]
             if ct.find( "boundary=" ) > 0:
                 boundary = ct.partition( "boundary=" )[2]
+                if boundary.startswith( "\"" ):
+                    boundary = boundary[1:]
+                boundary = boundary.partition( "\"" )[0]
+
                 pieces = body.split( "--" + boundary )
+
+                body = {}
+
                 for x in pieces:
-                    print( "ELIOT ELIOT" )
-                    print( x )
+                    if x.startswith( "--" ):
+                        x = x[2:].strip()
+                    x = x.strip()
+                    if len(x) == 0:
+                        continue
+
+                    th,tb = self._parse_headered( x )
+                    body[th["content-type"].partition(";")[0]] = { "headers" : th , "body" : tb } 
 
         return { "headers" : headers , "body" : body }
     
