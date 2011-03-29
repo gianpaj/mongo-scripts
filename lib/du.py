@@ -157,7 +157,16 @@ class DU:
         if body == "":
             print( "no summary to send" )
             return
-        
+
+
+        missing = []
+        for u in self.users.find():
+            if u["_id"] not in messages:
+                missing.append( u["_id"] )
+                
+        if len(missing) > 0:
+            body += "\nmissing: " + " ".join( missing ) + "\n"
+        body += "\n"
         print( body )
         raise Exception( "testing" )
 
