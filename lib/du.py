@@ -37,9 +37,11 @@ class DU:
             raise Exception( "can't find user: " + str(username) )
         
         u["_id"] = username
+        u["last_reminder"] = datetime.datetime.now() - datetime.timedelta(1)
         # TODO add other fields?
 
         self.users.insert( u , safe=True )
+
         return u
                 
     def getUserNames(self):
@@ -57,15 +59,37 @@ class DU:
         return users
 
     def send_reminder(self,user):
+
+
         self.gmail.send_simple( user["mail"] , 
                                 "Time for your DU - %s - %s" % ( user["_id"] , datetime.date.today().strftime( "%D" ) ) , 
                                 "Please reply to this email with your DU\n" +
                                 "Should go to dus@10gen.com\n"
                                 , replyto="dus@10gen.com" )
 
+        self.users.update( { "_id" : user["_id"] } , { "$set" : { "last_reminder" : datetime.datetime.now() } } )
+
     def send_reminders(self):
         for user in self.getUsers():
-            print( "sending reminder to: %s \t %s " % ( user["_id"] , user["mail" ] ) )
+            print( "send_reminders checking: " + user["_id"] )
+
+            
+            diff = datetime.datetime.now() - user["last_reminder"]
+            diff = diff.seconds + ( 24 * 3600 * diff.days )
+            print( "\t last reminder: %s - %d seconds ago" % ( str(user["last_reminder"]) , diff ) )
+
+            if diff < ( 3600 * 22 ):
+                continue;
+
+            hour = datetime.datetime.utcnow().hour
+            modhour = hour
+            if "gmtoffset" in user:
+                modhour = modhour + user["gmtoffset"]
+            print( "\t cur hour: %d  modhour: %d" % ( hour , modhour ) )
+            if modhour < 17:
+                continue
+
+            print( "\t sending reminder to: " + user["mail" ] )
             self.send_reminder( user )
 
     def _store(self,msg):
