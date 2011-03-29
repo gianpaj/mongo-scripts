@@ -20,7 +20,7 @@ class Crowd:
 
 
     def isValidPrincipalToken(self,token):
-        return self.service.isValidPrincipalToken( self.token , token , self.factory.create( "ns1:ArrayOfValidationFactor" ) )
+        return self.service.isValidPrincipalToken( self.token , token , self.client.factory.create( "ns1:ArrayOfValidationFactor" ) )
     
     def invalidatePrincipalToken(self,token):
         self.service.invalidatePrincipalToken( self.token , token )
