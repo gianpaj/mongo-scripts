@@ -77,7 +77,9 @@ class DU:
         for user in self.getUsers():
             print( "send_reminders checking: " + user["_id"] )
 
-            
+            if "skip" in user and user["skip"]:
+                continue
+
             diff = datetime.datetime.now() - user["last_reminder"]
             diff = diff.seconds + ( 24 * 3600 * diff.days )
             print( "\t last reminder: %s - %d seconds ago" % ( str(user["last_reminder"]) , diff ) )
@@ -113,6 +115,10 @@ class DU:
         if u == None and f.find( "<" ) >= 0:
             f = f.partition( "<" )[2].partition( ">" )[0]
             u = self.users.find_one( { "mail" : f } )
+            
+            if u == None:
+                u = self.users.find_one( { "aliases" : f } )
+
             if u != None:
                 user = u["_id"]
         
@@ -190,7 +196,7 @@ class DU:
 
 
         missing = []
-        for u in self.users.find():
+        for u in self.users.find( { "skip" : { "$ne" : True } } ):
             if u["_id"] not in messages:
                 missing.append( u["_id"] )
                 
