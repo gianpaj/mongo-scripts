@@ -84,7 +84,7 @@ class DU:
             diff = diff.seconds + ( 24 * 3600 * diff.days )
             print( "\t last reminder: %s - %d seconds ago" % ( str(user["last_reminder"]) , diff ) )
 
-            if diff < ( 3600 * 22 ):
+            if diff < ( 3600 * 12 ):
                 continue;
 
             hour = datetime.datetime.utcnow().hour
