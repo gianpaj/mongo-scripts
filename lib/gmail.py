@@ -143,7 +143,12 @@ class gmail:
                         continue
 
                     th,tb = self._parse_headered( x )
-                    body[th["content-type"].partition(";")[0]] = { "headers" : th , "body" : tb } 
+                    
+                    myct = "none"
+                    if "content-type" in th:
+                        myct = th["content-type"].partition(";")[0]
+                
+                    body[myct] = { "headers" : th , "body" : tb } 
 
         return { "headers" : headers , "body" : body }
     
