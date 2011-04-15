@@ -4,7 +4,10 @@
 
 import traceback
 import suds.client
-import settings
+import urllib2
+import base64
+import json
+import os
 
 class JiraConnection(object):
     """Just a wrapper around a suds client that passes through getattr.
@@ -16,6 +19,7 @@ class JiraConnection(object):
         """On init make a connection to JIRA and login.
         """
         try:
+            import settings
             self.__client = suds.client.Client(settings.jira_soap_url)
             self.__auth = self.__client.service.login(settings.jira_username, settings.jira_password)
         except:
@@ -54,4 +58,44 @@ class JiraConnection(object):
             print ""
 
         return True
+
+
+class MyAuth(urllib2.BaseHandler):
+    def __init__(self,u,p):
+        self.enc = "%s:%s" % (u,p)
+        
+    def default_open(self,r):
+        r.add_header( "Authorization" , "Basic %s" % ( base64.b64encode(self.enc).strip() ) )
+        
+
+class JiraRest:
+    
+    def __init__(self,username,passwd,version="2.0.alpha1",host="https://jira.mongodb.org"):
+        self.username = username
+        self.passwd = passwd
+
+        self.version = version
+        self.host = host
+
+        self.opener = urllib2.build_opener( MyAuth( self.username , self.passwd ) )
+
+
+    def fetch(self,suffix):
+        url = "%s/rest/api/%s/%s" % ( self.host , self.version , suffix )
+        data = self.opener.open( url )
+        data = data.read()
+        return json.loads( data )
+
+    def issue(self,key):
+        return self.fetch( "issue/" + key )
+
+    def dl_attachment(self,obj,local_dir):
+        local_file = local_dir + "/" + obj["content"].partition( "attachment/" )[2].replace( '/' , '_' )
+        if os.path.exists( local_file ):
+            return
+        print( "fetching: " + obj["filename"] )
+        f = open( local_file , "wb" )
+        f.write( self.opener.open( obj["content"] ).read() )
+        f.close()
+
 
