@@ -229,6 +229,9 @@ if __name__ == "__main__":
         du.fetch()
         
     # debug commands
+    elif cmd == "getUserNames":
+        for x in du.getUserNames():
+            print( x )
     elif cmd == "list":
         for x in du.getUsers():
             print( x )
