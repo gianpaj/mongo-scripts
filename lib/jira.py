@@ -8,12 +8,14 @@ import urllib2
 import base64
 import json
 import os
+import types
 
 class JiraConnection(object):
     """Just a wrapper around a suds client that passes through getattr.
 
-    This should always be instantiated as a Context Manager, within a with
-    statement.
+    j = JiraConnection()
+    j.getUser( "eliot" ) # can call soap methods directly
+    
     """
     def __init__(self):
         """On init make a connection to JIRA and login.
@@ -26,18 +28,22 @@ class JiraConnection(object):
             self.__client = None
             self.__auth = None
 
-    @property
-    def auth(self):
-        """Get auth object for use in other calls to JIRA service.
-        """
-        return self.__auth
-
     def __getattr__(self, method):
         """Pass through __getattr__s to underlying client.
         """
         if self.__client is None:
             return None
-        return getattr(self.__client, method)
+
+        a = self.__auth
+        m = getattr(self.__client.service, method)
+
+        if m is None:
+            return m
+        
+        def foo(*args):
+            return m(a,*args)
+        
+        return foo
 
     def __enter__(self):
         """Support for the context manager protocol.
