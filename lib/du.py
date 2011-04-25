@@ -21,7 +21,7 @@ class DU:
         self.gmail = gmail.gmail( settings.smtp["smtp_username"] , settings.smtp["smtp_password"] )
 
         # mongo
-        self.db = pymongo.Connection( "www-c.10gen.cc" ).du
+        self.db = pymongo.Connection().du
         self.dus = self.db.dus
         self.users = self.db.users
 
