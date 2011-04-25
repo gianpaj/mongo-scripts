@@ -190,6 +190,7 @@ def getReverse( ip ):
             x["r"] = r = socket.gethostbyaddr( ip )[0]
             db.ips.insert( x )
         except Exception,e:
+            print( "erorr looking up domain: %s error: %s" % ( str(ip) , str(e) ) )
             return None
 
     return x["r"]
