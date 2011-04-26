@@ -19,7 +19,7 @@ class GoogleGroup:
         self.opener = urllib2.build_opener()  
 
         self._debug = False
-        self.use_cache_timeout = False
+        self.use_cache_timeout = True
 
         if self._debug:
             self.use_cache_timeout = False
@@ -87,9 +87,9 @@ class GoogleGroup:
         path = "/group/%s/topics" % self.name
 
         for i in range(pages_back):
-            p = path
+            p = path + "?gvc=2&tsc=1&"
             if len(seen) > 0:
-                p += "?start=" + str(1 + len(seen) )
+                p += "start=" + str(1 + len(seen) )
             self.debug( p )
 
             page = self.fetch( p )
@@ -99,7 +99,7 @@ class GoogleGroup:
 
             self.debug( "unique thisTime: %d total unique: %d " % ( len(thisTime) , len(seen) ) )
 
-        if pages_back == 1:
+        if False and pages_back == 1:
             # this is a dirty dirty hack
             for x in self.cache.find():
                 if x["_id"].find( "/browse_thread/" ) >= 0:

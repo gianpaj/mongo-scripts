@@ -35,7 +35,7 @@ class gmail:
         self.cache = self.mongo.gmail_cache_raw.cache
         
     def select(self,name):
-        self.mailbox.select( name )
+        self.mailbox.select( name , readonly=True )
         self.folder = name
 
     def list(self):
@@ -166,7 +166,6 @@ class gmail:
 
         self.cache.insert( { "_id" : key , "data" : data } )
         return self._convert_raw( data )
-
 
     def send_simple(self,to,subject,body,replyto=None):
         msg = MIMEText(body)
