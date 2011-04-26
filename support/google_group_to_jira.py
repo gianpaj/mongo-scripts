@@ -266,8 +266,8 @@ class ggs:
                 
             issue = j.getIssue( key )
             assignee = issue["assignee"]
-            print( "assigned to [%s]" % assignee )
-            print( issue )
+            debug( "\t assigned to [%s]" % assignee )
+            #print( issue )
                 
             needToSave = False
 
