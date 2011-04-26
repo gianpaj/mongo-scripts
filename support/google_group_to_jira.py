@@ -6,6 +6,7 @@ import pprint
 import re
 import urllib2
 import time
+import datetime
 
 path = os.path.dirname(os.path.abspath(__file__))
 path = path.rpartition( "/" )[0] 
@@ -81,10 +82,25 @@ class ggs:
 
 
     def sync(self):
-        self.sync_mail()
-        self.sync_subjects()
-        self.sync_urls()
-        self.sync_jira()
+        
+        msg = { "_id" : str(datetime.datetime.utcnow()) }
+        start = time.time()        
+        try:
+            stats = {}
+            stats["mail"] = self.sync_mail()
+            stats["topics"] = self.sync_subjects()
+            stats["urls"] = self.sync_urls()
+            stats["jira"] = self.sync_jira()
+            msg["stats"] = stats
+        except Exception,e:
+            print(e)
+            msg["error"] = str(e)
+            
+        end = time.time()
+        msg["elapsedSeconds"] = end - start;
+        
+
+        self.db.log.insert( msg )
 
         
     def gmail(self):
@@ -94,6 +110,7 @@ class ggs:
         return self._gmail
 
     def sync_mail(self):
+        num = 0
         all = self.gmail().list()
     
         for x in all:
@@ -104,6 +121,7 @@ class ggs:
             if self.processed.find_one( { "_id" : key } ):
                 continue
             
+            num = num + 1
             p = { "_id" : key , "uid" : x }
             for z in [ "from" , "subject" , "date" ]:
                 p[z] = headers[z]
@@ -125,7 +143,10 @@ class ggs:
 
             self.processed.insert( p )
 
+        return num
+
     def sync_subjects(self):
+        num = 0
         for x in self.topics.find( { "subject" : None } ):
             sub = None
             for m in x["messages"]:
@@ -143,7 +164,8 @@ class ggs:
 
             print( sub )
             self.topics.update( { "_id" : x["_id"] } , { "$set" : { "subject" : sub , "subject_simple" : self.simple_topic( sub ) } } )
-            
+            num = num + 1
+        return num
 
     def _pull_url(self,url,others):
         detail = self.gg_threads.find_one( { "_id" : url } )
@@ -172,6 +194,7 @@ class ggs:
                 print( "found via ll: %s" % x )
 
     def sync_urls(self,iteration=0):
+        num = 0
         numMissing = 0
         for x in self.topics.find( { "url" : None } ):
             if "skip" in x and x["skip"]:
@@ -197,11 +220,14 @@ class ggs:
             ggt = lst[0]
             self.topics.update( { "_id" : x["_id"] } , { "$set" : { "url" : ggt["_id"] } } )
             self.gg_threads.update( { "_id" : ggt["_id"] } , { "$set" : { "topic" : x["_id"] } } )
-            
+            num = num + 1
+
         print( "numMissing: %d" % numMissing )
         if numMissing > 0 and iteration < 5:
             self.pull_urls( iteration + 1 )
             self.sync_urls( iteration + 1 )
+            
+        return num
 
     def getUsername(self,email):
         
@@ -233,7 +259,7 @@ class ggs:
         
 
     def sync_jira(self):
-        
+        num = 0 
         def debug(msg):
             if True:
                 print(msg)
@@ -323,7 +349,8 @@ class ggs:
             if needToSave:
                 debug( "\t need to save" )
                 self.topics.save( x )
-            
+                num = num + 1
+        return num
         
 thing = ggs()
 thing.sync()
