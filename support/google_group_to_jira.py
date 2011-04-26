@@ -16,8 +16,12 @@ import lib.gmail
 import lib.googlegroup
 import lib.jira
 import lib.crowd
+import lib.aws
 
 import settings
+
+def send_error_email(msg):
+    lib.aws.send_email( "noc-admin@10gen.com" , "Free Support Tool Error" , str(msg) , "noc-admin@10gen.com" )
 
 class ggs:
     def __init__(self):
@@ -82,7 +86,7 @@ class ggs:
 
 
     def sync(self):
-        
+        error = False
         msg = { "_id" : str(datetime.datetime.utcnow()) }
         start = time.time()        
         try:
@@ -95,12 +99,15 @@ class ggs:
         except Exception,e:
             print(e)
             msg["error"] = str(e)
+            error = True
             
         end = time.time()
         msg["elapsedSeconds"] = end - start;
-        
 
         self.db.log.insert( msg )
+        
+        if error:
+            send_error_email(str(e))
 
         
     def gmail(self):
@@ -351,7 +358,11 @@ class ggs:
                 self.topics.save( x )
                 num = num + 1
         return num
-        
-thing = ggs()
-thing.sync()
+
+try:        
+    thing = ggs()
+    thing.sync()
+except Exception,e:
+    print( e )
+    send_error_email(str(e))
 
