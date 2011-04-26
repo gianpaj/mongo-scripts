@@ -174,7 +174,9 @@ class ggs:
     def sync_urls(self,iteration=0):
         numMissing = 0
         for x in self.topics.find( { "url" : None } ):
-            
+            if "skip" in x and x["skip"]:
+                continue
+
             lst = list(self.gg_threads.find( { "subject" : x["subject"] } ))
             ss = x["subject_simple"]
             if len(lst) == 0:
@@ -266,7 +268,8 @@ class ggs:
                 
             issue = j.getIssue( key )
             assignee = issue["assignee"]
-            debug( "\t assigned to [%s]" % assignee )
+            debug( "\t https://jira.mongodb.org/browse/%s" % key )
+            debug( "\t currently assigned to [%s]" % assignee )
             #print( issue )
                 
             needToSave = False
@@ -297,19 +300,25 @@ class ggs:
 
 
                 j.addComment( key , { "body" : cmt } )
-            
+                
+            def progress( to ):
+                if issue["status"] == to:
+                    return None
+                debug( "\t progressing from %s to %s" % ( issue["status"] , to ) )
+                return j.progressWorkflowAction( key , to )
+
             if user:
                 # this means the last comment was from a 10gen person
                 if issue["status"] == "1":
-                    res = j.progressWorkflowAction( key , "21" )
+                    progress( "21" )
             else:
                 if issue["status"] == "1":
                     # this is ok
                     pass
                 elif issue["status"] == "10006":
-                    j.progressWorkflowAction( key ,  "71" )
+                    progress( "71" )
                 else:
-                    j.progressWorkflowAction( key ,  "81" )
+                    progress( "81" )
 
             if needToSave:
                 debug( "\t need to save" )
