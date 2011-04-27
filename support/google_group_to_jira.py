@@ -250,7 +250,15 @@ class ggs:
         return None
 
     def cleanComment(self,cmt):
-        
+        if "text/plain" in cmt:
+            cmt = cmt["text/plain"]
+        elif "text/html" in cmt:
+            cmt = cmt["text/html"]
+            cmt = cmt.replace( "<br>" , "\n" )
+            cmt = re.sub( ">\s+<" , "><" , cmt )
+            cmt = re.sub( "<.*?>" , "" , cmt )
+
+        cmt = str(cmt)
         cmt = cmt.partition( "You received this message because you are subscribed to the Google Groups" )[0]
 
         n = ""
@@ -264,7 +272,7 @@ class ggs:
             n += line + "\n"
             prevSkipped = False
 
-        return n
+        return n.strip()
         
 
     def sync_jira(self):
@@ -319,8 +327,7 @@ class ggs:
                 email = self.gmail().fetch( m["uid"] )
                 if email and "body" in email:
                     email = email["body"]
-                    cmt += str(email)
-                cmt = self.cleanComment( cmt )
+                    cmt += self.cleanComment( email )
 
                 needToSave = True
                 m["processed"] = True
@@ -361,10 +368,43 @@ class ggs:
                 num = num + 1
         return num
 
-try:        
-    thing = ggs()
-    thing.sync()
-except Exception,e:
-    print( e )
-    send_error_email(str(e))
+
+
+if __name__ == "__main__":
+
+    if len(sys.argv) == 1:
+        print( "running normnal sync" )
+        try:        
+            thing = ggs()
+            thing.sync()
+        except Exception,e:
+            print( e )
+            send_error_email(str(e))
+
+    elif "test" == sys.argv[1]:
+        print( "testing" )
+        thing = ggs()
+        
+
+        print( thing.cleanComment( """
+a
+b
+> d
+> e
+"""
+                                 ) )
+
+        print( thing.cleanComment( { "text/html" : """
+<html>
+ <body>
+ a<br>b
+ d
+ e
+ </body>
+</html>
+
+""" 
+} ) )
+    else:
+        print( "unknown command: %s" % argv[1] )
 
