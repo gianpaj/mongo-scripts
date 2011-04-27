@@ -89,23 +89,25 @@ class ggs:
         error = False
         msg = { "_id" : str(datetime.datetime.utcnow()) }
         start = time.time()        
+        stats = {}
         try:
-            stats = {}
             stats["mail"] = self.sync_mail()
             stats["topics"] = self.sync_subjects()
             stats["urls"] = self.sync_urls()
             stats["jira"] = self.sync_jira()
-            msg["stats"] = stats
         except Exception,e:
             print(e)
             msg["error"] = str(e)
             error = True
-            
+
+        msg["stats"] = stats
         end = time.time()
         msg["elapsedSeconds"] = end - start;
 
         self.db.log.insert( msg )
         
+        self.db.stats.update( { "_id" : str(datetime.datetime.utcnow())[0:13] } , { "$inc" : stats } , upsert=True )
+
         if error:
             send_error_email(str(e))
 
@@ -344,7 +346,7 @@ class ggs:
                 # this means the last comment was from a 10gen person
                 if issue["status"] == "1":
                     progress( "21" )
-            else:
+            elif needToSave:
                 if issue["status"] == "1":
                     # this is ok
                     pass
