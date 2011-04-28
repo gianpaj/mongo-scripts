@@ -343,8 +343,8 @@ class ggs:
                     
                 debug( "\t adding comment from %s" % m["from"] )
 
-
-                j.addComment( key , { "body" : cmt } )
+                if user is None:
+                    j.addComment( key , { "body" : cmt } )
                 
             def progress( to ):
                 if issue["status"] == to:
