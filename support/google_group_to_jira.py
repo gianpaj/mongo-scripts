@@ -7,6 +7,7 @@ import re
 import urllib2
 import time
 import datetime
+import traceback
 
 path = os.path.dirname(os.path.abspath(__file__))
 path = path.rpartition( "/" )[0] 
@@ -97,7 +98,7 @@ class ggs:
             stats["jira"] = self.sync_jira()
         except Exception,e:
             print(e)
-            msg["error"] = str(e)
+            msg["error"] = str(e) + "---\n" + traceback.format_exc()
             error = True
 
         msg["stats"] = stats
@@ -382,7 +383,7 @@ if __name__ == "__main__":
             thing.sync()
         except Exception,e:
             print( e )
-            send_error_email(str(e))
+            send_error_email( "%s\n--\n%s" % ( str(e) , traceback.format_exc() )
 
     elif "test" == sys.argv[1]:
         print( "testing" )
