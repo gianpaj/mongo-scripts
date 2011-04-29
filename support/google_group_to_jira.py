@@ -252,7 +252,7 @@ class ggs:
         return None
 
     def cleanComment(self,cmt):
-        if not isinstance( b , basestring ):
+        if not isinstance( cmt , basestring ):
             if "text/plain" in cmt:
                 return self.cleanComment( cmt["text/plain"] )
             elif "text/html" in cmt:
