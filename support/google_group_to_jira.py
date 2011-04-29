@@ -383,7 +383,7 @@ if __name__ == "__main__":
             thing.sync()
         except Exception,e:
             print( e )
-            send_error_email( "%s\n--\n%s" % ( str(e) , traceback.format_exc() )
+            send_error_email( "%s\n--\n%s" % ( str(e) , traceback.format_exc() ) )
 
     elif "test" == sys.argv[1]:
         print( "testing" )
