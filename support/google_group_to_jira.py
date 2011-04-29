@@ -98,6 +98,7 @@ class ggs:
             stats["jira"] = self.sync_jira()
         except Exception,e:
             print(e)
+            traceback.print_exc()
             msg["error"] = str(e) + "---\n" + traceback.format_exc()
             error = True
 
@@ -383,6 +384,7 @@ if __name__ == "__main__":
             thing.sync()
         except Exception,e:
             print( e )
+            traceback.print_exc()
             send_error_email( "%s\n--\n%s" % ( str(e) , traceback.format_exc() ) )
 
     elif "test" == sys.argv[1]:
