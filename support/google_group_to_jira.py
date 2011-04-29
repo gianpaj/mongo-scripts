@@ -252,18 +252,19 @@ class ggs:
         return None
 
     def cleanComment(self,cmt):
-        if "text/plain" in cmt:
-            return self.cleanComment( cmt["text/plain"] )
-        elif "text/html" in cmt:
-            cmt = cmt["text/html"]
-            cmt = cmt.replace( "<br>" , "\n" )
-            cmt = re.sub( ">\s+<" , "><" , cmt )
-            cmt = re.sub( "<.*?>" , "" , cmt )
-            return self.cleanComment( cmt )
-        elif "body" in cmt:
-            return self.cleanComment( cmt["body"] )
+        if not isinstance( b , basestring ):
+            if "text/plain" in cmt:
+                return self.cleanComment( cmt["text/plain"] )
+            elif "text/html" in cmt:
+                cmt = cmt["text/html"]
+                cmt = cmt.replace( "<br>" , "\n" )
+                cmt = re.sub( ">\s+<" , "><" , cmt )
+                cmt = re.sub( "<.*?>" , "" , cmt )
+                return self.cleanComment( cmt )
+            elif "body" in cmt:
+                return self.cleanComment( cmt["body"] )
+            cmt = str(cmt)
 
-        cmt = str(cmt)
         cmt = cmt.partition( "You received this message because you are subscribed to the Google Groups" )[0]
 
         n = ""
