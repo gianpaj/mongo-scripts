@@ -111,7 +111,7 @@ class ggs:
         self.db.stats.update( { "_id" : str(datetime.datetime.utcnow())[0:13] } , { "$inc" : stats } , upsert=True )
 
         if error:
-            send_error_email(str(e))
+            send_error_email(msg["error"])
 
         
     def gmail(self):
