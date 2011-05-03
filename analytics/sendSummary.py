@@ -1,8 +1,11 @@
-
+import sys
 import smtplib
 from email.MIMEText import MIMEText
 
 import pymongo
+from distutils import version
+
+from operator import itemgetter, attrgetter
 
 conn = pymongo.Connection()
 db = conn.mongousage
@@ -34,8 +37,20 @@ def genBody():
         
     body += "\n\n"
     body += "Versions\n"
+    
+    versions = []
     for x in db["gen.versions"].find().sort( "_id" , pymongo.DESCENDING ):
-        body += "%s\t%d\n" % ( x["_id"] , int(x["value"]) )
+        x["v"] = version.LooseVersion( x["_id"] )
+        versions.append( x )
+        
+
+    versions.sort( key=lambda x: x["v"] )
+    versions.reverse()
+    
+    for x in versions:
+        body += "%-8s\t%d\t%s\n" % ( x["_id"] , 
+                                     int(x["value"]["count"]) , 
+                                     str(x["value"]["minDate"]).partition( " " )[0] )
         
     return body
 
@@ -52,5 +67,7 @@ def sendEmail():
 
 
 if __name__ == "__main__":
-    #print( genBody() )
-    sendEmail()
+    if len(sys.argv) > 1:
+        print( genBody() )
+    else:
+        sendEmail()
