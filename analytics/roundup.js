@@ -175,8 +175,17 @@ function doVersions(){
         function(){ 
             v = parseVersion( this["uri-stem"] );
             if ( v )
-                emit( v , 1 );
-        } , simpleSum , { out : "gen.versions" } );
+                emit( v , { count : 1 , minDate : this.day } );
+        } , 
+        function( k , vs ) {
+            var out = { count : 0 , minDate : vs[0].minDate }
+            for ( var i=0; i<vs.length; i++ ) {
+                out.count += vs[i].count;
+                if ( vs[i].minDate < out.minDate )
+                    out.minDate = vs[i].minDate;
+            }
+            return out;
+        } , { out : "gen.versions" } );
     res.find().sort( { _id : -1 } ).forEach( printjson );
         
 }
