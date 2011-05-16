@@ -3,3 +3,4 @@
 *.swp
 www/settings_private.py
 www/devel
+*#
