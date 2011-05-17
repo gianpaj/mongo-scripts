@@ -116,7 +116,12 @@ class GoogleGroup:
         soup = BeautifulSoup.BeautifulStoneSoup( page , convertEntities=BeautifulSoup.BeautifulStoneSoup.XML_ENTITIES )
         
         subject = ""
-        for x in soup.find( id="thread_subject_site" ):
+
+        nodes = soup.find( id="thread_subject_site" )
+        if nodes is None or len(nodes) == 0:
+            raise Exception( "no title on: %s" % path )
+        
+        for x in nodes:
             subject += str(x)
         subject = subject.strip()
         

@@ -256,7 +256,7 @@ class ggs:
             if "text/plain" in cmt:
                 return self.cleanComment( cmt["text/plain"] )
             elif "text/html" in cmt:
-                cmt = cmt["text/html"]
+                cmt = str(cmt["text/html"])
                 cmt = cmt.replace( "<br>" , "\n" )
                 cmt = re.sub( ">\s+<" , "><" , cmt )
                 cmt = re.sub( "<.*?>" , "" , cmt )
