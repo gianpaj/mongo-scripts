@@ -80,6 +80,8 @@ class ggs:
         return s
 
     def simple_topic(self,s):
+        # makes subject comparable in the event
+        # of whitespace and case changes
         s = self.clean_topic( s )
         s = re.sub( "\s*" , "" , s )
         s = s.lower()
@@ -87,6 +89,8 @@ class ggs:
 
 
     def sync(self):
+        # "main" method
+
         error = False
         msg = { "_id" : str(datetime.datetime.utcnow()) }
         start = time.time()        
@@ -133,6 +137,7 @@ class ggs:
                 continue
             
             num = num + 1
+            # copy certain headers into the db document
             p = { "_id" : key , "uid" : x }
             for z in [ "from" , "subject" , "date" ]:
                 p[z] = headers[z]
@@ -147,6 +152,9 @@ class ggs:
 
             print( ids  )
             
+            # add new messages to the topic, and update
+            # ids with any new message IDs that future
+            # messages might be in-reply-to
             self.topics.update( { "ids" : { "$in" : ids } } , 
                                 { "$addToSet" : { "ids" : { "$each" : ids } ,
                                                   "messages" : p } } ,
@@ -157,6 +165,10 @@ class ggs:
         return num
 
     def sync_subjects(self):
+        # adds subject and subject_simple fields
+        # to topics which don't already have it
+        # (which will be new topics created by
+        # the upsert in sync_mail)
         num = 0
         for x in self.topics.find( { "subject" : None } ):
             sub = None
@@ -205,6 +217,10 @@ class ggs:
                 print( "found via ll: %s" % x )
 
     def sync_urls(self,iteration=0):
+        # set the url field on topics if not already
+        # set; finds the thread with the given topic,
+        # and uses its canonical groups url. raises if
+        # 0 or more than 1 thread with the topic is found
         num = 0
         numMissing = 0
         for x in self.topics.find( { "url" : None } ):
@@ -216,6 +232,8 @@ class ggs:
             if len(lst) == 0:
                 lst = list(self.gg_threads.find( { "subject_simple" : ss } ))
             
+            # strip off "[mongodb-user]" or similar;
+            # TODO: use clean_topic?
             if len(lst) == 0 and ss.find( "]" ) >= 0 :
                 even_cleaner = x["subject_simple"].rpartition( "]" )[2]
                 lst = list(self.gg_threads.find( { "subject_simple" : even_cleaner } ))
@@ -241,7 +259,10 @@ class ggs:
         return num
 
     def getUsername(self,email):
-        
+        # get the JIRA username of the person with the
+        # given email (parses "Name Name <email@email.com>"
+        # style headers as well); return None if doesn't
+        # correspond to a 10gen JIRA user
         if email.find( "<" ) >= 0:
             email = email.rpartition( ">" )[0].rpartition( "<" )[2]
 
@@ -252,6 +273,10 @@ class ggs:
         return None
 
     def cleanComment(self,cmt):
+        # attempt to clean the text of the email to only
+        # include that sent in this message (puts in a
+        # placeholder for replied text on lines beginning
+        # with ">")
         if not isinstance( cmt , basestring ):
             if "text/plain" in cmt:
                 return self.cleanComment( cmt["text/plain"] )
@@ -295,6 +320,7 @@ class ggs:
 
             debug( x["subject"] )
 
+            # find or create the JIRA for this topic
             key = None
             if "jira" in x:
                 key = x["jira"]
@@ -323,6 +349,8 @@ class ggs:
                 
             needToSave = False
 
+            # append any new comments from the google group
+            # to the ticket
             user = None
             for m in x["messages"]:
                 if "processed" in m and m["processed"]:
@@ -346,6 +374,7 @@ class ggs:
                     
                 debug( "\t adding comment from %s" % m["from"] )
 
+                # don't show comments from 10gen people (per eliot)
                 if user is None:
                     j.addComment( key , { "body" : cmt } )
                 
@@ -355,18 +384,29 @@ class ggs:
                 debug( "\t progressing from %s to %s" % ( issue["status"] , to ) )
                 return j.progressWorkflowAction( key , to )
 
+            # progress actions
+            RESPONSE_SENT = '21'
+            GOT_MORE_INFO = '71'
+            NEW_POST_FROM_USER = '81'
+
+            # ticket statuses
+            OPEN = '1'
+            WAITING_FOR_CUSTOMER = '10006'
+
             if user:
                 # this means the last comment was from a 10gen person
-                if issue["status"] == "1":
-                    progress( "21" )
+                if issue["status"] == OPEN:
+                    progress( RESPONSE_SENT )
             elif needToSave:
-                if issue["status"] == "1":
+                # new comment from non-10gen person
+                if issue["status"] == OPEN:
                     # this is ok
                     pass
-                elif issue["status"] == "10006":
-                    progress( "71" )
+                elif issue["status"] == WAITING_FOR_CUSTOMER:
+                    progress( GOT_MORE_INFO )
                 else:
-                    progress( "81" )
+                    # issue is closed
+                    progress( NEW_POST_FROM_USER )
 
             if needToSave:
                 debug( "\t need to save" )
