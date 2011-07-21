@@ -195,13 +195,17 @@ class ggs:
         if detail:
             return False
 
-        detail = self.gg.getThreadDetail( url , others )
-        detail["_id"] = url
-        detail["subject"] = self.clean_topic( detail["subject"] )
-        detail["subject_simple"] = self.simple_topic( detail["subject"] )
-        self.gg_threads.insert( detail )
-        #print( "%s\n\t%s" % ( url , detail["subject"] ) )        
-        return True
+        try:
+            detail = self.gg.getThreadDetail( url , others )
+            detail["_id"] = url
+            detail["subject"] = self.clean_topic( detail["subject"] )
+            detail["subject_simple"] = self.simple_topic( detail["subject"] )
+            self.gg_threads.insert( detail )
+            #print( "%s\n\t%s" % ( url , detail["subject"] ) )        
+            return True
+        except Exception,e:
+            print(e)
+            return False
 
     def pull_urls(self,pages_back=1):
         threads = self.gg.getThreads( pages_back )
@@ -340,22 +344,26 @@ class ggs:
                 self.topics.update( { "_id" : x["_id"] } , { "$set" : { "jira" : key } } )
                 x["jira"] = key
             
-                
-            issue = j.getIssue( key )
-            assignee = issue["assignee"]
-            debug( "\t https://jira.mongodb.org/browse/%s" % key )
-            debug( "\t currently assigned to [%s]" % assignee )
-            #print( issue )
-                
+
             needToSave = False
 
             # append any new comments from the google group
             # to the ticket
             user = None
+            issue = None
+            assignee = None
+
             for m in x["messages"]:
                 if "processed" in m and m["processed"]:
                     continue
                 
+                if issue is None:
+                    issue = j.getIssue( key )
+                    assignee = issue["assignee"]
+                    debug( "\t https://jira.mongodb.org/browse/%s" % key )
+                    debug( "\t currently assigned to [%s]" % assignee )
+
+
                 cmt = "%s\n%s\n" % ( m["from"] , m["date"] )
 
                 email = self.gmail().fetch( m["uid"] )

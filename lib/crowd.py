@@ -16,7 +16,6 @@ class Crowd:
         self.token = self.client.service.authenticateApplication(self.auth_context)
 
         self.service = self.client.service
-        
 
 
     def isValidPrincipalToken(self,token):
@@ -29,7 +28,9 @@ class Crowd:
         return self.service.authenticatePrincipalSimple( self.token , username , password )
 
     def findGroupByName(self,group):
-        return self.service.findGroupByName( self.token , group ).members[0]
+        x = self.service.findGroupByName( self.token , group )
+        print(x)
+        return x.members[0]
 
 
     def findPrincipalByName(self,name):
