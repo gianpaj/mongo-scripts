@@ -15,7 +15,7 @@ class StackOverflowImport(object):
 
     # questions before this datetime will never be
     # added to JIRA, even if they otherwise would be
-    jira_cutoff = datetime(2011, 7, 14, 12, tzinfo=pytz.timezone('America/New_York'))
+    jira_cutoff = datetime(2011, 7, 20, 10, tzinfo=pytz.timezone('America/New_York'))
 
     def __init__(self):
         self.conn = pymongo.Connection(tz_aware=True)
