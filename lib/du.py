@@ -63,7 +63,7 @@ class DU:
 
         self.gmail.send_simple( user["mail"] , 
                                 "Time for your DU - %s - %s" % ( user["_id"] , datetime.date.today().strftime( "%D" ) ) , 
-                                "*** What did you today?\n" +
+                                "*** What did you do today?\n" +
                                 "*** What are you planning on doing tomorrow?\n" +
                                 "*** What blockers do you have?\n" +
                                 "\n"
