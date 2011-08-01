@@ -80,13 +80,19 @@ class DU:
             if "skip" in user and user["skip"]:
                 continue
 
+            # TODO: this should be utcnow()?
             diff = datetime.datetime.now() - user["last_reminder"]
             diff = diff.seconds + ( 24 * 3600 * diff.days )
             print( "\t last reminder: %s - %d seconds ago" % ( str(user["last_reminder"]) , diff ) )
 
+            # if last reminder was sent less than 12 hours ago,
+            # skip user for now
             if diff < ( 3600 * 12 ):
                 continue;
 
+            # take into account user's gmt offset,
+            # and send email to them if it's at or
+            # after 5pm in their configured local time
             hour = datetime.datetime.utcnow().hour
             modhour = hour
             if "gmtoffset" in user:
