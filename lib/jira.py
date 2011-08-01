@@ -25,6 +25,7 @@ class JiraConnection(object):
             self.__client = suds.client.Client(settings.jira_soap_url)
             self.__auth = self.__client.service.login(settings.jira_username, settings.jira_password)
         except:
+            print( "failed to get u/p for jira" )
             self.__client = None
             self.__auth = None
 

@@ -15,3 +15,9 @@ else:
     usagedb_host = "jira.10gen.cc"
     wwwdb_host = "localhost"
     mongowwwdb_host = "localhost"
+
+#Jira
+jira_soap_url = "http://jira.mongodb.org/rpc/soap/jirasoapservice-v2?wsdl"
+jira_username = "auto"
+jira_password = "automenow"
+jira_support_group = "Commercial Support"

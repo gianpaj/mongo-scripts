@@ -1,0 +1,11 @@
+<html>
+  <body>
+    {% for t in topics %}
+    <small>{{ t["subject"] }}</small> | 
+    <a href="https://jira.mongodb.org/browse/{{ t["jira"] }}">jira</a> |
+    assigned to {{ t["assignee"] }}
+    {% endfor %}
+    <br>
+  </body>
+</html>
+   

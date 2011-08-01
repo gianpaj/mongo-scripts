@@ -22,13 +22,13 @@ here = os.path.dirname(os.path.abspath(__file__))
 if here not in sys.path:
     sys.path.append(here)
 
-libpath = here.rpartition( "/" )[0] + "/lib"
-
-print( libpath )
-sys.path.append( libpath )
+sys.path.append( here.rpartition( "/" )[0] + "/lib" )
+sys.path.append( here.rpartition( "/" )[0] + "/support" )
 
 import settings
 import crowd
+import google_group_to_jira
+import jira
 
 # setup web env
 env = jinja2.Environment(loader=jinja2.PackageLoader("www", "templates"))
@@ -44,6 +44,8 @@ wwwdb = pymongo.Connection( settings.wwwdb_host ).www
 usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
 mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
 
+myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
+myjira = jira.JiraConnection()
 
 class CorpFavicon(app.page):
     path="/favicon.ico"
@@ -123,6 +125,26 @@ class CorpNormal(app.page):
 
         t = env.get_template( p )
         return t.render(**pageParams)
+
+
+    def gggiframe(self,pp):
+        subject = web.input()["subject"]
+        simple = myggs.simple_topic( subject )
+        
+        topics = []
+        for x in myggs.topics.find( { "subject_simple" : simple } ):
+            if "jira" in x:
+                key = x["jira"]
+                issue = myjira.getIssue( key )
+                x["assignee"] = issue["assignee"]
+            else:
+                x["assignee"] = None
+                x["jira"] = None
+            topics.append( x )
+
+        pp["topics"] = topics
+
+        
 
 
     def dlDomains(self,pp):

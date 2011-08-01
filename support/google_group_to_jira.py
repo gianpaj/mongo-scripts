@@ -25,11 +25,11 @@ def send_error_email(msg):
     lib.aws.send_email( "noc-admin@10gen.com" , "Free Support Tool Error" , str(msg) , "noc-admin@10gen.com" )
 
 class ggs:
-    def __init__(self):
+    def __init__(self,host="127.0.0.1",syncUsers=True):
         self._gmail = None
         
         # setup mongo
-        self.db = pymongo.Connection().support_gg
+        self.db = pymongo.Connection(host).support_gg
         self.processed = self.db.processed
 
         self.topics = self.db.topics
@@ -52,7 +52,8 @@ class ggs:
         
         # crowd
         self.crowd = lib.crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )
-        self.sync_users()
+        if syncUsers:
+            self.sync_users()
         
     def sync_users(self):
         for u in self.crowd.findGroupByName( "10gen" ):
