@@ -130,12 +130,17 @@ class CorpNormal(app.page):
     def gggiframe(self,pp):
         subject = web.input()["subject"]
         simple = myggs.simple_topic( subject )
+        pp["simple"] = simple
         
         topics = []
         for x in myggs.topics.find( { "subject_simple" : simple } ):
             if "jira" in x:
                 key = x["jira"]
-                issue = myjira.getIssue( key )
+                try:
+                    issue = myjira.getIssue( key )
+                except:
+                    myjira = jira.JiraConnection()
+                    issue = myjira.getIssue( key )
                 x["assignee"] = issue["assignee"]
             else:
                 x["assignee"] = None
