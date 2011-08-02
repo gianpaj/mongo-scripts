@@ -337,7 +337,7 @@ class ggs:
                     url = "http://groups.google.com" + url
 
                 res = j.createIssue( { "project" : "FREE" , 
-                                       "type" : "1" , 
+                                       "type" : "6" , 
                                        "summary" : x["subject"] ,
                                        "description" : url } )
                 key = res["key"]
