@@ -90,17 +90,22 @@ class DU:
             if diff < ( 3600 * 12 ):
                 continue;
 
-            # take into account user's gmt offset,
-            # and send email to them if it's at or
-            # after 5pm in their configured local time
-            hour = datetime.datetime.utcnow().hour
-            modhour = hour
+            # take into account user's gmt offset, and send email to them if it's at or
+            # after their desired reminder time in their configured local time
+            curtime = datetime.datetime.utcnow()
+            reminderTime = user.get('reminderTime', '17:00') # Default to 5pm
+            reminderTime = datetime.datetime.strptime(reminderTime, "%H:%M").time()
+
+            modhour = curtime.hour
             if "gmtoffset" in user:
                 modhour = modhour + user["gmtoffset"]
                 if modhour < 0:
                     modhour = modhour + 24
-            print( "\t cur hour: %d  modhour: %d" % ( hour , modhour ) )
-            if modhour < 17:
+            print( "\t cur hour: %d  modhour: %d cur minute: %d" % ( curtime.hour , modhour , curtime.minute ) )
+            print( "\t reminder hour: %d reminder minute: %d" % (reminderTime.hour, reminderTime.minute) )
+
+            modtime = reminderTime.replace(hour=modhour, minute = curtime.minute)
+            if modtime < reminderTime:
                 continue
 
             print( "\t sending reminder to: " + user["mail" ] )
