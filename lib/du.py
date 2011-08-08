@@ -98,7 +98,7 @@ class DU:
 
             modhour = curtime.hour
             if "gmtoffset" in user:
-                modhour = modhour + user["gmtoffset"]
+                modhour = modhour + int(user["gmtoffset"])
                 if modhour < 0:
                     modhour = modhour + 24
             print( "\t cur hour: %d  modhour: %d cur minute: %d" % ( curtime.hour , modhour , curtime.minute ) )
