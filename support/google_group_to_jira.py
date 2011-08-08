@@ -249,7 +249,7 @@ class ggs:
                 continue
 
             if len(lst) > 1:
-                raise Exception( "ahhhh 2 topics with same name %s" % x["subject"] )
+                print( "ahhhh 2 topics with same name %s %s %s " %(  x["subject"] , lst[0] , lst[1] ) )
 
             ggt = lst[0]
             self.topics.update( { "_id" : x["_id"] } , { "$set" : { "url" : ggt["_id"] } } )
