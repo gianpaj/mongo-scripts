@@ -68,7 +68,8 @@ class DU:
                                 "*** What blockers do you have?\n" +
                                 "\n"
                                 "Please reply to this email with your DU\n" +
-                                "Should go only to dus@10gen.com, do not send to dev\n"
+                                "Should go only to dus@10gen.com, do not send to dev\n" +
+                                "Web interface at: http://www.10gen.com/admin/dumanager\n"
                                 , replyto="dus@10gen.com" )
 
         self.users.update( { "_id" : user["_id"] } , { "$set" : { "last_reminder" : datetime.datetime.now() } } )
