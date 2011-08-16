@@ -40,7 +40,7 @@ import settings
 csBigFilter = """
   project = CS AND 
   resolution = Unresolved AND 
-  status not in ("Waiting for Customer", "Waiting for bug fix") AND
+  status not in ("Waiting for Customer", "Waiting for bug fix" , "Resolved" ) AND
   type != Tracking
 """
 
@@ -119,7 +119,7 @@ personToEmail = {}
 def getEmail( person ):
     if person in personToEmail:
         return personToEmail[person]
-    personToEmail[person] = crowd.getUser( person )["mail"]
+    personToEmail[person] = str(crowd.getUser( person )["mail"])
     return str(personToEmail[person])
 
 def debug(msg):
@@ -198,20 +198,25 @@ def sendEmails( messages , managerSummary ):
                 
             mgr += "\n"
             ind += "\n"
-        
-        # TODO: remove this check
-        if who in getSupportTriageList():
-            debug( "will send email to: %s" % who )
-            debug( ind )
-            lib.aws.send_email( "info@10gen.com" , "Support Cases open for %s as of %s" % ( who , shortDate ) , ind , getEmail( who ) )
+    
+        debug( "will send email to: %s" % who )
+        debug( ind )
+        lib.aws.send_email( "info@10gen.com" , "Support Cases open for %s as of %s" % ( who , shortDate ) , ind , getEmail( who ) )
         
 
     subject = "Support Manager Jira Digest %s" % shortDate
-    debug( mgr )
-    if False and managerSummary:
+    #debug( mgr )
+    if managerSummary:
         for s in getSupportTriageList():
-            lib.aws.send_email( "info@10gen.com" , subject , mgr , getEmail( s ) )
+            mgre = getEmail(s)
+            debug( "sending to manager: %s " % mgre )
+            lib.aws.send_email( "info@10gen.com" , subject , mgr , mgre )
 
 if __name__ == "__main__":
-    messages = run(True)
-    sendEmails( messages , True )
+    try:
+        messages = run(True)
+        sendEmails( messages , True )
+    except Exception,e:
+        print(e)
+        traceback.print_exc()
+        lib.aws.send_email( "noc-admin@10gen.com" , "jira alert failure" , "%s\n--\n%s" % ( str(e) , traceback.format_exc() ) , "support@10gen.com" )
