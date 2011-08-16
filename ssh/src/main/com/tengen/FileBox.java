@@ -24,6 +24,7 @@ public class FileBox extends SSHBase {
     }
 
     public Command createCommand( String s ){
+        System.out.println( "FileBox.createCommand: " + s );
         String pcs[] = Pattern.compile( "\\s+" ).split(s);
         if ( pcs[0].equals( "scp" ) )
             return new IncomingSCP( pcs , true );

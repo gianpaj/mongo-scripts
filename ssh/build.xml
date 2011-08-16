@@ -34,7 +34,7 @@
            debug="on" >
       <classpath refid="classpath"/>
     </javac>
-
+<!--
     <javac srcdir="src/test"
            destdir="build/test"
            optimize="off"
@@ -44,7 +44,7 @@
            debug="on" >
       <classpath refid="classpath"/>
     </javac>
-
+-->
   </target>
 
   <target name="support" depends="compile">
@@ -54,7 +54,7 @@
   </target>
 
   <target name="file" depends="compile">
-    <java classname="com.tengen.FileBox" >
+    <java classname="com.tengen.FileBox">
       <classpath refid="classpath"/>
     </java>
   </target>

@@ -63,7 +63,11 @@ public class IncomingSCP implements Command, Runnable {
                             throw new IllegalArgumentException( "can't have -f and -t" );
                         _mode = Mode.WRITE;
                         break;
+                    case '-': 
+                        // wtf is this...
+                        break;
                     default:
+                        System.err.println( "Unsupported option: " + args[i] );
                         throw new IllegalArgumentException( "Unsupported option: " + args[i].charAt(j) );
                     }
                 }
@@ -225,71 +229,6 @@ public class IncomingSCP implements Command, Runnable {
         ack();
         readAck();
     }
-
-    /*
-
-    protected void readFile(File path) throws IOException {
-        if (log.isDebugEnabled()) {
-            log.debug("Reading file {}", path);
-        }
-        StringBuffer buf = new StringBuffer();
-        buf.append("C");
-        buf.append("0644"); // what about perms
-        buf.append(" ");
-        buf.append(path.length()); // length
-        buf.append(" ");
-        buf.append(path.getName());
-        buf.append("\n");
-        out.write(buf.toString().getBytes());
-        out.flush();
-        readAck();
-
-        InputStream is = new FileInputStream(path);
-        try {
-            byte[] buffer = new byte[8192];
-            for (;;) {
-                int len = is.read(buffer, 0, buffer.length);
-                if (len == -1) {
-                    break;
-                }
-                out.write(buffer, 0, len);
-            }
-        } finally {
-            is.close();
-        }
-        ack();
-        readAck();
-    }
-
-    protected void readDir(File path) throws IOException {
-        if (log.isDebugEnabled()) {
-            log.debug("Reading directory {}", path);
-        }
-        StringBuffer buf = new StringBuffer();
-        buf.append("D");
-        buf.append("0755"); // what about perms
-        buf.append(" ");
-        buf.append("0"); // length
-        buf.append(" ");
-        buf.append(path.getName());
-        buf.append("\n");
-        out.write(buf.toString().getBytes());
-        out.flush();
-        readAck();
-
-        for (File child : path.listFiles()) {
-            if (child.isFile()) {
-                readFile(child);
-            } else if (child.isDirectory()) {
-                readDir(child);
-            }
-        }
-
-        out.write("E\n".getBytes());
-        out.flush();
-        readAck();
-    }
-    */
 
     protected String readLine() 
         throws IOException {
