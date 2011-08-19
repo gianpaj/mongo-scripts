@@ -46,8 +46,19 @@ csBigFilter = """
 
 
 queries = [
-    { "name": "CS cases not touched in 24 hours" , 
+
+    { "name" : "SLA in danger - not assigned" ,
+      "who" : "AO" ,
+      "jql" : csBigFilter + " AND assignee is EMPTY and created <= -30m" } ,
+
+    { "name": "CS problems not touched in 24 hours" , 
       "jql" : csBigFilter + " AND updated <= -24h AND issuetype = 'Problem Ticket'" , 
+      "who" : "AO" , 
+      "sms" : False , 
+      "digest" : True } ,
+
+    { "name": "CS questions not touched in 3 days" , 
+      "jql" : csBigFilter + " AND updated <= -72h AND issuetype != 'Problem Ticket'" , 
       "who" : "AO" , 
       "sms" : False , 
       "digest" : True } ,
@@ -72,6 +83,9 @@ queries = [
 #       "freq" : "1000" } ,
 
     ]
+
+inDebug = False
+
 
 # ---------------
 # ---------------
@@ -125,6 +139,12 @@ def getEmail( person ):
 def debug(msg):
     if True:
         print( msg )
+
+def mail( subject , body , who ):
+    if inDebug:
+        print( "would send mail [%s] to %s" % ( subject , who ) )
+    else:
+        lib.aws.send_email( "info@10gen.com" , subject , body , who )
         
 def run( digest ):
 
@@ -140,10 +160,10 @@ def run( digest ):
         
         name = q["name"]
         
-        if digest != q["digest"]:
+        if "digest" in q and q["digest"] and not digest:
             continue
 
-        if q["sms"]:
+        if "sms" in q and q["sms"]:
             raise Exception( "sms not supported yet" )
 
         for issue in jira.getIssuesFromJqlSearch( q["jql"] , 1000 ):
@@ -201,7 +221,7 @@ def sendEmails( messages , managerSummary ):
     
         debug( "will send email to: %s" % who )
         debug( ind )
-        lib.aws.send_email( "info@10gen.com" , "Support Cases open for %s as of %s" % ( who , shortDate ) , ind , getEmail( who ) )
+        mail( "Support Cases open for %s as of %s" % ( who , shortDate ) , ind , getEmail( who ) )
         
 
     subject = "Support Manager Jira Digest %s" % shortDate
@@ -210,13 +230,23 @@ def sendEmails( messages , managerSummary ):
         for s in getSupportTriageList():
             mgre = getEmail(s)
             debug( "sending to manager: %s " % mgre )
-            lib.aws.send_email( "info@10gen.com" , subject , mgr , mgre )
+            mail( subject , mgr , mgre )
 
 if __name__ == "__main__":
+
+    digest = False
+    
+    for x in sys.argv:
+        if x == "debug":
+            inDebug = True
+
+        if x == "digest":
+            digest = True
+
     try:
-        messages = run(True)
+        messages = run(digest)
         sendEmails( messages , True )
     except Exception,e:
         print(e)
         traceback.print_exc()
-        lib.aws.send_email( "noc-admin@10gen.com" , "jira alert failure" , "%s\n--\n%s" % ( str(e) , traceback.format_exc() ) , "support@10gen.com" )
+        mail( "jira alert failure" , "%s\n--\n%s" % ( str(e) , traceback.format_exc() ) , "support@10gen.com" )
