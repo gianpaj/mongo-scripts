@@ -49,6 +49,7 @@ queries = [
 
     { "name" : "SLA in danger - not assigned" ,
       "who" : "AO" ,
+      "digest" : False ,
       "jql" : csBigFilter + " AND assignee is EMPTY and created <= -30m" } ,
 
     { "name": "CS problems not touched in 24 hours" , 
@@ -160,7 +161,7 @@ def run( digest ):
         
         name = q["name"]
         
-        if "digest" in q and q["digest"] and not digest:
+        if digest != q["digest"]:
             continue
 
         if "sms" in q and q["sms"]:
@@ -195,7 +196,7 @@ def getCompany(issue):
     return None
         
 
-def sendEmails( messages , managerSummary ):
+def sendEmails( messages , managerSummary , digest ):
     
     mgr = ""
 
@@ -221,10 +222,17 @@ def sendEmails( messages , managerSummary ):
     
         debug( "will send email to: %s" % who )
         debug( ind )
-        mail( "Support Cases open for %s as of %s" % ( who , shortDate ) , ind , getEmail( who ) )
-        
+        if digest:
+            subject = "Support Cases open for %s as of %s" % ( who , shortDate )
+        else:
+            subject = "Jira alerts for %s as of %s" % ( who , shortDate )
+        mail( subject , ind , getEmail( who ) )
 
-    subject = "Support Manager Jira Digest %s" % shortDate
+    if digest:
+        subject = "Support Manager Jira Digest %s" % shortDate
+    else:
+        subject = "Support Manager Jira Alerts %s" % shortDate
+
     #debug( mgr )
     if managerSummary:
         for s in getSupportTriageList():
@@ -245,7 +253,7 @@ if __name__ == "__main__":
 
     try:
         messages = run(digest)
-        sendEmails( messages , True )
+        sendEmails( messages , True , digest )
     except Exception,e:
         print(e)
         traceback.print_exc()
