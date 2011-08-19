@@ -234,7 +234,7 @@ def sendEmails( messages , managerSummary , digest ):
         subject = "Support Manager Jira Alerts %s" % shortDate
 
     #debug( mgr )
-    if managerSummary:
+    if managerSummary and len(mgr) > 0:
         for s in getSupportTriageList():
             mgre = getEmail(s)
             debug( "sending to manager: %s " % mgre )
