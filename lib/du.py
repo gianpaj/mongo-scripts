@@ -58,6 +58,14 @@ class DU:
 
         return users
 
+    def send_report(self):
+        emailbody = "Hello 10gen Management,\nHere's a summary of how many DUs everyone sent this week:\n\n"
+        weekago = datetime.datetime.utcnow() - datetime.timedelta(7)
+        for user in self.getUserNames():
+            numdus = self.dus.find({"user":user, "headers.date" : {"$gt" : weekago}}).count()
+            emailbody += "%s: %d\n" % (user, numdus)
+        self.gmail.send_simple("spencer@10gen.com", "Weekly DU report", emailbody, replyto="noreply@10gen.com")
+
     def send_reminder(self,user):
 
 
@@ -239,7 +247,8 @@ if __name__ == "__main__":
         du.send_reminders()
     elif cmd == "fetch":
         du.fetch()
-        
+    elif cmd == "send_report":
+        du.send_report()
     # debug commands
     elif cmd == "getUserNames":
         for x in du.getUserNames():
