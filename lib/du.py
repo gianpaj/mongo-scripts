@@ -67,7 +67,7 @@ class DU:
             username = user["_id"]
             numdus = self.dus.find({"user":username, "headers.date" : {"$gt" : weekago}}).count()
             emailbody += "%s: %d\n" % (username, numdus)
-        self.gmail.send_simple("spencer@10gen.com", "Weekly DU report", emailbody, replyto="noreply@10gen.com")
+        self.gmail.send_simple("techmgmt@10gen.com", "Weekly DU report", emailbody, replyto="noreply@10gen.com")
 
     def send_reminder(self,user):
 
