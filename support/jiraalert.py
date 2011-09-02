@@ -64,6 +64,12 @@ queries = [
       "sms" : False , 
       "digest" : True } ,
 
+    { "name" : "SERVER - debugging with submitter not touched in a week" , 
+      "jql" : "project = SERVER AND fixVersion = 'debugging with submitter' AND ( status = Open or status = Reopened ) and updated <= -7d" ,
+      "who" : "A" , 
+      "sms" : False , 
+      "digest" : True }
+
 #     { "jql" : csBigFilter + " AND updated <= -72h" , 
 #       "who" : "A" , 
 #       "sms" : False , 
