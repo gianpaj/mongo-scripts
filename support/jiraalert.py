@@ -64,6 +64,12 @@ queries = [
       "sms" : False , 
       "digest" : True } ,
 
+    { "name" : "Community Private not touched in 3 days" , 
+      "jql" : "project = SUPPORT AND status in (Open, \"In Progress\", Reopened) and updated <= -72h" ,
+      "who" : "AO" ,
+      "sms" : False ,
+      "digest" : True } ,
+
     { "name" : "SERVER - debugging with submitter not touched in a week" , 
       "jql" : "project = SERVER AND fixVersion = 'debugging with submitter' AND ( status = Open or status = Reopened ) and updated <= -7d" ,
       "who" : "A" , 
