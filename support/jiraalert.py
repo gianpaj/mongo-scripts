@@ -55,7 +55,7 @@ queries = [
     { "name" : "SLA in danger - blocker needs response" ,
       "who" : "AO" ,
       "digest" : False ,
-      "jql" : csBigFilter + " AND priority = blocked AND updated <= -60m" } , 
+      "jql" : csBigFilter + " AND priority = blocker AND updated <= -60m" } , 
 
     { "name" : "SLA in danger - critical needs response" ,
       "who" : "AO" ,
