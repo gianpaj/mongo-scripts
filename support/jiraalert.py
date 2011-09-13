@@ -60,10 +60,10 @@ queries = [
     { "name" : "SLA in danger - critical needs response" ,
       "who" : "AO" ,
       "digest" : False ,
-      "jql" : csBigFilter + " AND updated <= -240m" } , 
+      "jql" : csBigFilter + " AND priority = critical AND updated <= -240m" } , 
 
     { "name": "CS problems not touched in 24 hours" , 
-      "jql" : csBigFilter + " AND priority = critical AND updated <= -24h AND issuetype = 'Problem Ticket'" , 
+      "jql" : csBigFilter + " AND  updated <= -24h AND issuetype = 'Problem Ticket'" , 
       "who" : "AO" , 
       "sms" : False , 
       "digest" : True } ,
