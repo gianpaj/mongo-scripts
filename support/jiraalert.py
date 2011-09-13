@@ -52,6 +52,16 @@ queries = [
       "digest" : False ,
       "jql" : csBigFilter + " AND assignee is EMPTY and created <= -30m" } ,
 
+    { "name" : "SLA in danger - blocker needs response" ,
+      "who" : "AO" ,
+      "digest" : False ,
+      "jql" : csBigFilter + " AND updated <= -60m" } , 
+
+    { "name" : "SLA in danger - critical needs response" ,
+      "who" : "AO" ,
+      "digest" : False ,
+      "jql" : csBigFilter + " AND updated <= -240m" } , 
+
     { "name": "CS problems not touched in 24 hours" , 
       "jql" : csBigFilter + " AND updated <= -24h AND issuetype = 'Problem Ticket'" , 
       "who" : "AO" , 
