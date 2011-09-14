@@ -284,7 +284,7 @@ def sendEmails( messages , managerSummary , digest ):
     
     mgr = ""
 
-    shortDate = datetime.datetime.now().strftime( "%Y-%b-%m" ) 
+    shortDate = datetime.datetime.now().strftime( "%Y-%b-%d" ) 
     
     for who in messages:
         
