@@ -45,25 +45,29 @@ csBigFilter = """
   type != Tracking
 """
 
-all10gen = []
+all10gen = set()
 def getAll10gen( jira ):
     if len(all10gen) > 0:
         return all10gen
 
     for g in [ "10gen" , "10gen-eng" , "10gen-support" ]:
-        for x in jira.getGroup( g ):
-            all10gen.append( x )
+        for x in jira.getGroup( g ).users:
+            all10gen.add( str(x["email"]).lower() )
 
-    return x
+    return all10gen
 
 def last_comment_from_10gen( jira , issue ):
-    print( issue["key"] )
+    def mydebug(s):
+        print( "last_comment_from_10gen [%s] %s " % ( issue["key"] , s ) )
+
     comments = jira.getComments( issue["key"] )
     if comments is None or len(comments) == 0:
+        mydebug( "no comments" )
         return False
     
     c = comments[len(comments)-1]
-    who = jira.getUser( c["author"] )
+    who = jira.getUser( c["author"] )["email"].lower()
+    mydebug( "last comment from %s " % who )
     return who in getAll10gen( jira )
 
 queries = [
