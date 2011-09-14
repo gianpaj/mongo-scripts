@@ -79,14 +79,14 @@ queries = [
       "digest" : False ,
       "freq" : 3 , 
       "filter" : last_comment_from_10gen ,
-      "jql" : csBigFilter + " AND priority = blocker AND updated <= -120m" } , 
+      "jql" : csBigFilter + " AND priority = blocker AND updated <= -60m" } , 
 
     { "name" : "SLA in danger - critical needs response" ,
       "who" : "AO" ,
       "digest" : False ,
       "freq" : 6 ,
       "filter" : last_comment_from_10gen ,
-      "jql" : csBigFilter + " AND priority = critical AND updated <= -480m" } , 
+      "jql" : csBigFilter + " AND priority = critical AND updated <= -180m" } , 
 
     { "name": "CS problems not touched in 24 hours" , 
       "jql" : csBigFilter + " AND  updated <= -24h AND issuetype = 'Problem Ticket'" , 
