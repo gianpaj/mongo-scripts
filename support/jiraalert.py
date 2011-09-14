@@ -72,6 +72,8 @@ def last_comment_from_10gen( jira , issue ):
 
 queries = [
 
+    # ------ cs sla issues ----------
+
     { "name" : "SLA in danger - not assigned" ,
       "who" : "AO" ,
       "digest" : False ,
@@ -84,13 +86,15 @@ queries = [
       "freq" : 3 , 
       "filter" : last_comment_from_10gen ,
       "jql" : csBigFilter + " AND priority = blocker AND updated <= -60m" } , 
-
+    
     { "name" : "SLA in danger - critical needs response" ,
       "who" : "AO" ,
       "digest" : False ,
       "freq" : 6 ,
       "filter" : last_comment_from_10gen ,
       "jql" : csBigFilter + " AND priority = critical AND updated <= -180m" } , 
+
+    # ------ cs bad response issues ----------
 
     { "name": "CS problems not touched in 24 hours" , 
       "jql" : csBigFilter + " AND  updated <= -24h AND issuetype = 'Problem Ticket'" , 
@@ -104,35 +108,36 @@ queries = [
       "sms" : False , 
       "digest" : True } ,
 
-    { "name" : "Community Private not touched in 3 days" , 
-      "jql" : "project = SUPPORT AND status in (Open, \"In Progress\", Reopened) and updated <= -72h" ,
+    # ------ community private ----------
+
+    { "name" : "Community Private not touched in 45 days" , 
+      "jql" : "project = SUPPORT AND status in (Open, \"In Progress\", Reopened) and updated <= -45d" ,
       "who" : "AO" ,
       "sms" : False ,
+      "digest" : True } ,
+
+
+    { "name" : "Community Private not touched in 3 days" , 
+      "jql" : "project = SUPPORT AND status in (Open, \"In Progress\", Reopened) and updated <= -3d" ,
+      "who" : "AO" ,
+      "sms" : False ,
+      "filter" : last_comment_from_10gen ,
+      "digest" : True } ,
+
+    # ------ debugging with submitted ----------
+
+    { "name" : "SERVER - debugging with suebmitter not touched in a month" , 
+      "jql" : "project = SERVER AND fixVersion = 'debugging with submitter' AND ( status = Open or status = Reopened ) and updated <= -30d" ,
+      "who" : "A" , 
+      "sms" : False , 
       "digest" : True } ,
 
     { "name" : "SERVER - debugging with submitter not touched in a week" , 
       "jql" : "project = SERVER AND fixVersion = 'debugging with submitter' AND ( status = Open or status = Reopened ) and updated <= -7d" ,
       "who" : "A" , 
       "sms" : False , 
-      "digest" : True }
-
-#     { "jql" : csBigFilter + " AND updated <= -72h" , 
-#       "who" : "A" , 
-#       "sms" : False , 
-#       "digest" : True } ,
-
-#     { "jql" : "project = SUPPORT AND resolution = Unresolved AND updated <= -48h" , 
-#       "who" : "A" , 
-#       "sms" : False , 
-#       "digest" : True } ,
-#     { "jql" : "project = SERVER AND fixVersion = 10165 AND resolution = Unresolved AND updated <= -48h" , 
-#       "who" : "A" , 
-#       "sms" : False , 
-#       "digest" : True } ,
-#     { "jql" : csBigFilter + " AND created >= -48h" , 
-#       "who" : "S" , 
-#       "sms" : True , 
-#       "digest" : False }
+      "filter" : last_comment_from_10gen ,
+      "digest" : True } 
 
     ]
 
@@ -207,6 +212,8 @@ def run( digest ):
     db = conn.jira_alert
     last_alert = db.last_alert
 
+    seenAlready = set()
+
     messages = {}
     
     for q in queries:
@@ -245,12 +252,18 @@ def run( digest ):
 
         for issue in jira.getIssuesFromJqlSearch( q["jql"] , 1000 ):
             
+            if issue["key"] in seenAlready:
+                debug( "\t\t\t skipping because already seen" )
+                continue
+            
             if not digest and inBlackout( issue ):
                 continue
 
             if "filter" in q and q["filter"]( jira , issue ):
                 debug( "\t\t\t skipping because of filter" )
                 continue
+            
+            seenAlready.add( issue["key"] )
 
             debug( "%s\t%s" % ( issue["key"] , issue["summary"] ) )
             who = q["who"]
