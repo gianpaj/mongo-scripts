@@ -34,7 +34,8 @@ import settings
 #   "sms" : <Bool>            whether to send an sms for this
 #   "digest" : <Bool>         whether or not this should be part of a daily digest. 
 #                             if so, goes out at night rather than immediate
-#   "freq"   : <# of hours between notifications>  None means no cap
+#   "freq"   :                # of hours betweeen emails  - None means no cap
+#   "filter" :                if True, skip this issue
 # }
 
 csBigFilter = """
@@ -44,29 +45,54 @@ csBigFilter = """
   type != Tracking
 """
 
+all10gen = []
+def getAll10gen( jira ):
+    if len(all10gen) > 0:
+        return all10gen
+
+    for g in [ "10gen" , "10gen-eng" , "10gen-support" ]:
+        for x in jira.getGroup( g ):
+            all10gen.append( x )
+
+    return x
+
+def last_comment_from_10gen( jira , issue ):
+    print( issue["key"] )
+    comments = jira.getComments( issue["key"] )
+    if comments is None or len(comments) == 0:
+        return False
+    
+    c = comments[len(comments)-1]
+    who = jira.getUser( c["author"] )
+    return who in getAll10gen( jira )
 
 queries = [
 
     { "name" : "SLA in danger - not assigned" ,
       "who" : "AO" ,
       "digest" : False ,
+      "freq" : 2 ,
       "jql" : csBigFilter + " AND assignee is EMPTY and created <= -30m" } ,
 
     { "name" : "SLA in danger - blocker needs response" ,
       "who" : "AO" ,
       "digest" : False ,
-      "jql" : csBigFilter + " AND priority = blocker AND updated <= -60m" } , 
+      "freq" : 3 , 
+      "filter" : last_comment_from_10gen ,
+      "jql" : csBigFilter + " AND priority = blocker AND updated <= -120m" } , 
 
     { "name" : "SLA in danger - critical needs response" ,
       "who" : "AO" ,
       "digest" : False ,
-      "jql" : csBigFilter + " AND priority = critical AND updated <= -240m" } , 
+      "freq" : 6 ,
+      "filter" : last_comment_from_10gen ,
+      "jql" : csBigFilter + " AND priority = critical AND updated <= -480m" } , 
 
     { "name": "CS problems not touched in 24 hours" , 
       "jql" : csBigFilter + " AND  updated <= -24h AND issuetype = 'Problem Ticket'" , 
       "who" : "AO" , 
       "sms" : False , 
-      "digest" : True } ,
+      "digest" : True  } ,
 
     { "name": "CS questions not touched in 3 days" , 
       "jql" : csBigFilter + " AND updated <= -72h AND issuetype != 'Problem Ticket'" , 
@@ -102,8 +128,7 @@ queries = [
 #     { "jql" : csBigFilter + " AND created >= -48h" , 
 #       "who" : "S" , 
 #       "sms" : True , 
-#       "digest" : False ,
-#       "freq" : "1000" } ,
+#       "digest" : False }
 
     ]
 
@@ -168,7 +193,8 @@ def mail( subject , body , who ):
         print( "would send mail [%s] to %s" % ( subject , who ) )
     else:
         lib.aws.send_email( "info@10gen.com" , subject , body , who )
-        
+
+
 def run( digest ):
 
     jira = lib.jira.JiraConnection()
@@ -180,6 +206,30 @@ def run( digest ):
     messages = {}
     
     for q in queries:
+
+        def inBlackout( issue ):
+            if "freq" not in q:
+                return False
+            
+            last = db.last_email.find_one( { "_id" : issue["key"] } )
+            
+            if last is None:
+                if not inDebug:
+                    db.last_email.insert( { "_id" : issue["key"] , "last" : datetime.datetime.now() } )
+                return False
+
+            diff = datetime.datetime.now() - last["last"]
+            diff = (diff.seconds / 3600.0 + diff.days * 24.0 ) 
+
+            if q["freq"] > diff:
+                debug( "in blackout key: %s last: %s " % ( issue["key"] , last ) )
+                return True
+
+            if not inDebug:
+                db.last_email.save( { "_id" : issue["key"] , "last" : datetime.datetime.now() } )
+            return False
+    
+
         
         name = q["name"]
         
@@ -190,6 +240,14 @@ def run( digest ):
             raise Exception( "sms not supported yet" )
 
         for issue in jira.getIssuesFromJqlSearch( q["jql"] , 1000 ):
+            
+            if not digest and inBlackout( issue ):
+                continue
+
+            if "filter" in q and q["filter"]( jira , issue ):
+                debug( "\t\t\t skipping because of filter" )
+                continue
+
             debug( "%s\t%s" % ( issue["key"] , issue["summary"] ) )
             who = q["who"]
             who = set(expandWho( issue , who ))
