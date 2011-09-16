@@ -186,11 +186,18 @@ def expandWho( issue , who ):
 
     return all
 
+personToCrowd = {}
+def getUserProfile( person ):
+    if person in personToCrowd:
+        return personToCrowd[person]
+    personToCrowd[person] = crowd.getUser( person )
+    return personToCrowd[person]
+
 personToEmail = {}
 def getEmail( person ):
     if person in personToEmail:
         return personToEmail[person]
-    personToEmail[person] = str(crowd.getUser( person )["mail"])
+    personToEmail[person] = str(getUserProfile(person)["mail"])
     return str(personToEmail[person])
 
 def debug(msg):
@@ -247,9 +254,6 @@ def run( digest ):
         if digest != q["digest"]:
             continue
 
-        if "sms" in q and q["sms"]:
-            raise Exception( "sms not supported yet" )
-
         for issue in jira.getIssuesFromJqlSearch( q["jql"] , 1000 ):
             
             if issue["key"] in seenAlready:
@@ -279,6 +283,15 @@ def run( digest ):
                     p[name] = []
                     
                 p[name].append( issue )
+
+                if "sms" in q and q["sms"]:
+                    profile = getUserProfile(w)
+                    print(profile)
+                    raise Exception( "sms not supported yet" )
+
+
+
+
 
     return messages
 
