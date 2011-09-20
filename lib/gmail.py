@@ -167,8 +167,18 @@ class gmail:
         self.cache.insert( { "_id" : key , "data" : data } )
         return self._convert_raw( data )
 
+    def _getCharset(self,string):
+        for charset in 'US-ASCII', 'ISO-8859-1', 'UTF-8':
+            try:
+                string.encode(charset)
+            except UnicodeError:
+                pass
+            else:
+                return charset
+
     def send_simple(self,to,subject,body,replyto=None):
-        msg = MIMEText(body)
+        charset = self._getCharset(body)
+        msg = MIMEText(body.encode(charset), 'plain', charset)
         msg['Subject'] = subject
         msg['To']      = to
         if replyto != None:
