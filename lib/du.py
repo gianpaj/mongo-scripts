@@ -150,6 +150,10 @@ class DU:
         self.users.update( { "_id" :user } , { "$set" : { "last_du" : date } } )
 
         msg["user"] = user
+
+        # Don't insert DU if it's already in the database
+        if self.dus.find_one({'user':user, 'headers.subject':sub, 'headers.message-id':msg['headers']['message-id']}):
+            return
         
         key = date.strftime( "%Y-%m-%d" ) + "-" + user + "-" + str(date) + "-" + sub
         msg["_id"] = key
