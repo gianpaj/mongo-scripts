@@ -17,12 +17,12 @@
   
   {% for c in contributors %}
   <tr>
-    <td>{{ c.full_name }}</td>
-    <td>{{ c.github_username }}</td>
+    <td>{% if c.full_name %}{{ c.full_name }}{% else %}{{ c.first_name }} {{ c.last_name }}{% endif %}</td>
     <td>{{ c.github_username }}</td>
     <td>{{ c.company_name }}</td>
     <td>{{ c.email }}</td>
     <td>{{ c.signed }}</td>
+    <td>{{ c.address }}</td>
     <td>{{ c.phone_number }}</td>
   </tr>
   {% endfor %}

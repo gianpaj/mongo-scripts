@@ -6,6 +6,7 @@ import pymongo
 import gmail
 import datetime
 import pprint
+from BeautifulSoup import BeautifulSoup
 
 path = os.path.dirname(os.path.abspath(__file__))
 path = path.rpartition( "/" )[0] + "/www"
@@ -24,8 +25,6 @@ class DU:
         self.db = pymongo.Connection().du
         self.dus = self.db.dus
         self.users = self.db.users
-
-        
 
     def getUser(self,username):
         u = self.users.find_one( { "_id" : username } )
@@ -151,6 +150,10 @@ class DU:
         self.users.update( { "_id" :user } , { "$set" : { "last_du" : date } } )
 
         msg["user"] = user
+
+        # Don't insert DU if it's already in the database
+        if self.dus.find_one({'user':user, 'headers.subject':sub, 'headers.message-id':msg['headers']['message-id']}):
+            return
         
         key = date.strftime( "%Y-%m-%d" ) + "-" + user + "-" + str(date) + "-" + sub
         msg["_id"] = key
@@ -202,7 +205,10 @@ class DU:
                 
                 b = m["body"]
                 if not isinstance( b , basestring ):
-                    b = b["text/plain"]["body"]
+                    if "text/plain" in b:
+                        b = b["text/plain"]["body"]
+                    else:
+                        b = "".join(BeautifulSoup(b["text/html"]["body"]).findAll(text=True))
 
                 for l in b.split( "\n" ):
                     l = l.rstrip()
