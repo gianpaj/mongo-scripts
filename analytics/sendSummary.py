@@ -7,7 +7,7 @@ from distutils import version
 
 from operator import itemgetter, attrgetter
 
-conn = pymongo.Connection()
+conn = pymongo.Connection('jira.10gen.cc')
 db = conn.mongousage
 
 def genBody():

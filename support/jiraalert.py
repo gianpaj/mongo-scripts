@@ -215,7 +215,7 @@ def run( digest ):
 
     jira = lib.jira.JiraConnection()
     
-    conn = pymongo.Connection();
+    conn = pymongo.Connection('jira.10gen.cc');
     db = conn.jira_alert
     last_alert = db.last_alert
 
