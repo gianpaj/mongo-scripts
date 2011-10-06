@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+<script type='text/javascript'>
+      google.load('visualization', '1', {packages:['orgchart']});
+      google.setOnLoadCallback(drawChart);
+ 
+      function nospace(x){
+        return x.replace( / /g , "&nbsp;" );
+      }
+
+      function person( name , title , boss ) {
+          var x = name;
+          if ( title )
+             x = { v : name , f : nospace(name) + " - " + title };
+          return [ x , boss , '' ]
+      }
+ 
+      function list() {
+         var h ="<br><small>"
+         for ( var i=0; i < arguments.length; i++ ) {
+            h += arguments[i] + "<br>"                          
+         }
+         h += "</small>"
+         return h;
+      }
+ 
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Name');
+        data.addColumn('string', 'Manager');
+        data.addColumn('string', 'ToolTip');
+        data.addRows([
+          person( "Dwight" , "CEO" , "" ) ,
+          person( "Max" , "President" , "Dwight" ) ,
+     
+          // tech
+          person( "Eliot" , "CTO" , "Max" ) ,
+     
+          person( "Vishy" , "VP Eng" , "Eliot" ) ,
+ 
+          person( "Dan P." , "Eng Mgr" , "Vishy" ) ,
+          person( "Kernel" , list("Kristina","Mathias","Greg","Tony","Kyle","Spencer","Brandon","Chris","Antoine","Aaron","Richard")  , "Dan P." ) ,
+          person( "Cloud" , list("Ryan","Dan C." ) , "Dan P." ) ,
+          person( "Web/Corp" , list("THB") , "Dan P." ) ,
+          person( "Docs" , list("Sam") , "Dan P." ) ,
+ 
+          person( "Steve" , "Chief Evangelist" , "Vishy" ) ,
+          person( "Driver/Lang Evang" , list("Brendon","Bernie","Sridhar","Robert","Christian", "Mike") , "Steve" ) ,
+          person( "Triage/Support" , list( "Marc" ) , "Steve" ) ,
+ 
+          person( "Tech OPs" , list("Sabina","Ian") , "Vishy" ) ,
+ 
+          person( "TBH1" , "VP Solution Arch" , "Eliot" ) ,
+          person( "TBH multiple" , null , "TBH1" ) ,
+ 
+          person( "Paul" , "Deputy CTO" , "Eliot" ) ,    
+          person( "Alvin" , "Europe Tech" , "Eliot" ) ,
+          person( "Europe SE", list ("Daniel", "Chris"), "Alvin") ,
+ 
+ 
+          // sales
+          person( "Ben" , "VP Sales" , "Max" ) ,
+          person( "West-Sales" , list("Anthony","Jarek","Ali" , "Margaret") , "Ben" ) ,
+          person( "East-Sales" , list("Jeff","Matt", "Valerie") , "Ben" ) ,
+          person("Brendan C", "Channel sales", "Ben"),
+ 
+          // marketing
+          person( "Erik" , "VP Marketing/Aliances" , "Max" ) ,
+          person ("Jared", "Director Product Marketing", "Erik") ,
+          person ("Nosh", "Director Alliances", "Erik") ,
+          person ("Meghan", "Manager Community Marketing", "Erik") ,
+          person ("Paz", "Director European Marketing", "Erik") ,
+          person ("Product Marketing", list ("Adam", "TBH"), "Jared") ,
+          person ("Community Marketing" , list("Melia", "Samantha", "Meg", "Amelia") , "Meghan" ) ,
+          person ("Scot", "Marketing Ops", "Erik") ,
+ 
+          // ops
+          person( "Lily" , "VP Finance" , "Max" ) ,
+          person( "Finance/Ops" , list("Kristina", "Julia") , "Lily" ) ,
+ 
+          // eu ???
+          person( "Gerry" , "Director European Sales" , "Max" ) ,
+          person( "Renaud" , "Telesales Rep" , "Gerry" ) ,
+ 
+          // recruiting
+          person ("Kristy", "Head of Recruiting", "Max") ,
+          person ("Recruiting", list ("Stacy", "Craig", "Andrew"), "Kristy") ,
+        ]);
+        var chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
+        chart.draw(data, {allowHtml:true});
+      }
+</script>
+{% endblock %}
+
+{% block content %}
+<div id='chart_div'></div>
+{% endblock %}
