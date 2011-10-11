@@ -94,6 +94,14 @@ queries = [
       "filter" : last_comment_from_10gen ,
       "jql" : csBigFilter + " AND priority = critical AND updated <= -180m" } , 
 
+    { "name" : "SLA in danger - CS" ,
+      "who" : "AO" ,
+      "digest" : False ,
+      "freq" : 6 ,
+      "filter" : last_comment_from_10gen ,
+      "jql" : csBigFilter + " AND  updated <= -12h" } , 
+
+
     # ------ cs bad response issues ----------
 
     { "name": "CS problems not touched in 24 hours" , 
@@ -102,8 +110,8 @@ queries = [
       "sms" : False , 
       "digest" : True  } ,
 
-    { "name": "CS questions not touched in 3 days" , 
-      "jql" : csBigFilter + " AND updated <= -72h AND issuetype != 'Problem Ticket'" , 
+    { "name": "CS questions not touched in 2 days" , 
+      "jql" : csBigFilter + " AND updated <= -48h AND issuetype != 'Problem Ticket'" , 
       "who" : "AO" , 
       "sms" : False , 
       "digest" : True } ,
