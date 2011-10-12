@@ -69,10 +69,10 @@ class DU:
         self.gmail.send_simple("techmgmt@10gen.com", "Weekly DU report", emailbody, replyto="noreply@10gen.com")
 
     def send_reminder(self,user):
-
+        user_time = datetime.datetime.utcnow() + datetime.timedelta(hours=user.get('gmtoffset', -5))
 
         self.gmail.send_simple( user["mail"] , 
-                                "Time for your DU - %s - %s" % ( user["_id"] , datetime.date.today().strftime( "%D" ) ) , 
+                                "Time for your DU - %s - %s" % ( user["_id"] , user_time.strftime( "%D" ) ) ,
                                 "*** What did you do today?\n" +
                                 "*** What are you planning on doing tomorrow?\n" +
                                 "*** What blockers do you have?\n" +
