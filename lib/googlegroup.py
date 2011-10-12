@@ -15,7 +15,7 @@ def get_value( tag , a ):
 class GoogleGroup:
     def __init__(self,name):
         self.name = name
-        self.cache = pymongo.Connection().gg_cache.cache
+        self.cache = pymongo.Connection('jira.10gen.cc').gg_cache.cache
         self.opener = urllib2.build_opener()  
 
         self._debug = False
