@@ -20,7 +20,7 @@
       function list() {
          var h ="<br><small>"
          for ( var i=0; i < arguments.length; i++ ) {
-            h += arguments[i] + "<br>"                          
+            h += nospace(arguments[i]) + "<br>"                          
          }
          h += "</small>"
          return h;
@@ -47,7 +47,7 @@
           person( "Docs" , list("Sam") , "Dan P." ) ,
  
           person( "Steve" , "Chief Evangelist" , "Vishy" ) ,
-          person( "Driver/Lang Evang" , list("Brendan","Bernie","Sridhar","Robert","Christian", "Mike") , "Steve" ) ,
+          person( "Driver/Lang Evang" , list("Brendan(JVM)","Bernie(Python)","Sridhar(.NET)","Robert(.NET)","Christian(node.js)", "Mike(Python)") , "Steve" ) ,
           person( "Triage/Support" , list( "Marc" ) , "Steve" ) ,
  
           person( "Tech OPs" , list("Sabina","Ian","Jackie") , "Vishy" ) ,
