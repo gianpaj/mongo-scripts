@@ -82,15 +82,14 @@
  
           // ops
           person( "Lily" , "VP Finance" , "Max" ) ,
-          person( "Finance/Ops" , list("Kristina", "Julia") , "Lily" ) ,
+          person( "Finance/Ops" , list("Kristina", "Julia", "Elyse") , "Lily" ) ,
  
           // eu ???
           person( "Gerry" , "Director European Sales" , "Max" ) ,
           person( "Renaud" , "Telesales Rep" , "Gerry" ) ,
  
           // recruiting
-          person ("Kristy", "Head of Recruiting", "Max") ,
-          person ("Recruiting", list ("Stacy", "Craig", "Andrew"), "Kristy") ,
+          person ("Recruiting", list ("Stacy", "Craig", "Andrew"), "Max") ,
         ]);
         var chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
         chart.draw(data, {allowHtml:true});
