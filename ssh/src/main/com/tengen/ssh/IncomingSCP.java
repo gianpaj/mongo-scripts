@@ -27,6 +27,7 @@ public class IncomingSCP implements Command, Runnable {
     String _filePrefix;
     String _user;
     boolean _recusrive = false;
+    boolean _multiple = false;
     
     InputStream _in;
     OutputStream _out;
@@ -41,6 +42,10 @@ public class IncomingSCP implements Command, Runnable {
         if ( ! args[0].equals( "scp" ) )
             throw new IllegalArgumentException( "first arg has to be scp" );
         
+        for ( String s : args ) 
+            System.out.print( s + " " );
+        System.out.println();
+
         for ( int i=1; i<args.length; i++){
             if ( args[i].charAt(0) == '-' ){
                 for (int j = 1; j < args[i].length(); j++) {
@@ -62,6 +67,10 @@ public class IncomingSCP implements Command, Runnable {
                         if ( _mode != Mode.NONE )
                             throw new IllegalArgumentException( "can't have -f and -t" );
                         _mode = Mode.WRITE;
+                        break;
+                    case 'd':
+                        // unknown right now
+                        _multiple = true;
                         break;
                     case '-': 
                         // wtf is this...
@@ -119,10 +128,26 @@ public class IncomingSCP implements Command, Runnable {
             }
             else if ( _mode == Mode.WRITE ){
                 ack();
-                if ( _recusrive )
-                    writeDir( readLine() , root );
-                else
-                    writeFile( readLine() , root );
+                
+                while ( true ) {
+                    String header = readLine( true );
+                    
+                    System.out.println( header );
+                    
+                    if ( header == null ) {
+                        break;
+                    }
+                    else if ( header.startsWith( "D" ) ) {
+                        writeDir( header , root );
+                    }
+                    else if ( header.startsWith( "C" ) ) {
+                        writeFile( header , root );
+                    }
+                    else {
+                        System.err.println( "unknown scp header: " + header );
+                        throw new IllegalArgumentException( "bad header: " + header );
+                    }
+                }
             }
             else {
                 throw new IllegalStateException();
@@ -140,7 +165,8 @@ public class IncomingSCP implements Command, Runnable {
                 
                 _out.write('\n');
                 _out.flush();
-            } catch (IOException e2) {
+            } 
+            catch (IOException e2) {
                 // Ignore
             }
             
@@ -171,7 +197,7 @@ public class IncomingSCP implements Command, Runnable {
         ack();
 
         for (;;) {
-            header = readLine();
+            header = readLine( false );
             if (header.startsWith("C")) {
                 writeFile(header, file);
             } else if (header.startsWith("D")) {
@@ -230,7 +256,7 @@ public class IncomingSCP implements Command, Runnable {
         readAck();
     }
 
-    protected String readLine() 
+    protected String readLine( boolean returnNullOnEOO ) 
         throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         for (;;) {
@@ -241,8 +267,11 @@ public class IncomingSCP implements Command, Runnable {
             if (c  == '\n' )
                 return baos.toString();
             
-            if (c == -1)
+            if (c == -1) {
+                if ( returnNullOnEOO )
+                    return null;
                 throw new IOException("End of stream");
+            }
                 
             baos.write(c);
         }
@@ -260,10 +289,10 @@ public class IncomingSCP implements Command, Runnable {
             case 0:
                 break;
             case 1:
-                System.out.println("Received warning: " + readLine());
+                System.out.println("Received warning: " + readLine(false));
                 break;
             case 2:
-                throw new IOException("Received nack: " + readLine());
+                throw new IOException("Received nack: " + readLine(false));
         }
     }
     
