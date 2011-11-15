@@ -1,21 +1,13 @@
 from __future__ import with_statement
 
-import re
 import os
 import sys
 
-import subprocess
-
-import httplib
-import urllib2
-
-import jinja2
 import web
 
-import pymongo
-from suds.client import Client
+web.config.debug = False
 
-from itertools import ifilter, imap, islice
+from suds.client import Client
 
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
@@ -25,87 +17,27 @@ if here not in sys.path:
 sys.path.append( here.rpartition( "/" )[0] + "/lib" )
 sys.path.append( here.rpartition( "/" )[0] + "/support" )
 
-import settings
-import crowd
+from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb
+from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, CodeReviewCommit,\
+    CodeReviewCommits, CodeReviewPostReceiveHook, CodeReviewPatternTest
+
 import google_group_to_jira
 import jira
-
-# setup web env
-env = jinja2.Environment(loader=jinja2.PackageLoader("www", "templates"))
-web.config.debug = False
-app = web.auto_application()
-
-
-#setup crowd
-crowd = crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )
-
-#setup dbs
-wwwdb = pymongo.Connection( settings.wwwdb_host ).www
-usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
-mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
 
 myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
 myjira = jira.JiraConnection()
 
-class CorpFavicon(app.page):
-    path="/favicon.ico"
-
+class CorpFavicon:
     def GET(self):
         return web.redirect("http://media.mongodb.org/favicon.ico")
 
+class CorpNormal(CorpBase):
+    @authenticated
+    def POST(self, pageParams, p):
+        return self.GET(pageParams, p)
 
-class CorpNormal(app.page):
-    path = "/(.*)"
-
-    def checkAuth(self,isLogout):
-        res = { "ok" : False }
-
-        c = web.webapi.cookies()
-        if "auth_user" in c and "auth_token" in c:
-            res["user"] = c["auth_user"]
-
-            if crowd.isValidPrincipalToken( c["auth_token"] ):
-                if isLogout:
-                    crowd.invalidatePrincipalToken( c["auth_token"] )
-                else:
-                    res["ok"] = True
-                return res
-        
-        params = web.input()
-        if "user" in params and "pwd" in params:
-            username = params["user"]
-            password = params["pwd"]
-
-            if username is None or password is None:
-                return res
-            
-            try:
-                token = crowd.authenticatePrincipalSimple( username , password )
-            except Exception,e:
-                res["err"] = str(e)
-                return res;
-
-            if not token:
-                res["err"] = "bad username/password"
-                return res
-            
-            web.webapi.setcookie( "auth_user" , username )
-            web.webapi.setcookie( "auth_token" , token )
-            res["ok"] = True
-            return res
-        
-        return res
-
-    def POST(self,p):
-        return self.GET(p)
-
-    def GET(self,p):
-        web.header('Content-type','text/html')
-        
-        pageParams = self.checkAuth( p=="logout")
-        if not pageParams["ok"]:
-            return env.get_template( "login.html" , pageParams ).render( pageParams )
-
+    @authenticated
+    def GET(self, pageParams, p=''):
         if p == "logout":
             return web.redirect( "/" )
         
@@ -201,17 +133,30 @@ class CorpNormal(app.page):
     def contributors(self,pp):
         pp["contributors"] = wwwdb.contributors.find()
 
+urls = (
+    "/codeReview/patternTest/(.+)/(.+)/(.+)", CodeReviewPatternTest,
+    "/codeReview/rules/(.+)", CodeReviewAssignmentRule,
+    "/codeReview/rules", CodeReviewAssignmentRules,
+    "/codeReview/commits/(.*)/(.*)", CodeReviewCommits,
+    "/codeReview/commit/(.*)", CodeReviewCommit,
+    "/codeReview/postReceiveHook", CodeReviewPostReceiveHook,
+    "/favicon.ico", CorpFavicon,
+    "/(.*)", CorpNormal,
+)
+
+app = web.application(urls, globals())
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         app.run()
     else:
         cmd = sys.argv[1]
         if cmd == "crowdtest":
-            x = crowd.findGroupByName( "10gen-eng" )
-            for z in x:
+            for z in eng_group:
                 print(z)
-                print( "\t" + str( crowd.getUser( z ) ) )
+                print( "\t" + str( the_crowd.getUser( z ) ) )
         else:
             print( "unknown www command: " + cmd )
 else:
     application = app.wsgifunc()
+

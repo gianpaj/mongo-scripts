@@ -4,3 +4,5 @@
 www/settings_private.py
 www/devel
 *#
+
+www/tmp_kernel_repo/

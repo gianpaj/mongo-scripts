@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="/static/codeReview.css">
+<script type="text/javascript" src="/static/jquery-1.7.js"></script>
+<script type="text/javascript" src="/static/jquery-ui-1.8.16.custom/js/jquery-ui-1.8.16.custom.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.8.16.custom/css/smoothness/jquery-ui-1.8.16.custom.css">
+<script type="text/javascript" src="/static/jquery.scrollTo-1.4.2.js"></script>
+<script type="text/javascript" src="/static/underscore.js"></script>
+<script type="text/javascript" src="/static/backbone.js"></script>
+<script type="text/javascript" src="/static/codeReview.js"></script>
+{% endblock %}
+
+{% block content %}
+<div id="container">
+  <button id="rules-button" class="btn">Assignment rules <span id="rules-arrow">&darr;</span></button>
+  <div id="rules" style="display: none"></div>
+  <div id="header">
+    <h1>Releases</h1>
+    <table id="releases">
+    </table>
+  </div>
+  <div id="commits">
+  </div>
+</div>
+
+<script type="text/template" id="test-results-template">
+    <div class="test-results">
+        <% if ( ! fetchComplete) { %>
+            <img width="16px" height="16px" src="static/ajax-loader.gif"> Loading results...
+        <% } else if ( ! testResultList.length) { %>
+            No past commits match your pattern.
+        <% } else { %>
+            <ul class="test-results">
+                <% testResultList.each(function(commit) { %>
+                    <!-- TODO: Somehow refactor this with commit-template below -->
+                    <li class="commit">
+                        <img width="36" height="36" src="https://secure.gravatar.com/avatar/<%= commit.get('author').email_md5 %>?s=80&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png" class="gravatar">
+                        <span class="author-name"><%= commit.get('author').name %></span>
+                        <span title="<%= commit.get('date') %>" class="relative-date"><%= commit.get('date') %></span>
+                        <p class="commit-title">
+                            <%= commit.get('message').slice(0,200) %>
+                            <% if (commit.get('message').length > 200) { %>
+                                <a class="expander" href="#">...</a>
+                                <span class="message-remainder">
+                                    <%= commit.get('message').slice(200) %>
+                                    <a class="contractor" href="#">&larr;</a>
+                                </span>
+                            <% } %>
+                        </p>
+                        <div class="diff-link">
+                            <a href="https://github.com/mongodb/mongo/commit/<%= commit.get('hexsha') %>" target="_blank">View diff</a>
+                        </div>
+                        <br class="clearfloat">
+                        <% _.each(_.keys(commit.get('diff')), function(change_type) { %>
+                            <% if (commit.get('diff')[change_type].length) { %>
+                                <%= change_type %>: <%= commit.get('diff')[change_type].join(',') %>
+                            <% } %>
+                        <% }); %>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } %>
+    </div>
+</script>
+
+<script type="text/template" id="rule-template">
+    <td><button class="btn small test">Test pattern</button></td>
+    <td>
+        <span style="font-size:12px">on branch:</span>
+        <select name="release">
+            <% if (releaseList) { %>
+            <% releaseList.each(function(release) { %>
+            <option><%= release.get('branch_name') %></option>
+            <% }); %>
+            <% } %>
+        </select>
+    </td>
+    <td><input name="pattern" type="text" value="<%= rule.get('pattern') %>"></td>
+    <td><input name="assignees" type="text" value="<%= rule.get('assignees') %>"></td>
+    <td>
+        <button disabled class="btn small save"><%= rule.isNew() ? 'Save' : 'Update' %></button>
+    </td>
+    <% if ( ! rule.isNew()) { %>
+        <td><button class="btn small remove danger">Delete</button></td>
+    <% } %>
+</script>
+
+<script type="text/template" id="rules-template">
+    <% if ( ! ruleList.length) { %>No rules yet.<% } else { %>
+    <table>
+        <thead>
+        <th colspan="3">
+            <label>When files matching this regex change...</label><br>
+            <span style="color:#888; font-size:12px">(should usually start with ^ and end with $)</span>
+        </th>
+        <th><label>... assign these people to review the changes</label><br>&nbsp;</th>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <% } %>
+    <button class="btn small primary" style="margin-left: 3px; margin-top: 1px;" id="new-rule">New Rule</button>
+</script>
+
+<script type="text/template" id="commits-template">
+    <% if (commitList.current_release) { %>
+        <h3><%= commitList.length %> commits: <%= commitList.current_release.get('stop_tag') %> to <%= commitList.current_release.get('branch_name') %></h3>
+    <% } %>
+    <p>
+        <label for="show-complete">Show completed reviews?</label>
+        <input type="checkbox" id="show-complete" <%= showComplete ? 'checked': '' %> >
+    </p>
+    <ol></ol>
+</script>
+
+<script type="text/template" id="commit-template">
+    <h3><%= commit.state() %></h3>
+    <img width="36" height="36" src="https://secure.gravatar.com/avatar/<%= commit.get('author').email_md5 %>?s=80&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png" class="gravatar">
+    <span class="author-name"><%= commit.get('author').name %></span>
+    <span title="<%= commit.get('date') %>" class="relative-date"><%= commit.get('date') %></span>
+    <div>
+        <p class="commit-title">
+            <%= commit.get('message').slice(0,200) %>
+            <% if (commit.get('message').length > 200) { %>
+                <a class="expander" href="#">...</a>
+                <span class="message-remainder">
+                    <%= commit.get('message').slice(200) %>
+                    <a class="contractor" href="#">&larr;</a>
+                </span>
+            <% } %>
+        </p>
+    </div>
+    <div class="diff-link">
+        <a href="https://github.com/mongodb/mongo/commit/<%= commit.get('hexsha') %>" target="_blank">View diff</a>
+    </div>
+    <br class="clearfloat">
+    <div>
+        <p class="modified-files">
+            <% _.each(_.keys(commit.get('diff')), function(change_type) { %>
+                <% if (commit.get('diff')[change_type].length) { %>
+                    <span class="change-type"><%= change_type %></span>: <%= commit.get('diff')[change_type].join(', ') %>
+                <% } %>
+            <% }); %>
+        </p>
+        <p>Assigned to: <%= commit.get('assigned_to') %></p>
+        <p>Accepted by: <%= commit.accepters() %></p>
+        <p>Rejected by: <%= commit.rejecters() %></p>
+    </div>
+    <div>
+        <form class="reject-accept">
+            <input type="button" value="Reject<%= commit.get('user_rejected') ? 'ed' : '' %>" class="btn <%= commit.get('user_rejected') ? 'primary' : '' %>">
+            <input type="button" value="Accept<%= commit.get('user_accepted') ? 'ed' : '' %>" class="btn <%= commit.get('user_accepted') ? 'primary' : '' %>">
+        </form>
+    </div>
+    <div>
+        <div class="ui-widget">
+            <form class="assign">
+                <label >Assign to:</label>
+                <input type="text" class="assign-user" name="assignees">
+                <input type="submit" value="Assign" class="btn small">
+            </form>
+        </div>
+    </div>
+    <br class="clearfloat">
+</script>
+
+<script type="text/template" id="releases-template">
+    <thead>
+    <th><label>Upcoming release</label></th>
+    <th><label>Stable release</label></th>
+    </thead>
+    <tbody>
+    <% releaseList.each(function(r) { %>
+        <tr>
+            <td><%= r.get('stop_tag') %> &rarr;</td><td><a href="#<%= r.get('branch_name') %>"><%= r.get('branch_name') %></a></td>
+        </tr>
+    <% }); %>
+    </tbody>
+</script>
+
+<script type="text/javascript">
+    $(function() {
+        controller.init('{{ user }}', {{ users }});
+    });
+</script>
+
+{% endblock %}

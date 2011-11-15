@@ -1,0 +1,259 @@
+#container {
+    background: #FFFFFF;
+    margin: 0 auto; /* the auto margins (in conjunction with a width) center the page */
+    text-align: left; /* this overrides the text-align: center on the body element. */
+    font-family: Helvetica;
+    font-size: 14px;
+}
+#container #rules-button {
+    margin: 15px;
+}
+#container #header, #container #commits, #container #rules, li.commit {
+    background: #FAFAFA;
+    padding: 0 5px;  /* this padding matches the left alignment of the elements in the divs that appear beneath it. If an image is used in the #header instead of text, you may want to remove the padding. */
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+#container #rules {
+    padding: 15px;
+    margin-bottom: 15px;
+}
+#container #rules input[type="text"] {
+    width:300px;
+}
+#container #header h1 {
+    margin: 0; /* zeroing the margin of the last element in the #header div will avoid margin collapse - an unexplainable space between divs. If the div has a border around it, this is not necessary as that also avoids the margin collapse */
+    padding: 5px 0; /* using padding instead of margin will allow you to keep the element away from the edges of the div */
+    font-size: 16px;
+}
+#container #commits {
+    margin-top: 15px;
+}
+#container #commits p {
+    margin-left: 15px;
+}
+#container h3 {
+    font-size: 14px;
+}
+
+#container th label {
+    font-size: 12px;
+}
+
+#container #commits h3, #container #commits p {
+    margin: 5px;
+    margin-bottom: 5px;
+}
+
+#container #commits ol {
+    list-style: none;
+    margin: 0 5px;
+    padding: 0;
+}
+#container #commits li, test-results li {
+    background: #FFFFFF;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    padding: 5px;
+    margin-bottom: 15px;
+}
+#container #commits li.section-header {
+    font-size: 14px;
+    font-weight: bold;
+    padding-left: 15px;
+    padding-top: 10px;
+    text-transform: uppercase;
+    background-color: #00008B;
+    color: white;
+    border: 1px solid black;
+}
+#container #commits li.complete {
+    background-color: #90ee90;
+}
+#container #commits li.started {
+    background-color: #ffffe0;
+}
+#container #commits li h3 {
+    margin: 5px 0 10px;
+    text-transform: capitalize;
+}
+ul.test-results {
+    padding: 0;
+}
+li.commit {
+    font-family: Helvetica;
+    font-size: 14px;
+    padding: 10px;
+    list-style: none;
+    margin-bottom: 15px;
+}
+li.commit img.gravatar {
+    float: left;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.author-name {
+    font-weight: bold;
+}
+.commit-title {
+    margin: 0 5px;
+}
+div.diff-link {
+    float: right;
+    margin: 0 5px;
+}
+.change-type {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #00008b;
+}
+#container #footer {
+    padding: 0 5px; /* this padding matches the left alignment of the elements in the divs that appear above it. */
+    background:#DDDDDD;
+}
+#container #footer p {
+    margin: 0; /* zeroing the margins of the first element in the footer will avoid the possibility of margin collapse - a space between divs */
+    padding: 5px 0; /* padding on this element will create space, just as the the margin would have, without the margin collapse issue */
+}
+
+/* Miscellaneous classes for reuse */
+.fltrt { /* this class can be used to float an element right in your page. The floated element must precede the element it should be next to on the page. */
+    float: right;
+    margin-left: 8px;
+}
+.fltlft { /* this class can be used to float an element left in your page */
+    float: left;
+    margin-right: 8px;
+}
+.clearfloat { /* this class should be placed on a div or break element and should be the final element before the close of a container that should fully contain a float */
+    clear:both;
+    height:0;
+    font-size: 1px;
+    line-height: 0px;
+}
+
+.message-remainder {
+    display: none;
+}
+
+/* stolen from bootstrap.css */
+.btn {
+    cursor: pointer;
+    display: inline-block;
+    background-color: #e6e6e6;
+    background-repeat: no-repeat;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#e6e6e6));
+    background-image: -webkit-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -moz-linear-gradient(top, #ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -ms-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -o-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+    padding: 5px 14px 6px;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    color: #333;
+    font-size: 13px;
+    line-height: normal;
+    border: 1px solid #ccc;
+    border-bottom-color: #bbb;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    -webkit-transition: 0.1s linear all;
+    -moz-transition: 0.1s linear all;
+    -ms-transition: 0.1s linear all;
+    -o-transition: 0.1s linear all;
+    transition: 0.1s linear all;
+}
+
+.btn:hover {
+    background-position: 0 -15px;
+    color: #333;
+    text-decoration: none;
+}
+.btn:focus {
+    outline: 1px dotted #666;
+}
+.btn.primary {
+    color: #ffffff;
+    background-color: #0064cd;
+    background-repeat: repeat-x;
+    background-image: -khtml-gradient(linear, left top, left bottom, from(#049cdb), to(#0064cd));
+    background-image: -moz-linear-gradient(top, #049cdb, #0064cd);
+    background-image: -ms-linear-gradient(top, #049cdb, #0064cd);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #049cdb), color-stop(100%, #0064cd));
+    background-image: -webkit-linear-gradient(top, #049cdb, #0064cd);
+    background-image: -o-linear-gradient(top, #049cdb, #0064cd);
+    background-image: linear-gradient(top, #049cdb, #0064cd);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#049cdb', endColorstr='#0064cd', GradientType=0);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    border-color: #0064cd #0064cd #003f81;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+.btn.active, .btn :active {
+    -webkit-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.btn.disabled {
+    cursor: default;
+    background-image: none;
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+    filter: alpha(opacity=65);
+    -khtml-opacity: 0.65;
+    -moz-opacity: 0.65;
+    opacity: 0.65;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+.btn[disabled] {
+    cursor: default;
+    background-image: none;
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+    filter: alpha(opacity=65);
+    -khtml-opacity: 0.65;
+    -moz-opacity: 0.65;
+    opacity: 0.65;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+.btn.success, .alert-message.success {
+    background-color: #57a957;
+    background-repeat: repeat-x;
+    background-image: -khtml-gradient(linear, left top, left bottom, from(#62c462), to(#57a957));
+    background-image: -moz-linear-gradient(top, #62c462, #57a957);
+    background-image: -ms-linear-gradient(top, #62c462, #57a957);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #62c462), color-stop(100%, #57a957));
+    background-image: -webkit-linear-gradient(top, #62c462, #57a957);
+    background-image: -o-linear-gradient(top, #62c462, #57a957);
+    background-image: linear-gradient(top, #62c462, #57a957);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#62c462', endColorstr='#57a957', GradientType=0);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    border-color: #57a957 #57a957 #3d773d;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+.btn.small {
+    padding: 7px 9px 7px;
+    font-size: 11px;
+}
+.btn.danger {
+    color: #ffffff;
+    background-color: #c43c35;
+    background-repeat: repeat-x;
+    background-image: -khtml-gradient(linear, left top, left bottom, from(#ee5f5b), to(#c43c35));
+    background-image: -moz-linear-gradient(top, #ee5f5b, #c43c35);
+    background-image: -ms-linear-gradient(top, #ee5f5b, #c43c35);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ee5f5b), color-stop(100%, #c43c35));
+    background-image: -webkit-linear-gradient(top, #ee5f5b, #c43c35);
+    background-image: -o-linear-gradient(top, #ee5f5b, #c43c35);
+    background-image: linear-gradient(top, #ee5f5b, #c43c35);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ee5f5b', endColorstr='#c43c35', GradientType=0);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    border-color: #c43c35 #c43c35 #882a25;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
