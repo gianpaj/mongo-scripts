@@ -35,11 +35,11 @@ def check_assignees(obj):
 
 def get_repo():
     here = os.path.dirname(os.path.abspath(__file__))
-    repo_dir = os.path.join('tmp_kernel_repo/mongo')
+    repo_dir = os.path.join(here, 'tmp_kernel_repo/mongo')
     try:
         return git.Repo(repo_dir)
     except git.exc.NoSuchPathError:
-        print 'cloning mongo repository from GitHub'
+        print 'cloning mongo repository from GitHub to %s' % repo_dir
         basedir, leafdir = os.path.split(repo_dir)
         os.makedirs(basedir)
         os.system('cd %s; git clone git://github.com/mongodb/mongo.git; cd %s; git checkout v1.8; git checkout v2.0' % (
