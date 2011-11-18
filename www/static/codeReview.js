@@ -1,4 +1,19 @@
 $(function() {
+    // Extend underscore's template() to allow inclusions
+    function template(str, data) {
+        // match "<% include #template-id %>"
+        return _.template(
+            str.replace(
+                /<%\s*include\s*(.*?)\s*%>/g,
+                function(match, templateId) {
+                    var el = document.getElementById(templateId);
+                    return el ? el.innerHTML : '';
+                }
+            ),
+            data
+        );
+    }
+
     // Fix jQuery UI's autocomplete to allow multiple items in the list, comma-delimited
     // From http://www.codenition.com/jquery-ui-autocomplete-with-multiple-selections
     (function($){
@@ -57,7 +72,7 @@ $(function() {
             this.el = $(this.el);
             this.testResultList = options.testResultList;
             this.testResultList.bind('reset', this.render, this);
-            this.template = _.template($('#test-results-template').html());
+            this.template = template($('#test-results-template').html());
         },
 
         render: function(testResultList, options) {
@@ -121,7 +136,7 @@ $(function() {
             this.el = $(this.el);
             this.rule = options.rule;
             this.rule.bind('change', this.render, this);
-            this.template = _.template($('#rule-template').html());
+            this.template = template($('#rule-template').html());
         },
 
         render: function() {
@@ -129,6 +144,13 @@ $(function() {
                 rule: this.rule,
                 releaseList: controller.releaseList
             }));
+
+            // autocomplete() from jQuery UI, multicomplete() from the code at the top of this file
+            this.el.find('input[name="assignees"]').multicomplete({
+                source: controller.users,
+                delay: 100
+            });
+
             return this;
         },
 
@@ -138,26 +160,20 @@ $(function() {
         },
 
         keypress: function(e) {
-            if (e.keyCode === 13) {
-                // Enter key
-                this.test();
-            } else {
-                // A key has been pressed, but the fields' values haven't actually
-                // updated yet -- wait for them to be updated, then see if we
-                // should enable the 'save' button
+            // A key has been pressed, but the fields' values haven't actually
+            // updated yet -- wait for them to be updated, then see if we
+            // should enable the 'save' button
+            setTimeout(_.bind(function() {
+                var $saveButton = this.el.find('button.save'),
+                    pattern = this.formPattern(),
+                    assignees = this.formAssignees(),
+                    saveable = pattern && assignees && (
+                        ! _.isEqual(assignees, this.rule.get('assignees'))
+                        || ! _.isEqual(pattern, this.rule.get('pattern'))
+                    );
 
-                setTimeout(_.bind(function() {
-                    var $saveButton = this.el.find('button.save'),
-                        pattern = this.formPattern(),
-                        assignees = this.formAssignees(),
-                        saveable = pattern && assignees && (
-                            ! _.isEqual(assignees, this.rule.get('assignees'))
-                            || ! _.isEqual(pattern, this.rule.get('pattern'))
-                        );
-
-                    $saveButton.attr('disabled', ! saveable);
-                }, this), 0);
-            }
+                $saveButton.attr('disabled', ! saveable);
+            }, this), 0);
         },
 
         test: function() {
@@ -220,7 +236,7 @@ $(function() {
             this.ruleList.bind('reset', _.bind(this.render, this));
             this.ruleList.bind('add', _.bind(this.render, this)); // TODO
             this.ruleList.bind('destroy', _.bind(this.render, this)); // TODO
-            this.template = _.template($('#rules-template').html());
+            this.template = template($('#rules-template').html());
         },
 
         render: function() {
@@ -273,7 +289,7 @@ $(function() {
 
         initialize: function(options) {
             this.releaseList = options.releaseList;
-            this.template = _.template($('#releases-template').html());
+            this.template = template($('#releases-template').html());
         },
 
         render: function() {
@@ -408,7 +424,7 @@ $(function() {
             this.commit = options.commit;
             this.commit.bind('change', this.render, this);
 
-            this.template = _.template($('#commit-template').html());
+            this.template = template($('#commit-review-template').html());
         },
 
         render: function() {
@@ -499,7 +515,7 @@ $(function() {
         initialize: function(options) {
             this.commitList = options.commitList;
             this.commitList.bind('reset', this.render, this);
-            this.template = _.template($('#commits-template').html());
+            this.template = template($('#commits-template').html());
             this.showComplete = false;
         },
 

@@ -18,6 +18,9 @@
     padding: 15px;
     margin-bottom: 15px;
 }
+#container #rules button {
+    width: 80px;
+}
 #container #rules input[type="text"] {
     width:300px;
 }
@@ -76,6 +79,10 @@
 #container #commits li h3 {
     margin: 5px 0 10px;
     text-transform: capitalize;
+}
+button.test {
+    padding: 3px !important;
+    margin-left: 15px;
 }
 ul.test-results {
     padding: 0;

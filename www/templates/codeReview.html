@@ -24,6 +24,25 @@
   </div>
 </div>
 
+<!-- included by other templates using Jesse's custom <% include commit-template %> tag -->
+<script type="text/template" id="commit-template">
+    <img width="36" height="36" src="https://secure.gravatar.com/avatar/<%= commit.get('author').email_md5 %>?s=80&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png" class="gravatar">
+    <span class="author-name"><%= commit.get('author').name %></span>
+    <span title="<%= commit.get('date') %>" class="relative-date"><%= commit.get('date') %></span>
+    <div>
+        <p class="commit-title">
+            <%= commit.get('message').slice(0,200) %>
+            <% if (commit.get('message').length > 200) { %>
+            <a class="expander" href="#">...</a>
+                <span class="message-remainder">
+                    <%= commit.get('message').slice(200) %>
+                    <a class="contractor" href="#">&larr;</a>
+                </span>
+            <% } %>
+        </p>
+    </div>
+</script>
+
 <script type="text/template" id="test-results-template">
     <div class="test-results">
         <% if ( ! fetchComplete) { %>
@@ -33,21 +52,8 @@
         <% } else { %>
             <ul class="test-results">
                 <% testResultList.each(function(commit) { %>
-                    <!-- TODO: Somehow refactor this with commit-template below -->
                     <li class="commit">
-                        <img width="36" height="36" src="https://secure.gravatar.com/avatar/<%= commit.get('author').email_md5 %>?s=80&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png" class="gravatar">
-                        <span class="author-name"><%= commit.get('author').name %></span>
-                        <span title="<%= commit.get('date') %>" class="relative-date"><%= commit.get('date') %></span>
-                        <p class="commit-title">
-                            <%= commit.get('message').slice(0,200) %>
-                            <% if (commit.get('message').length > 200) { %>
-                                <a class="expander" href="#">...</a>
-                                <span class="message-remainder">
-                                    <%= commit.get('message').slice(200) %>
-                                    <a class="contractor" href="#">&larr;</a>
-                                </span>
-                            <% } %>
-                        </p>
+                        <% include commit-template %>
                         <div class="diff-link">
                             <a href="https://github.com/mongodb/mongo/commit/<%= commit.get('hexsha') %>" target="_blank">View diff</a>
                         </div>
@@ -65,6 +71,14 @@
 </script>
 
 <script type="text/template" id="rule-template">
+    <td>
+        <button disabled class="btn small save primary"><%= rule.isNew() ? 'Save' : 'Update' %></button>
+    </td>
+    <% if ( ! rule.isNew()) { %>
+        <td><button class="btn small remove danger">Delete</button></td>
+    <% } %>
+    <td><input name="pattern" type="text" value="<%= rule.get('pattern') %>"></td>
+    <td><input name="assignees" type="text" value="<%= rule.get('assignees') %>"></td>
     <td><button class="btn small test">Test pattern</button></td>
     <td>
         <span style="font-size:12px">on branch:</span>
@@ -76,21 +90,15 @@
             <% } %>
         </select>
     </td>
-    <td><input name="pattern" type="text" value="<%= rule.get('pattern') %>"></td>
-    <td><input name="assignees" type="text" value="<%= rule.get('assignees') %>"></td>
-    <td>
-        <button disabled class="btn small save"><%= rule.isNew() ? 'Save' : 'Update' %></button>
-    </td>
-    <% if ( ! rule.isNew()) { %>
-        <td><button class="btn small remove danger">Delete</button></td>
-    <% } %>
 </script>
 
 <script type="text/template" id="rules-template">
     <% if ( ! ruleList.length) { %>No rules yet.<% } else { %>
     <table>
         <thead>
-        <th colspan="3">
+        <th></th>
+        <th></th>
+        <th>
             <label>When files matching this regex change...</label><br>
             <span style="color:#888; font-size:12px">(should usually start with ^ and end with $)</span>
         </th>
@@ -114,23 +122,9 @@
     <ol></ol>
 </script>
 
-<script type="text/template" id="commit-template">
+<script type="text/template" id="commit-review-template">
     <h3><%= commit.state() %></h3>
-    <img width="36" height="36" src="https://secure.gravatar.com/avatar/<%= commit.get('author').email_md5 %>?s=80&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png" class="gravatar">
-    <span class="author-name"><%= commit.get('author').name %></span>
-    <span title="<%= commit.get('date') %>" class="relative-date"><%= commit.get('date') %></span>
-    <div>
-        <p class="commit-title">
-            <%= commit.get('message').slice(0,200) %>
-            <% if (commit.get('message').length > 200) { %>
-                <a class="expander" href="#">...</a>
-                <span class="message-remainder">
-                    <%= commit.get('message').slice(200) %>
-                    <a class="contractor" href="#">&larr;</a>
-                </span>
-            <% } %>
-        </p>
-    </div>
+    <% include commit-template %>
     <div class="diff-link">
         <a href="https://github.com/mongodb/mongo/commit/<%= commit.get('hexsha') %>" target="_blank">View diff</a>
     </div>
