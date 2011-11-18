@@ -34,8 +34,8 @@ class CorpFavicon:
 
 class CorpNormal(CorpBase):
     @authenticated
-    def POST(self, pageParams, p):
-        return self.GET(pageParams, p)
+    def POST(self, pageParams, p=''):
+        return self.GET(p)
 
     @authenticated
     def GET(self, pageParams, p=''):
