@@ -34,7 +34,8 @@ def check_assignees(obj):
             )
 
 def get_repo():
-    repo_dir = 'tmp_kernel_repo/mongo'
+    here = os.path.dirname(os.path.abspath(__file__))
+    repo_dir = os.path.join('tmp_kernel_repo/mongo')
     try:
         return git.Repo(repo_dir)
     except git.exc.NoSuchPathError:
