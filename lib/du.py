@@ -44,7 +44,7 @@ class DU:
         return u
                 
     def getUserNames(self):
-        return self.crowd.findGroupByName( "10gen-eng" )
+        return self.crowd.findGroupByName( "10gen-eng" ) + self.crowd.findGroupByName( "10gen-support" )
 
     def getUsers(self):
         users = []
