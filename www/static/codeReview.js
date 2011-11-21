@@ -197,7 +197,12 @@ $(function() {
                 position: ['center', 100],
                 title: 'Commits matching /' + pattern + '/ in branch ' + branch_name
             });
-            testResultList.fetch();
+            testResultList.fetch({
+                error: function(testResultList, xhr) {
+                    alert('Error testing your pattern: ' + xhr.responseText);
+                    testResultsView.remove();
+                }
+            })
         },
 
         submit: function() {

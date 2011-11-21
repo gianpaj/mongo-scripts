@@ -11,12 +11,16 @@ import git # pip install GitPython
 import datetime
 import urllib
 import web
+import pymongo
 from pymongo.objectid import ObjectId
 import re
 import time
 import itertools
+import sys
 
-from corpbase import CorpBase, authenticated, wwwdb, eng_group
+from corpbase import CorpBase, authenticated, wwwdb, eng_group, env
+import gmail
+import settings
 
 pacific = pytz.timezone('US/Pacific') # github's timezone
 eastern = pytz.timezone('US/Eastern') # our default timezone # TODO: detect user's timezone?!
@@ -218,6 +222,11 @@ def commit_match(jsonified_commit, pattern):
 
     return False
 
+class BadRegex(web.badrequest):
+    def __init__(self, message):
+        self.message = message
+        web.badrequest.__init__(self)
+
 class CodeReviewPatternTest(CorpBase):
     @authenticated
     def GET(self, pageParams, branch_name, stop_tag, pattern):
@@ -227,7 +236,11 @@ class CodeReviewPatternTest(CorpBase):
         # pattern was encoded by Javascript with encodeURIComponent()
         web.header('Content-type','text/json')
         start = time.time()
-        decoded_pattern = re.compile(urllib.unquote_plus(pattern))
+
+        try:
+            decoded_pattern = re.compile(urllib.unquote_plus(pattern))
+        except re.error as e:
+            raise BadRegex(str(e))
 
         rv = json.dumps([
             commit for commit in jsonify_commits(iter_commits(branch_name, stop_tag))
@@ -399,3 +412,47 @@ class CodeReviewPostReceiveHook:
 
         # We know there are new commits in GitHub, so pull them to the local repo
         get_repo().remotes.origin.pull()
+
+def nightly_email(dryrun):
+    """
+    Run this once a night in a cron job. It checks to ensure it hasn't already run tonight,
+    using a unique document in www.codereview_emails.
+    @param dryrun:      If True, don't actually send emails, print them to stdout
+    """
+    # Like '2011-11-25'
+    tonight = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+
+    # Ensure exactly one script sends the emails -- our crontab is stored in
+    # https://github.com/10gen/ops/blob/master/cron/www-c/crontab
+    # which is installed on multiple machines, but they all share a wwwdb
+    try:
+        wwwdb.codereview_emails.insert({
+            '_id': tonight,
+        }, safe=True)
+    except pymongo.errors.DuplicateKeyError:
+        print 'Another script has already begun to email code reviews for %s' % tonight
+        sys.exit(1)
+
+    user2commits = collections.defaultdict(list)
+
+    for commit in wwwdb.commit.find():
+        assignees = set(commit.get('assigned_to', []))
+        reviewed_by = set(commit.get('rejected_by', [])).union(set(commit.get('accepted_by', [])))
+        must_review = assignees.difference(reviewed_by)
+        for user in must_review:
+            user2commits[user].append(commit)
+
+    n_reviews_total = len(set([commit['hexsha'] for commits in user2commits.values() for commit in commits]))
+
+    for user, commits in user2commits.items():
+        # 'env' is a jinja2 environment imported from corpbase.py
+        n_reviews = len(commits)
+        emailbody = env.get_template("codereview_email.txt").render(locals())
+        if dryrun:
+            print '-' * 75
+            print user
+            print emailbody
+            print
+        else:
+            gm = gmail.gmail( settings.smtp["smtp_username"] , settings.smtp["smtp_password"] )
+            gm.send_simple(user + "@10gen.com", "Your assigned code reviews", emailbody, replyto="noreply@10gen.com")

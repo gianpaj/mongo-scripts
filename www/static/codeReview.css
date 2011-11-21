@@ -99,7 +99,7 @@ li.commit img.gravatar {
     margin-right: 5px;
     margin-bottom: 5px;
 }
-.author-name {
+.author-name, .relative-date {
     font-weight: bold;
 }
 .commit-title {

@@ -28,6 +28,7 @@
 <script type="text/template" id="commit-template">
     <img width="36" height="36" src="https://secure.gravatar.com/avatar/<%= commit.get('author').email_md5 %>?s=80&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png" class="gravatar">
     <span class="author-name"><%= commit.get('author').name %></span>
+    <span class="hexsha"><%= commit.get('hexsha') %></span>
     <span title="<%= commit.get('date') %>" class="relative-date"><%= commit.get('date') %></span>
     <div>
         <p class="commit-title">

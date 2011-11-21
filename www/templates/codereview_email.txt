@@ -1,0 +1,7 @@
+Dear {{ user }},
+
+{% if commits %}
+You have {{ n_reviews }} code changes you must review: https://corp.10gen.com/codeReview
+{% endif %}
+
+The engineering team in total has {{ n_reviews_total }} code changes to review.
