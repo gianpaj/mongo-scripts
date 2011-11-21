@@ -135,7 +135,7 @@ class StackOverflowImport(object):
                     print "make jira for", question['url'],
                     res = jira.createIssue({
                         'project': 'FREE',
-                        'type': '1',
+                        'type': '6', # question type
                         'summary': question['title'],
                         'description': '%s\nby: %s\n\n%s' % (question['url'],
                                                              question['owner']['display_name'],
