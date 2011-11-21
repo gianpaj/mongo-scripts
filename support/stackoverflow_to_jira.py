@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 import pytz
 import pymongo
 from BeautifulSoup import BeautifulSoup as Soup
@@ -15,13 +14,39 @@ class StackOverflowImport(object):
 
     # questions before this datetime will never be
     # added to JIRA, even if they otherwise would be
-    jira_cutoff = datetime(2011, 7, 20, 10, tzinfo=pytz.timezone('America/New_York'))
+    jira_cutoff = datetime(2011, 11, 20, 10, tzinfo=pytz.timezone('America/New_York'))
 
     def __init__(self):
-        self.conn = pymongo.Connection(tz_aware=True)
-        self.db = self.conn.support_so
+        conn = pymongo.Connection(tz_aware=True)
+        self.db = conn.support_so
 
         self.db.questions.ensure_index('updated')
+
+    def run(self):
+        # ensure that only one copy runs concurrently
+
+        try:
+            self.db.lock.save({'_id': 'stackoverflow', 'locked': False}, safe=True)
+        except:
+            # duplicate _id
+            pass
+
+        lock = self.db.lock.find_and_modify(
+            {'_id': 'stackoverflow', 'locked': False},
+            {'$set': {'locked': True}},
+            new=True)
+
+        if not lock:
+            # another instance is running
+            return
+
+        try:
+            self.main()
+        finally:
+            self.db.lock.update(
+                {'_id': 'stackoverflow'},
+                {'$set': {'locked': False}},
+                safe=True)
 
     def main(self):
         # 1. scan for new questions, or updated questions,
@@ -34,7 +59,8 @@ class StackOverflowImport(object):
         fromdate = datetime.utcnow() - timedelta(days=30)
         fromdate = fromdate.replace(tzinfo=pytz.UTC)
         new_questions = lib.stackoverflow.get_questions_and_answers(
-            fromdate=fromdate
+            tags=['mongodb'],
+            fromdate=fromdate,
         )
 
         newly_answered_questions = set()
@@ -153,5 +179,5 @@ class StackOverflowImport(object):
 
 
 if __name__ == '__main__':
-    StackOverflowImport().main()
+    StackOverflowImport().run()
 

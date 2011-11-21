@@ -38,7 +38,7 @@ def req(tags, pagesize=100, pagenum=1, sort='activity', fromdate=None, todate=No
     body = json.load(gzip.GzipFile(fileobj=StringIO(response.read())))
     return body
 
-def get_questions_and_answers(tags=['mongodb'], fromdate=None, todate=None):
+def get_questions_and_answers(tags, fromdate=None, todate=None):
     if type(tags) in (str, unicode):
         tags = [tags]
 
