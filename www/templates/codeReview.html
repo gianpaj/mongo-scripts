@@ -113,6 +113,8 @@
 </script>
 
 <script type="text/template" id="commits-template">
+    <p>A commit is in "Incomplete" if it has not been accepted by at least 2 people, or if anyone assigned to review the commit has not accepted it.</p>
+    <p>Commits are displayed with the oldest on top.</p>
     <% if (commitList.current_release) { %>
         <h3><%= commitList.length %> commits: <%= commitList.current_release.get('stop_tag') %> to <%= commitList.current_release.get('branch_name') %></h3>
     <% } %>
