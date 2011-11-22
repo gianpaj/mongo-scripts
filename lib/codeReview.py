@@ -38,9 +38,12 @@ def check_assignees(obj):
                 "Can't assign to user %s because he/she is not in the group!" % user
             )
 
-def get_repo():
+def get_repo_dir():
     here = os.path.dirname(os.path.abspath(__file__))
-    repo_dir = os.path.join(here, 'tmp_kernel_repo/mongo')
+    return os.path.join(here, 'tmp_kernel_repo/mongo')
+
+def get_repo():
+    repo_dir = get_repo_dir()
     try:
         return git.Repo(repo_dir)
     except git.exc.NoSuchPathError:
@@ -417,7 +420,7 @@ class CodeReviewPostReceiveHook:
 
         # We know there are new commits in GitHub, so pull them to the local repo
         logging.info('Pulling repository from remote')
-        get_repo().remotes.origin.pull()
+        os.system("cd '%s'; git fetch --all" % get_repo_dir())
         logging.info('Pulled')
 
 def nightly_email(dryrun):
