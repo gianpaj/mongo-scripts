@@ -5,6 +5,7 @@ Library for code review tool
 import hashlib
 import collections
 import json
+import logging
 import os
 import pytz # pip install pytz
 import git # pip install GitPython
@@ -369,6 +370,8 @@ class CodeReviewPostReceiveHook:
         *) Check all the assignment rules and assign code reviews to people
         *) Update the local copy of the repository
         """
+        logging.info('CodeReviewPostReceiveHook.POST():\n%s' % web.data())
+        logging.info('decoded:\n%s' % web.input().get('payload'))
         rules = []
         for rule in wwwdb.rule.find():
             try:
@@ -377,15 +380,17 @@ class CodeReviewPostReceiveHook:
                     'assignees': rule['assignees']
                 })
             except re.error:
-                print 'Error with pattern: %s' % rule['pattern']
+                logging.error('Error with pattern: %s' % rule['pattern'])
 
         assignments = collections.defaultdict(set)
 
         payload = json.loads(web.input().get('payload'))
 
-        assert payload['repository']['name'] == 'mongo'
+        if payload['repository']['name'] != 'mongo':
+            logging.error('Post-commit hook for wrong repo: Should be "mongo", is %s' % payload['repository']['name'])
+            return
 
-        print 'CodeReviewPostReceiveHook.POST() got commits: %s' % [c.get('id') for c in payload.get('commits', [])]
+        logging.info('CodeReviewPostReceiveHook.POST() got commits: %s' % [c.get('id') for c in payload.get('commits', [])])
 
         for commit in payload.get('commits', []):
             for file_list in [
@@ -396,9 +401,9 @@ class CodeReviewPostReceiveHook:
                 for file in file_list:
                     for rule in rules:
                         if rule['pattern'].match(file):
-                            print 'assigning %s to %s' % (
-                                commit['id'], rule['assignees']
-                            )
+                            logging.info('assigning %s to %s, matches pattern "%s"' % (
+                                commit['id'], rule['assignees'], rule['pattern'].pattern
+                            ))
                             assignments[commit['id']].update(set(rule['assignees']))
 
         for hexsha, assignees in assignments.items():
@@ -411,7 +416,9 @@ class CodeReviewPostReceiveHook:
             }, upsert=True, multi=False)
 
         # We know there are new commits in GitHub, so pull them to the local repo
+        logging.info('Pulling repository from remote')
         get_repo().remotes.origin.pull()
+        logging.info('Pulled')
 
 def nightly_email(dryrun):
     """
@@ -430,7 +437,7 @@ def nightly_email(dryrun):
             '_id': tonight,
         }, safe=True)
     except pymongo.errors.DuplicateKeyError:
-        print 'Another script has already begun to email code reviews for %s' % tonight
+        logging.error('Another script has already begun to email code reviews for %s' % tonight)
         sys.exit(1)
 
     user2commits = collections.defaultdict(list)
@@ -445,8 +452,12 @@ def nightly_email(dryrun):
     n_reviews_total = len(set([commit['hexsha'] for commits in user2commits.values() for commit in commits]))
 
     for user, commits in user2commits.items():
-        # 'env' is a jinja2 environment imported from corpbase.py
         n_reviews = len(commits)
+        logging.info('Emailing %s: %s reviews for her or him, %s reviews total' % (
+            user, n_reviews, n_reviews_total
+        ))
+
+        # 'env' is a jinja2 environment imported from corpbase.py
         emailbody = env.get_template("codereview_email.txt").render(locals())
         if dryrun:
             print '-' * 75
@@ -456,3 +467,4 @@ def nightly_email(dryrun):
         else:
             gm = gmail.gmail( settings.smtp["smtp_username"] , settings.smtp["smtp_password"] )
             gm.send_simple(user + "@10gen.com", "Your assigned code reviews", emailbody, replyto="noreply@10gen.com")
+            logging.info('Emailed ' + user)

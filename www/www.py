@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+import logging
 import os
 import sys
 
@@ -146,6 +147,7 @@ urls = (
 )
 
 app = web.application(urls, globals())
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='www-corp.log',level=logging.DEBUG)
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
