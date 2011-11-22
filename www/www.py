@@ -147,7 +147,9 @@ urls = (
 )
 
 app = web.application(urls, globals())
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='www-corp.log',level=logging.DEBUG)
+logfilename = os.path.join(here, 'www-corp.log')
+logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(message)s', filename=logfilename,level=logging.INFO)
+logging.info('Logger up')
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
