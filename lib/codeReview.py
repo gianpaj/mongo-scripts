@@ -371,8 +371,7 @@ class CodeReviewPostReceiveHook:
         *) Check all the assignment rules and assign code reviews to people
         *) Update the local copy of the repository
         """
-        logging.info('CodeReviewPostReceiveHook.POST():\n%s' % web.data())
-        logging.info('decoded:\n%s' % web.input().get('payload'))
+        logging.info('CodeReviewPostReceiveHook.POST():\n%s' % web.input().get('payload'))
         rules = []
         for rule in wwwdb.rule.find():
             try:
@@ -417,7 +416,7 @@ class CodeReviewPostReceiveHook:
             }, upsert=True, multi=False)
 
         # We know there are new commits in GitHub, so pull them to the local repo
-        logging.info('Pulling repository from remote')
+        logging.info('Pulling repository from remote: %s' % get_repo_dir())
         os.system("cd '%s'; git fetch --all" % get_repo_dir())
         logging.info('Pulled')
 
