@@ -44,15 +44,13 @@ def get_repo():
     try:
         return git.Repo(repo_dir)
     except git.exc.NoSuchPathError:
-        print 'cloning mongo repository from GitHub to %s' % repo_dir
+        logging.info('cloning mongo repository from GitHub to %s' % repo_dir)
         basedir, leafdir = os.path.split(repo_dir)
         os.makedirs(basedir)
         os.system('cd %s; git clone git://github.com/mongodb/mongo.git; cd %s; git checkout v1.8; git checkout v2.0' % (
             basedir, leafdir
         ))
         return git.Repo(repo_dir)
-
-#        return git.Repo.clone_from('git://github.com/mongodb/mongo.git', repo_dir)
 
 def iter_commits(branch_name, stop_tag):
     """
@@ -247,7 +245,7 @@ class CodeReviewPatternTest(CorpBase):
             commit for commit in jsonify_commits(iter_commits(branch_name, stop_tag))
             if commit_match(commit, decoded_pattern)
         ])
-        print 'CodeReviewPatternTest.GET()', time.time() - start
+        logging.info('CodeReviewPatternTest.GET()', time.time() - start)
         return rv
 
 class CodeReviewAssignmentRules(CorpBase):
@@ -344,7 +342,7 @@ class CodeReviewCommits(CorpBase):
                 user=pageParams['user'],
             )
         )
-        print 'CodeReviewCommits.GET()', time.time() - start
+        logging.info('CodeReviewCommits.GET()', time.time() - start)
         return rv
 
 
