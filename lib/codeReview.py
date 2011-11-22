@@ -417,7 +417,7 @@ class CodeReviewPostReceiveHook:
 
         # We know there are new commits in GitHub, so pull them to the local repo
         logging.info('Pulling repository from remote: %s' % get_repo_dir())
-        os.system("cd '%s'; git fetch --all" % get_repo_dir())
+        os.system("cd '%s'; git pull --all" % get_repo_dir())
         logging.info('Pulled')
 
 def nightly_email(dryrun):
