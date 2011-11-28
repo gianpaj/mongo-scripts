@@ -444,7 +444,12 @@ def nightly_email(dryrun, force):
         }, safe=True)
     except pymongo.errors.DuplicateKeyError:
         if not force:
-            logging.error('Another script has already begun to email code reviews for %s' % tonight)
+            logging.error(
+                (
+                    'Another script has already begun to email code reviews for'
+                    ' %s, try --force?'
+                ) % tonight
+            )
             sys.exit(1)
 
     user2commits = collections.defaultdict(list)
