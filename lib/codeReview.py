@@ -121,9 +121,10 @@ def diff(commit, parent):
 
     return rv
 
-def jsonify_commits(commits):
+def jsonify_commits(commits, branch_name):
     """
     @param commits:     Iterator of git.Commit objects
+    @param branch_name: Like 'v1.8'
     @return:            List of JSON objects
     """
     lst = list(commits) # In case it's a generator
@@ -133,6 +134,7 @@ def jsonify_commits(commits):
             'author': {
                 'name': commit.author.name,
                 'email': commit.author.email,
+                # email_md5 for generating the Gravatar URL
                 'email_md5': md5(commit.author.email),
                 },
             'date': commit_date_fmt(commit.authored_date),
@@ -140,6 +142,7 @@ def jsonify_commits(commits):
             'message': commit.message,
             'hexsha': commit.hexsha,
             'diff': diff(commit, parent),
+            'branch_name': branch_name,
         } for commit, parent in itertools.izip_longest(
             lst, lst[1:]
         )
@@ -153,7 +156,7 @@ def commits(branch_name, stop_tag, db, user):
     @param db:              A Mongo database
     @param user:            Currently logged-in username, e.g. "jesse"
     """
-    rv = jsonify_commits(iter_commits(branch_name, stop_tag))
+    rv = jsonify_commits(iter_commits(branch_name, stop_tag), branch_name)
 
     if rv:
         # Merge in all the commit info -- who's accepted / rejected, to whom it's been assigned, etc.
@@ -245,8 +248,10 @@ class CodeReviewPatternTest(CorpBase):
             raise BadRegex(str(e))
 
         rv = json.dumps([
-            commit for commit in jsonify_commits(iter_commits(branch_name, stop_tag))
-            if commit_match(commit, decoded_pattern)
+            commit for commit in jsonify_commits(
+                iter_commits(branch_name, stop_tag),
+                branch_name,
+            ) if commit_match(commit, decoded_pattern)
         ])
         logging.info('CodeReviewPatternTest.GET()', time.time() - start)
         return rv
@@ -420,11 +425,12 @@ class CodeReviewPostReceiveHook:
         os.system("cd '%s'; git pull --all" % get_repo_dir())
         logging.info('Pulled')
 
-def nightly_email(dryrun):
+def nightly_email(dryrun, force):
     """
-    Run this once a night in a cron job. It checks to ensure it hasn't already run tonight,
-    using a unique document in www.codereview_emails.
+    Run this once a night in a cron job. It checks to ensure it hasn't already
+    run tonight, using a unique document in www.codereview_emails.
     @param dryrun:      If True, don't actually send emails, print them to stdout
+    @param force:       If True then run, even if this script has run before
     """
     # Like '2011-11-25'
     tonight = datetime.datetime.utcnow().strftime('%Y-%m-%d')
@@ -437,22 +443,37 @@ def nightly_email(dryrun):
             '_id': tonight,
         }, safe=True)
     except pymongo.errors.DuplicateKeyError:
-        logging.error('Another script has already begun to email code reviews for %s' % tonight)
-        sys.exit(1)
+        if not force:
+            logging.error('Another script has already begun to email code reviews for %s' % tonight)
+            sys.exit(1)
 
     user2commits = collections.defaultdict(list)
 
-    for commit in wwwdb.commit.find():
-        assignees = set(commit.get('assigned_to', []))
-        reviewed_by = set(commit.get('rejected_by', [])).union(set(commit.get('accepted_by', [])))
-        must_review = assignees.difference(reviewed_by)
-        for user in must_review:
-            user2commits[user].append(commit)
+    # Any commit that matches an assignment rule is assigned to a user in
+    # CodeReviewPostReceiveHook.POST(), regardless of whether the commit is
+    # in a release branch. So we need to iterate over commits that *are* in
+    # release branches, check if they're assigned for review, and email users
+    # to tell them to review the commits.
+    for branch_config in [
+        { 'branch_name': 'v1.8', 'stop_tag': 'r1.8.4' },
+        { 'branch_name': 'v2.0', 'stop_tag': 'r2.0.1' },
+    ]:
+        for commit in commits(
+            branch_name=branch_config['branch_name'],
+            stop_tag=branch_config['stop_tag'],
+            db=wwwdb,
+            user=None,
+        ):
+            assignees = set(commit.get('assigned_to', []))
+            reviewed_by = set(commit.get('rejected_by', [])).union(set(commit.get('accepted_by', [])))
+            must_review = assignees.difference(reviewed_by)
+            for user in must_review:
+                user2commits[user].append(commit)
 
-    n_reviews_total = len(set([commit['hexsha'] for commits in user2commits.values() for commit in commits]))
+    n_reviews_total = len(set([commit['hexsha'] for commits_to_review in user2commits.values() for commit in commits_to_review]))
 
-    for user, commits in user2commits.items():
-        n_reviews = len(commits)
+    for user, commits_to_review in user2commits.items():
+        n_reviews = len(commits_to_review)
         logging.info('Emailing %s: %s reviews for her or him, %s reviews total' % (
             user, n_reviews, n_reviews_total
         ))

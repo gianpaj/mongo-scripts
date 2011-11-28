@@ -1,7 +1,9 @@
 Dear {{ user }},
 
-{% if commits %}
-You have {{ n_reviews }} code changes you must review: https://corp.10gen.com/codeReview
-{% endif %}
-
+{% if n_reviews %}You have {{ n_reviews }} code changes you must review: https://corp.10gen.com/codeReview{% endif %}
+{% if commits_to_review %}{% for c in commits_to_review %}
+Message: {{ c['message'].strip() }}
+Author: {{ c['author']['name'] }} Date: {{ c['date'] }}
+Branch: {{ c['branch_name'] }}
+{% endfor %}{% endif %}
 The engineering team in total has {{ n_reviews_total }} code changes to review.
