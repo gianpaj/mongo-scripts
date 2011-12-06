@@ -6,6 +6,7 @@ import web
 import settings
 
 #setup dbs
+jirareportsdb = pymongo.Connection( settings.jirareports_host ).jira
 wwwdb = pymongo.Connection( settings.wwwdb_host ).www
 usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
 mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
