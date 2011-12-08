@@ -25,7 +25,7 @@ from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, Code
 
 import google_group_to_jira
 import jira
-from jirarep import JiraReport, JiraEngineerReport
+from jirarep import JiraReport, JiraEngineerReport, JiraCustomerReport
 
 myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
 myjira = jira.JiraConnection()
@@ -145,6 +145,7 @@ urls = (
     "/codeReview/postReceiveHook", CodeReviewPostReceiveHook,
     "/jirarep", JiraReport,
     "/engineer/(.*)", JiraEngineerReport,# TODO fix urls
+    "/customer/(.*)", JiraCustomerReport,# TODO fix urls
     "/favicon.ico", CorpFavicon,
     "/(.*)", CorpNormal,
 )
