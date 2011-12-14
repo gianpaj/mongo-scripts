@@ -25,6 +25,7 @@ from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, Code
 
 import google_group_to_jira
 import jira
+from jirarep import JiraReport, JiraEngineerReport, JiraCustomerReport
 
 myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
 myjira = jira.JiraConnection()
@@ -42,19 +43,19 @@ class CorpNormal(CorpBase):
     def GET(self, pageParams, p=''):
         if p == "logout":
             return web.redirect( "/" )
-        
+
         if p in dir(self):
             getattr(self,p)(pageParams)
 
         #print( pageParams )
-            
+
         #fix path
         if p == "":
             p = "index.html"
-        
+
         if not p.endswith( ".html" ):
             p = p + ".html"
-    
+
         pageParams["path"] = p
 
         t = env.get_template( p )
@@ -65,7 +66,7 @@ class CorpNormal(CorpBase):
         subject = web.input()["subject"]
         simple = myggs.simple_topic( subject )
         pp["simple"] = simple
-        
+
         topics = []
         for x in myggs.topics.find( { "subject_simple" : simple } ):
             if "jira" in x:
@@ -83,7 +84,7 @@ class CorpNormal(CorpBase):
 
         pp["topics"] = topics
 
-        
+
 
 
     def dlDomains(self,pp):
@@ -142,6 +143,9 @@ urls = (
     "/codeReview/commits/(.*)/(.*)", CodeReviewCommits,
     "/codeReview/commit/(.*)", CodeReviewCommit,
     "/codeReview/postReceiveHook", CodeReviewPostReceiveHook,
+    "/jirarep", JiraReport,
+    "/engineer/(.*)", JiraEngineerReport,# TODO fix urls
+    "/customer/(.*)", JiraCustomerReport,# TODO fix urls
     "/favicon.ico", CorpFavicon,
     "/(.*)", CorpNormal,
 )

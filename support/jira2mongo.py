@@ -67,7 +67,7 @@ class Processor:
 
 class Retreiver:
     def __init__(self):
-        self.limit = 1500
+        self.limit = 2000
         self.batchSize = 10
         self.counter = 1
         self.projectName = "CS"
@@ -78,6 +78,7 @@ class Retreiver:
         try:
             for issue in self.jira.getIssuesFromJqlSearch( jql, self.batchSize ):
                 issue["comments"] = self.jira.getComments( issue["key"] )
+                issue["resolutiondate"] = self.jira.getResolutionDateByKey(issue["key"])
                 self.issues[issue["key"]] = self.fixCustomFields(issue)
         except suds.WebFault as detail:
             print detail
@@ -136,5 +137,5 @@ def run( retreiver, jql ):
 retreiver = Retreiver()
 run( retreiver, "project = CS AND type != Tracking" )
 retreiver.store()
-#retreiver.updateCustomFields()
+retreiver.updateCustomFields()
 

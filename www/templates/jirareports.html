@@ -1,0 +1,174 @@
+<html>
+  <head>
+    <link rel="stylesheet/less" type="text/css" href="/static/styles.less">
+    <script src="/static/d3.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css"></link>
+    <script src="/static/jquery-1.7.js" type="text/javascript"></script>
+    <script src="/static/less.min.js" type="text/javascript"></script>
+    <script src="/static/graphs.js" type="text/javascript"></script>
+    <style>
+      .chart rect{
+        stroke: white;
+        fill: steelblue;
+      }
+      .chart text.innerlabel{
+        stroke: white;
+        fill: white;
+      }
+    </style>
+    <script>
+
+      var mode = null;
+      function activate(id){
+        mode = id;
+        var other = (id == "#engineerselect" ? "#customerselect" : "#engineerselect")
+        $(id).parent("div").addClass("active")
+        $(other).parent("div").removeClass("active")
+      }
+
+      function updateReport(){
+        var time = $('#timeoptions > li.active').text()
+        var engname = $('#engineerselect').val()
+        var cusname = $('#customerselect').val()
+        var url = (mode == "#engineerselect" ? "/engineer/"+engname : "/customer/"+cusname)
+        var params = {'period':'all'}
+        if(time=='Month'){
+          params['period'] = $('#period').val();
+        }
+        $.getJSON(url, params, function(data){
+          console.log(data)
+          $('#statsholder')
+            .html('')
+            .append($('<table></table>')
+            .append($('<tr></tr>')
+              .append($('<td></td>').text('# of tickets commented on'))
+              .append($('<td></td>').text(data.num_commented)))
+            .append($('<tr></tr>')
+              .append($('<td></td>').text('# of tickets resolved'))
+              .append($('<td></td>').text(data.num_resolved)))
+            .append($('<tr></tr>')
+              .append($('<td></td>').text('Avg Number Comments per Ticket'))
+              .append($('<td></td>').text(data.avg_numresponses)))
+            .append($('<tr></tr>')
+              .append($('<td></td>').text('Avg Resolution Time'))
+              .append($('<td></td>').text(humanizeTime(data.avg_resolutiontime))))
+            .append($('<tr></tr>')
+              .append($('<td></td>').text('Max Resolution Time'))
+              .append($('<td></td>').text(humanizeTime(data.max_resolutiontime)))))
+          $('#graphholder').html('')
+          if('resolutions_by_month' in data){
+            $('#graphholder').html('').append('<h3>Issues Resolved by Month</h3>')
+            bargraph(data['resolutions_by_month'], '#graphholder')
+          }
+          if('avg_res_times_bymonth' in data){
+            $('#graphholder').append('<h3>Average Resolution Times by Month</h3>')
+            options = {
+              'labelfunc': function(d,i){ return d[1] > 0 ? humanizeTime(d[1]) : ""}
+            }
+            bargraph(data['avg_res_times_bymonth'], '#graphholder', options)
+          }
+          if('resolutions_time_histogram' in data){
+            $('#graphholder').append('<h3>Count of log() of Resolution Times</h3>')
+            bargraph(data['resolutions_time_histogram'], '#graphholder')
+          }
+          if('response_time_histogram' in data){
+            $('#graphholder').append('<h3>Count of log() of First Response Times</h3>')
+            bargraph(data['response_time_histogram'], '#graphholder')
+          }
+        })
+      }
+
+      $(document).ready(
+        function(){
+          $('#engineerselect').change(function(){
+            activate('#engineerselect')
+            $('#timeselector').show()
+            $('#reportheading').text($('#engineerselect').val())
+            updateReport();
+
+          })
+          $('#customerselect').change(function(){
+            activate('#customerselect')
+            $('#timeselector').show()
+            $('#reportheading').text($('#customerselect').val())
+            updateReport();
+          })
+          $('#period').change(updateReport)
+
+          $('#timeoptions > li > a').click(function(){
+            $('#timeoptions > li.active').removeClass("active")
+            $(this).parent("li").addClass("active")
+            updateReport();
+            return false;
+          })
+        }
+      )
+
+    </script>
+    <style>
+      .active{
+        background-color: #DCEAF4;
+      }
+      .selector{
+        text-align:center;
+        padding-bottom:10px;
+      }
+      .reportitem{
+        font-weight:bold;
+        font-size:1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="span-one-third selector">
+          <h3>Engineer</h3>
+          <select name="engineer" id="engineerselect">
+            <option value="">All</option>
+            {% for engineer in engineers %}
+              <option value="{{engineer}}">{{engineer}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="span-one-third selector">
+          <h3>Company</h3>
+          <select name="engineer" id="customerselect">
+            <option value="">All</option>
+            {% for company in companies %}
+              <option value="{{company['_id']}}">{{company['_id']}}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="row active" style="display:none" id="timeselector">
+        <div class="span-two-thirds">
+          <h1 id="reportheading" style="text-align:center;padding-top:15px;"></h1>
+        </div>
+        <div class="span-one-third">
+          <h3>Time Period</h3>
+          <ul class="pills" id="timeoptions">
+            <li class="active"><a href="#">Everything</a></li>
+            <li><a href="#">Month</a></li>
+          </ul>
+          <select name="time" id="period">
+            {% for period in periods%}
+              <option value="{{period}}">{{period}}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+
+        <div class="span-one-third" id="statsholder">
+        </div>
+
+        <div class="span-one-third" id="graphholder"> </div>
+
+      </div>
+    </div>
+
+  </body>
+</html>
