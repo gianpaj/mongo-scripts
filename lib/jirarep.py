@@ -13,6 +13,7 @@ import sys
 
 class JiraReport(CorpBase):
     def GET(self):
+        web.header('Content-type','text/html')
         engineerslist = eng_group
         companieslist = list(jirareportsdb.companies.find());
         if not companieslist:
@@ -49,6 +50,7 @@ def refresh_periods():
 
 class JiraEngineerReport(CorpBase):
   def GET(self, name):
+    web.header('Content-type','application/json')
     pageparams = web.input()
     timeperiod =  pageparams.get("period", None) or "all"
     info = jirareportsdb.reports.find_one({'period':'all', 'engineer':name})
@@ -69,6 +71,7 @@ class JiraEngineerReport(CorpBase):
 
 class JiraCustomerReport(CorpBase):
   def GET(self, name):
+    web.header('Content-type','application/json')
     pageparams = web.input()
     timeperiod =  pageparams.get("period", None)
     report = jirareportsdb.reports.find_one({"type":"customer",'period':timeperiod, 'customer':name})
