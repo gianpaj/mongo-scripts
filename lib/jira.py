@@ -9,6 +9,7 @@ import base64
 import json
 import os
 import types
+import sys
 
 class JiraConnection(object):
     """Just a wrapper around a suds client that passes through getattr.
@@ -104,5 +105,35 @@ class JiraRest:
         f = open( local_file , "wb" )
         f.write( self.opener.open( obj["content"] ).read() )
         f.close()
+
+
+if __name__ == "__main__":
+
+    if len(sys.argv) <= 1:
+        print( "need to tell me what to do" )
+        exit(0)
+    
+    cmd = sys.argv[1]
+
+    j = JiraConnection();
+    
+    if "upload" == cmd:
+        if len(sys.argv) != 4:
+            print( "usage: upload <case> <filename>" )
+            exit(0)
+
+            
+        case = sys.argv[2]
+        filename = sys.argv[3]
+
+        if os.path.exists( filename ):
+            print( "don't know how to upload a real file" )
+        else:
+            data = sys.stdin.readlines()
+            j.addBase64EncodedAttachmentsToIssue( case , [ filename ] , [ base64.b64encode( "".join( data ) ) ] )
+
+
+    else:
+        print( "unknown command: " + cmd )
 
 
