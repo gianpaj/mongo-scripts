@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 import json
 import sys
 from pymongo import Connection
-jirareportsdb = Connection().jirax
+jirareportsdb = Connection().jira
 
 def average_builder(curval, doc):
   if not doc.get('resolutiondate', None):
