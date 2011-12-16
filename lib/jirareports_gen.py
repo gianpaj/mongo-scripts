@@ -8,11 +8,14 @@ import sys
 from pymongo import Connection
 jirareportsdb = Connection().jira
 
+def get_total_seconds(td):
+  return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
+
 def average_builder(curval, doc):
   if not doc.get('resolutiondate', None):
     return curval
   else:
-    return [curval[0] + 1, curval[1] + (doc['resolutiondate'] - doc['created']).total_seconds()]
+    return [curval[0] + 1, curval[1] + get_total_seconds((doc['resolutiondate'] - doc['created']))]
 
 def avg_calc(x):
   if x[0] > 0:
@@ -120,14 +123,14 @@ def generate_engineer_report(name, timeperiod="all"):
     resolution_times = []
     for i in issues_query:
         if i.get('resolutiondate', None) and i.get('created', None):
-            res_time = (i['resolutiondate'] - i['created']).total_seconds()
+            res_time = get_total_seconds(i['resolutiondate'] - i['created'])
             i['resolution_time'] = res_time
             resolution_times.append(res_time)
 
     first_responses = list(jirareportsdb.issues.find(dict([("comments.0.author",name)], **time_filter)))
     for i in first_responses:
         if i.get('created', None) and i['comments'][0]['created']:
-            response_time = (i['comments'][0]['created'] - i['created']).total_seconds()
+            response_time = get_total_seconds(i['comments'][0]['created'] - i['created'])
             i['response_time'] = response_time
 
     resolution_time_plot = log_histogram(issues_query, 'resolution_time')
@@ -170,7 +173,7 @@ def generate_customer_report(name, timeperiod='all'):
     num_resolved = jirareportsdb.issues.find(dict([("company",name)], **time_filter)).count()
     query = dict([("company",name),("resolutiondate",{"$exists":True, "$ne":None})], **time_filter)
     resolutions = list(jirareportsdb.issues.find(query, {"created":1, "resolutiondate":1}))
-    resolution_times = [(d['resolutiondate'] - d['created']).total_seconds() for d in resolutions if
+    resolution_times = [get_total_seconds(d['resolutiondate'] - d['created']) for d in resolutions if
               (d.get('resolutiondate',None) and d.get('created',None)) ]
     result = dict(resolution_times=resolution_times,
                 avg_resolutiontime = average(resolution_times),
