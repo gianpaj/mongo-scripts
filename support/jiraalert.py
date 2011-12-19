@@ -20,6 +20,7 @@ import lib.googlegroup
 import lib.jira
 import lib.crowd
 import lib.aws
+import lib.sms
 
 import settings
 
@@ -75,6 +76,7 @@ queries = [
     # ------ cs sla issues ----------
 
     { "name" : "SLA in danger - not assigned" ,
+      "sms" : True ,
       "who" : "AO" ,
       "digest" : False ,
       "freq" : 2 ,
@@ -148,6 +150,11 @@ queries = [
       "digest" : True } 
 
     ]
+
+# validate queries
+for x in queries:
+    if not ( "freq" in x or ( "digest" in x and x["digest"] ) ):
+        raise Exception( "need freq or digest=True in %s" , str(x) )
 
 inDebug = False
 
@@ -358,6 +365,10 @@ def sendEmails( messages , managerSummary , digest ):
             debug( "sending to manager: %s " % mgre )
             mail( subject , mgr , mgre )
 
+def test_sms():
+    t = lib.sms.Twilio()
+    t.sms( "+16462567013" , "a test from %s" % os.getenv( "USER" ) )
+
 if __name__ == "__main__":
 
     digest = False
@@ -368,6 +379,10 @@ if __name__ == "__main__":
 
         if x == "digest":
             digest = True
+
+        if x == "testsms":
+            test_sms()
+            sys.exit(1)
 
     try:
         messages = run(digest)

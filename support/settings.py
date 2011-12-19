@@ -9,3 +9,5 @@ jira_support_group = "Commercial Support"
 crowdAppUser = "corp"
 crowdAppPassword = "eng718corp"
 
+twilio_sid = "ACba2121fb9cdafa3e08cc6c2f1c8f2b6c"
+twilio_token = "96540788fe1a284eaaf9d81231eeb53d"
