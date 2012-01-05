@@ -59,4 +59,11 @@
     </java>
   </target>
 
+  <target name="radius" depends="compile">
+    <java classname="com.tengen.CrowdRadiusServer">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+
 </project>
