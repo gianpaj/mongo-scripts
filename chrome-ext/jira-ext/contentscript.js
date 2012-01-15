@@ -2,10 +2,10 @@ var doWork = function() {
     // look for the custom field and add link to clienthub
     var companyElem = document.getElementById("customfield_10030-field");
     if (companyElem != null) {
-        var companyName = companyElem.firstElementChild.innerHTML;
+        var companyName = companyElem.innerText;
 
         // create clienthub link
-        var clienthubLink = companyElem.firstElementChild.cloneNode(true);
+        var clienthubLink = document.createElement("a");
         clienthubLink.href = "http://www.10gen.com/clienthub/link/jira/" + companyName;
         clienthubLink.innerHTML = "clienthub";
         clienthubLink.style.color = "red";

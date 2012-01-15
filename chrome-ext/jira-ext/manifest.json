@@ -1,7 +1,7 @@
 {
     "name": "10gen Jira Linker",
     "description": "Links from Jira CS issues to clienthub and MMS",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "icons": { "128": "icon_128.png", "48": "icon_48.png", "16": "icon_16.png" },
     "permissions": [ "https://jira.mongodb.org/" ],
     "content_scripts": [ 
