@@ -47,6 +47,15 @@
 -->
   </target>
 
+  <target name="jar" depends="compile">
+    <jar destfile="build/xgen.jar"
+         basedir="build/main"
+         includes="com/tengen/**"
+         />
+  </target>
+
+  <!-- *********** -->
+
   <target name="support" depends="compile">
     <java classname="com.tengen.SupportSSH" >
       <classpath refid="classpath"/>
@@ -61,6 +70,18 @@
 
   <target name="radius" depends="compile">
     <java classname="com.tengen.CrowdRadiusServer">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+  <target name="test_getpage" depends="compile">
+    <java classname="com.tengen.http.Page">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+  <target name="test_bb" depends="compile">
+    <java classname="com.tengen.zeus.BuildBot">
       <classpath refid="classpath"/>
     </java>
   </target>
