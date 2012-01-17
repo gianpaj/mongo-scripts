@@ -225,7 +225,7 @@ def mail( subject , body , who ):
         print( "would send mail [%s] to %s" % ( subject , who ) )
     else:
         print( "would send mail [%s] to %s" % ( subject , who ) )
-        lib.aws.send_email( "info@10gen.com" , subject , body , "mikeo@10gen.com" )
+        lib.aws.send_email( "info@10gen.com" , subject , body , who)
 
 
 def run( digest ):
@@ -271,7 +271,6 @@ def run( digest ):
         if digest != q["digest"]:
             continue
 
-        statuses = set()
         for issue in jira.getIssuesFromJqlSearch( q["jql"] , 1000 ):
 
             if issue["key"] in seenAlready:
@@ -303,9 +302,6 @@ def run( digest ):
                 issue['latest_comment'] = latest_comment
                 issue['latest_commenter'] = latest_commenter
 
-            print issue
-            statuses.add(issue['status'])
-
             for w in who:
                 if w not in messages:
                     messages[w] = {}
@@ -321,11 +317,6 @@ def run( digest ):
                     print(profile)
                     raise Exception( "sms not supported yet" )
 
-
-
-
-
-    print "statuses", statuses
     return messages
 
 def getCompany(issue):
@@ -337,6 +328,12 @@ def getCompany(issue):
             return x["values"][0]
 
     return None
+
+def truncate(s, length, truncate_str="..."):
+    if len(s) > length:
+        return s[0:length] + truncate_str
+    else:
+        return s
 
 
 def sendEmails( messages , managerSummary , digest ):
@@ -356,13 +353,17 @@ def sendEmails( messages , managerSummary , digest ):
             ind += name + "\n"
 
             for issue in mymessages[name]:
-                print issue
                 simple = "http://jira.mongodb.org/browse/%s\t%s\t%s" % ( issue["key"] , getCompany(issue) , issue["summary"] )
                 mgr += "\t\t" + simple
                 ind += "\t" + simple
                 if issue["latest_comment"] and issue["latest_commenter"]:
-                    mgr += "\n\t\t\tLatest Comment: [%s] %s" % (issue["latest_commenter"], issue["latest_comment"]['body'] + "\n\t\n\n\n")
-                    ind += "\n\t\t\tLatest Comment: [%s] %s" % (issue["latest_commenter"], issue["latest_comment"]['body'] + "\n\t\n\n\n")
+                    latest_comment = truncate(issue["latest_comment"]["body"], 160).replace("\n", " ")
+                    mgr += "\n\t\t\tLatest Comment on %s: [by %s] %s" % (issue["latest_comment"]["created"],
+                                                                         issue["latest_commenter"],
+                                                                         latest_comment + "\n\t\n\n\n")
+                    ind += "\n\t\t\tLatest Comment on %s: [by %s] %s" % (issue["latest_comment"]["created"],
+                                                                         issue["latest_commenter"],
+                                                                         latest_comment + "\n\t\n\n\n")
                 else:
                     mgr += '\n'
                     ind += '\n'
@@ -390,8 +391,7 @@ def sendEmails( messages , managerSummary , digest ):
         for s in getSupportTriageList():
             mgre = getEmail(s)
             debug( "sending to manager: %s " % mgre )
-            print "to",mgre
-            mail( subject , mgr , "mikeo@10gen.com" )
+            mail( subject , mgr , mgre )
 
 def test_sms():
     t = lib.sms.Twilio()
