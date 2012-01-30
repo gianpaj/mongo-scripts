@@ -29,7 +29,6 @@ class Crowd:
 
     def findGroupByName(self,group):
         x = self.service.findGroupByName( self.token , group )
-        print(x)
         return x.members[0]
 
 
