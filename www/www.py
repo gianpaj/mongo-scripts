@@ -7,8 +7,6 @@ import pymongo
 
 web.config.debug = False
 
-from suds.client import Client
-
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
 if here not in sys.path:
