@@ -17,7 +17,6 @@ class Crowd:
 
         self.service = self.client.service
 
-
     def isValidPrincipalToken(self,token):
         return self.service.isValidPrincipalToken( self.token , token , self.client.factory.create( "ns1:ArrayOfValidationFactor" ) )
     
