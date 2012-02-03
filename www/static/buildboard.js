@@ -153,7 +153,7 @@
 
 
   /** main **/
-  var groupkey = 'version';
+  var groupkey = 'status';
   var sortkey = 'updated';
 
   function update() {
