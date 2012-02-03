@@ -7,7 +7,6 @@ from corpbase import env, CorpBase, authenticated
 
 memos = {}
 def memoize_for(cache_for):
-    cache_for = 86400
     def decorator(func):
         @wraps(func)
         def inner(*args):
