@@ -1,0 +1,5 @@
+Both the plugins (clientinfo and externallinks) depend on gson-2.1.jar. 
+
+They are based on maven build system so please edit the pom.xml to
+reflect the complete system path of the gson-2.1.jar so that maven
+can find them while building the plugins.

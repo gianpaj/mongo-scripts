@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+  <plugin-info>
+    <description>${project.description}</description>
+    <version>${project.version}</version>
+    <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+  </plugin-info>
+  <web-panel name="ClientInfo" i18n-name-key="clientinfo.name" key="clientinfo" location="atl.jira.view.issue.right.context" weight="900">
+    <description key="clientinfo.description">The Clientinfo Plugin</description>
+    <context-provider class="com.mongo.jira.plugins.Clientinfo"/>
+    <resource name="view" type="velocity" location="clientinfo.vm"/>
+    <label key="Client Info"/>
+  </web-panel>
+  <resource type="i18n" name="i18n" location="atlassian-plugin"/>
+</atlassian-plugin>
