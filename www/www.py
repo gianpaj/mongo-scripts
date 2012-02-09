@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import logging
 import os
 import sys
@@ -8,8 +6,6 @@ import web
 import pymongo
 
 web.config.debug = False
-
-from suds.client import Client
 
 # some path stuff
 here = os.path.dirname(os.path.abspath(__file__))
@@ -22,6 +18,7 @@ sys.path.append( here.rpartition( "/" )[0] + "/support" )
 from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb
 from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, CodeReviewCommit,\
     CodeReviewCommits, CodeReviewPostReceiveHook, CodeReviewPatternTest
+from buildboard import BuildBoard
 
 import google_group_to_jira
 import jira
@@ -143,6 +140,7 @@ urls = (
     "/codeReview/commits/(.*)/(.*)", CodeReviewCommits,
     "/codeReview/commit/(.*)", CodeReviewCommit,
     "/codeReview/postReceiveHook", CodeReviewPostReceiveHook,
+    "/buildBoard", BuildBoard,
     "/jirarep", JiraReport,
     "/engineer/(.*)", JiraEngineerReport,# TODO fix urls
     "/customer/(.*)", JiraCustomerReport,# TODO fix urls

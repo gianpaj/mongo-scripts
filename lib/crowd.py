@@ -17,7 +17,6 @@ class Crowd:
 
         self.service = self.client.service
 
-
     def isValidPrincipalToken(self,token):
         return self.service.isValidPrincipalToken( self.token , token , self.client.factory.create( "ns1:ArrayOfValidationFactor" ) )
     
@@ -29,7 +28,6 @@ class Crowd:
 
     def findGroupByName(self,group):
         x = self.service.findGroupByName( self.token , group )
-        print(x)
         return x.members[0]
 
 

@@ -43,24 +43,24 @@
           person( "Paul" , "Deputy CTO" , "Eliot" ) ,    
  
           person( "Dan P." , "Eng Mgr" , "Eliot" ) ,
-          person( "Core Server Eng." , list("Kristina","Mathias","Greg","Kyle","Spencer","Brandon","Scott","Chris","Antoine","Aaron","Richard","Eric","Tad","Kevin M.","Andrew S.","Ben B.(jan.)")  , "Dan P." ) ,
+          person( "Core Server Eng." , list("Kristina","Mathias","Greg","Kyle","Spencer","Brandon","Scott","Chris","Antoine","Aaron","Richard","Eric","Tad","Kevin M.","Andrew S.","Ben Becker")  , "Dan P." ) ,
           person( "Build Eng" , list("Dan C.") , "Dan P." ) ,
  
           person( "Steve" , "Chief Evangelist" , "Eliot" ) ,
-          person( "Drivers/Integration" , list("Brendan(JVM)","Bernie(Python)","Sridhar(.NET)","Robert(.NET)","Christian(node.js)","Jesse(Python)","Derick(PHP)","Ross(Python)(12/8)") , "Steve" ) ,
+          person( "Drivers/Integration" , list("Brendan(JVM)","Bernie(Python)","Sridhar(.NET)","Robert(.NET)","Christian(node.js)","Jesse(Python)","Derick(PHP)","Ross(Python)", "Mike O.", "Tyler" ) , "Steve" ) ,
           person( "Docs" , list("Sam") , "Steve" ) ,
-          person( "WWW/Corp" , list( "Ben", "Mike O." ) , "Steve" ) ,
+          person( "WWW/Corp" , list( "Ben Beecher" ) , "Steve" ) ,
 
           person( "Bill" , "Global Support" , "Eliot" ) ,
-          person( "NY" , list( "Marc" , "Barrie" , "Tyler" ) , "Bill" ) ,
-          person( "Ireland" , list( "Adam(jan)."  ) , "Bill" ) ,
+          person( "NY" , list( "Marc" , "Barrie" ) , "Bill" ) ,
+          person( "Ireland" , list( "Adam"  ) , "Bill" ) ,
 
           person( "Tech OPs" , list("Sabina","Ian","Jackie") , "Eliot" ) ,
  
           person( "Edouard" , "Americas SA (March 2012)" , "Eliot" ) ,
           person( "West Coast" , list("Kevin H.") , "Edouard" ) ,
  
-          person( "Alvin" , "EMEA SA" , "Eliot" ) ,
+          person( "Alvin" , "Director EMEA" , "Eliot" ) ,
           person( "Europe SA", list ("Daniel", "Chris"), "Alvin") ,
 
           person( "Jeff" , "MMS" , "Eliot" ) ,
@@ -69,7 +69,7 @@
 
           person( "Devops", list( "Michael F." ) , "Eliot" ) ,
 
-          person( "College 2012" , list("Siddharth(Jan)","Randolph(Jan)","Matt S.(Jan)(CA)","Randall Hunt(June)","Sam Helman(July)","Shaun Verch(June)","Jason Rassi(Sep)") , "Eliot" ) ,
+          person( "College 2012" , list("Siddharth","Randolph","Matt S.","Randall Hunt(June)","Sam Helman(July)","Shaun Verch(June)","Jason Rassi(Sep)") , "Eliot" ) ,
           person( "Interns 2012" , list("Amalia","Kaushal","Samantha Ritter","Leonardo","Gabriel") , "College 2012" ) ,
 
 
@@ -77,7 +77,7 @@
           // sales
           person( "Ben" , "VP Sales" , "Max" ) ,
           person( "West-Sales" , list("Anthony","Jarek","Ali" , "Margaret") , "Ben" ) ,
-          person( "East-Sales" , list("Jeff","Matt", "Valerie","Sarah","Will(starts nov.)") , "Ben" ) ,
+          person( "East-Sales" , list("Jeff","Matt", "Valerie","Sarah","Will") , "Ben" ) ,
           person("Brendan C", "Channel sales", "Ben"),
  
           // marketing
@@ -93,16 +93,16 @@
  
           // ops
           person( "Lily" , "VP Finance" , "Max" ) ,
-          person( "Ops" , list("Julia", "Jennifer(jan)", "Esther", "Allyson", "Isabelle(jan)") , "Lily" ) ,
+          person( "Ops" , list("Julia", "Jennifer", "Esther", "Allyson", "Isabelle") , "Lily" ) ,
           person( "HR" , list( "Kirsten" ) , "Lily" ) ,
-          person( "Fin/Acctg" , list( "Caitlin(jan)" ) , "Lily" ) ,
+          person( "Fin/Acctg" , list( "Caitlin" ) , "Lily" ) ,
 
           // eu ???
           person( "Gerry" , "Director European Sales" , "Max" ) ,
           person( "Europe Sales", list ("Renaud", "Allan", "Tim"), "Gerry") ,
  
           // recruiting
-          person ("Recruiting", list ("Stacy", "Craig", "Adrienne", "Jennifer(part time temp)") , "Max") ,
+          person ("Recruiting", list ("Stacy", "Craig", "Adrienne", "Thameka") , "Max") ,
         ]);
         var chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
         chart.draw(data, {allowHtml:true});
