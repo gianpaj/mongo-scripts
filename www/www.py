@@ -15,7 +15,7 @@ if here not in sys.path:
 sys.path.append( here.rpartition( "/" )[0] + "/lib" )
 sys.path.append( here.rpartition( "/" )[0] + "/support" )
 
-from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb
+from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb
 from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, CodeReviewCommit,\
     CodeReviewCommits, CodeReviewPostReceiveHook, CodeReviewPatternTest
 from buildboard import BuildBoard
@@ -23,6 +23,28 @@ from buildboard import BuildBoard
 import google_group_to_jira
 import jira
 from jirarep import JiraReport, JiraEngineerReport, JiraCustomerReport
+import jinja2
+
+# setup web env
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(here, "templates")))
+web.config.debug = False
+app = web.auto_application()
+web.config.app = app
+
+
+# share some globals through web.config
+
+web.config.app = app
+web.config.env = env
+web.config.wwwdb = wwwdb
+web.config.usagedb = usagedb
+web.config.mongowwwdb = mongowwwdb
+web.config.pstatsdb = pstatsdb
+from pstats import Pstats, PstatsCSV
+
+# import other handlers
+import pstats
+
 
 myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
 myjira = jira.JiraConnection()
@@ -140,6 +162,8 @@ urls = (
     "/codeReview/commits/(.*)/(.*)", CodeReviewCommits,
     "/codeReview/commit/(.*)", CodeReviewCommit,
     "/codeReview/postReceiveHook", CodeReviewPostReceiveHook,
+    "/pstats", Pstats,
+    "/pstats/csv", PstatsCSV,
     "/buildBoard", BuildBoard,
     "/jirarep", JiraReport,
     "/engineer/(.*)", JiraEngineerReport,# TODO fix urls

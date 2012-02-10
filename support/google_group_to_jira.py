@@ -25,7 +25,8 @@ def send_error_email(msg):
     lib.aws.send_email( "noc-admin@10gen.com" , "Free Support Tool Error" , str(msg) , "noc-admin@10gen.com" )
 
 class ggs:
-    def __init__(self,host="jira.10gen.cc",syncUsers=True):
+    def __init__(self,host="localhost",syncUsers=True):
+    #def __init__(self,host="jira.10gen.cc",syncUsers=True):
         self._gmail = None
         
         # setup mongo

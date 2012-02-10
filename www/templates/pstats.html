@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="/static/jquery-ui-1.8.17.custom.css"/>
+<style type="text/css">
+  .content {
+    font-family:"Lucida Grande",Helvetica,sans-serif;
+    color:#333;
+  }
+
+  #chartaround {
+    position:relative;
+  }
+  .descheading{
+    font-weight:bold;
+    font-size:1.2em;
+  }
+
+  .btn {
+    cursor: pointer;
+    display: inline-block;
+    background-color: #E6E6E6;
+    background-repeat: no-repeat;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#e6e6e6));
+    background-image: -webkit-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -moz-linear-gradient(top, #ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -ms-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -o-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+    padding: 5px 14px 6px;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    color: #333;
+    font-size: 13px;
+    line-height: normal;
+    border: 1px solid #CCC;
+    border-bottom-color: #BBB;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    -webkit-transition: 0.1s linear all;
+    -moz-transition: 0.1s linear all;
+    -ms-transition: 0.1s linear all;
+    -o-transition: 0.1s linear all;
+    transition: 0.1s linear all;
+  }
+
+  #chartwrap {
+    width:85%;
+    height:515px;
+    border:1px solid #666;
+  }
+
+  #chart {
+    width:100%;
+    height:450px;
+  }
+
+  #info {
+    height: 28px;
+    padding:2px 10px;
+    font-size:smaller;
+  }
+
+  .optiontabs{
+    list-style:none;
+  }
+  .optiontabs > li{
+    display:inline;
+    padding:10px;
+    cursor:pointer;
+  }
+
+  .optiontabs > li.active{
+    background-color:#eee;
+    font-weight:bold;
+  }
+
+  #controls_basic, #controls_versions, #controls_date{
+    position:absolute;
+    background-color:white;
+    top:0px;
+    left:0px;
+    z-index:1000;
+    width:840px;
+    padding:5px;
+    border:1px solid #888;
+  }
+
+  /*
+  #controls {
+    margin-top:20px;
+    padding-left:50%;
+    font-size:85%;
+  }
+
+  #controls > div {
+    margin-top:20px;
+    margin-left:-400px;
+    padding:10px;
+    width:840px;
+    border:1px solid #666;
+  }*/
+
+  .columns {
+    margin-top:0.5em;
+  }
+
+  .column {
+    float:left;
+    width:260px;
+    margin-left:10px;
+    font-size:.8em;
+  }
+
+  br + .column, .column:first-child {
+    margin-left:0px;
+  }
+
+  #controls .inner > label {
+    display:block;
+    font-weight:bold;
+    padding:15px 0px 5px;
+  }
+
+  #controls .inner > label:first-child {
+    padding-top:0px;
+  }
+
+  #controls .inner div {
+    padding-left:10px;
+  }
+</style>
+<script type="text/javascript" src="/static/jquery-1.7.js"></script>
+<script type="text/javascript" src="/static/dygraph-combined.js"></script>
+<script type="text/javascript" src="/static/jquery-ui-1.8.17.custom.min.js"></script>
+
+<script type="text/javascript">
+
+var timer = null;
+var graph = null;
+var xinfo = {};
+var vers = [];
+var hashes = [];
+var messages = [];
+
+$.deparam = jq_deparam = function( params, coerce ) {
+  var obj = {},
+      coerce_types = { 'true': !0, 'false': !1, 'null': null };
+  $.each( params.replace( /\+/g, ' ' ).split( '&' ), function(j,v){
+      var param = v.split( '=' ),
+      key =  decodeURIComponent( param[0] ),
+
+      val,
+      cur = obj,
+      i = 0,
+      keys = key.split( '][' ),
+      keys_last = keys.length - 1;
+      if ( /\[/.test( keys[0] ) && /\]$/.test( keys[ keys_last ] ) ) {
+        keys[ keys_last ] = keys[ keys_last ].replace( /\]$/, '' );
+        keys = keys.shift().split('[').concat( keys );
+        keys_last = keys.length - 1;
+      } else {
+        keys_last = 0;
+      }
+      if ( param.length === 2 ) {
+        val = decodeURIComponent( param[1] );
+        if ( coerce ) {
+          val = val && !isNaN(val)            ? +val              // number
+            : val === 'undefined'             ? undefined         // undefined
+            : coerce_types[val] !== undefined ? coerce_types[val] // true, false, null
+            : val;                                                // string
+        }
+
+        if ( keys_last ) {
+          for ( ; i <= keys_last; i++ ) {
+            key = keys[i] === '' ? cur.length : keys[i];
+            cur = cur[key] = i < keys_last
+              ? cur[key] || ( keys[i+1] && isNaN( keys[i+1] ) ? {} : [] )
+              : val;
+          }
+
+        } else {
+          if ( $.isArray( obj[key] ) ) {
+            obj[key].push( val );
+          } else if ( obj[key] !== undefined ) {
+            obj[key] = [ obj[key], val ];
+          } else {
+            obj[key] = val;
+          }
+        }
+      } else if ( key ) {
+        obj[key] = coerce ? undefined : '';
+      }
+  });
+  return obj;
+};
+
+
+function loadcsv() {
+  timer = null;
+
+  var args = {
+    type: "rps",
+    //versions: [],
+    tests: [],
+    start: null,
+    end: null,
+    versioncontrols:[]
+  };
+
+  //args.type = $('input[name="type"]:checked').val();
+  //$('.versioncontrols input[type="checkbox"]:checked').each(function() {console.log("checked", $(this).attr('name')); args.versioncontrols[args.versioncontrols.length] = $(this).attr('name')});
+  //$('.versions input[type="checkbox"]:checked').each(function() {args.versions[args.versions.length] = $(this).attr('name')});
+  $('.tests input[type="checkbox"]:checked').each(function() {args.tests.push($(this).attr('name'))});
+  args.start = $('input.date[name="start"]').val();
+  args.end = $('input.date[name="end"]').val();
+
+  var url_args = jQuery.param(args, true)
+  console.log
+  window.location.hash = url_args
+  //delete url_args['versioncontrols']
+  var csvurl = '/pstats/csv?' + url_args;
+  $('#url').empty().append('<a href="http://local.corp.10gen.com' + csvurl + '&dl=1" target="_blank">Download CSV</a>');
+
+  var testNames = []
+  $('.tests input[type="checkbox"]:checked').each(function(){
+      var name = $(this).attr('name')
+      testNames.push(name.substring(name.indexOf('-')+1))
+  })
+  $('#plotdescription_tests').text(testNames.join(", "))
+
+  //var numVersionBoxes = $('.v, .av').length
+  //var numVersionBoxesChecked = $('.v:checked, .av:checked').length
+  //var versionDescr;
+  //$('#plotdescription_versions').text(numVersionBoxesChecked==numVersionBoxes ? "All Versions" : numVersionBoxesChecked + " versions")
+  $('#plotdescription_other').text( $('#datepickerstart').val() + " to " + $('#datepickerend').val())
+
+  function parsehash(xval) {
+    var parts = xval.split('|');
+    var datepart = parts[0];
+    var hash = parts[1];
+    var version = parts[2];
+    var index = parts[3]
+    var message = parts.slice(4).join("|")
+
+    if (version != '') {
+      vers[vers.length] = xval;
+    }
+
+    xinfo[xval] = {hash: hash, version: version};
+    var dateval = Date.parse(datepart);
+    hashes[index] = hash
+    messages[hash] = message
+    return dateval
+  }
+
+  function show_commit(e, point){ }
+
+  function show_releases(context, area, graph) {
+    // context is the canvas 2D drawing context
+    // area is the chart area coords (excluding axes, etc)
+    // graph is the dygraph object
+    for (var i in vers) {
+      var parts = vers[i].split('|');
+      var xcoord = Date.parse(parts[0]);
+      var xspot = graph.toDomXCoord(xcoord);
+
+      var align = "left";
+      var offset = 6;
+
+      var textsize = context.measureText(parts[2]);
+
+      if (xspot <= area.x ) {
+        // offset slightly to the right
+        xspot += 1;
+      } else if (xspot + textsize.width >= area.x + area.w) {
+        // offset slightly to the left
+        xspot -= 2;
+        align = "right";
+        offset = -4;
+      }
+
+
+
+      context.fillStyle = "rgba(255, 204, 153, 1.0)";
+      context.fillRect(xspot, area.y, 2, area.h);
+
+      context.fillStyle = "rgba(255, 255, 255, 1.0)";
+      context.fillRect(
+          xspot + offset + (align == "left" ? -2 : -textsize.width - 4),
+          area.y,
+          textsize.width + 6,
+          16);
+
+
+      context.fillStyle = "rgba(102, 102, 102, 1.0)";
+      context.font = "12px sans-serif";
+      context.textAlign = align;
+      context.fillText(parts[2], xspot + offset, area.y + 12);
+    }
+  }
+
+  graph = new Dygraph(
+    $('#chart').get(0), csvurl,
+    {
+      //yAxisLabelFormatter: function (val) { if (val == 1.0) { return "Avg" } else { return (parseInt(val * 100) / 100) + "%"; }},
+      xValueParser: parsehash,
+      labelsDiv: "info",
+      underlayCallback: show_releases,
+      pointClickCallback: show_commit,
+      rollPeriod: 3,
+      showRoller: true,
+      "AVERAGE":{strokeWidth:3}
+    }
+  );
+}
+
+function wait_and_load(e) {
+  if (timer !== null) { clearTimeout(timer); }
+  timer = setTimeout(loadcsv, 100);
+}
+
+$(document).ready(function() {
+
+  if(window.location.hash != ""){
+    console.log("here")
+    args_obj = $.deparam(window.location.hash)
+    //Just load all the versions
+
+    /*
+    $('.versions input[type="checkbox"]:checked').each(function() {args.versions[args.versions.length] = $(this).attr('name')});
+    for(var i=0;i<=args_obj.versions.length;i++){
+      var elem = document.getElementById('v:' +  args_obj.versions[i])
+      $(elem).attr("checked", true)
+    }
+
+    if( args_obj.versioncontrols){
+      for(var i=0;i<=args_obj.versioncontrols.length;i++){
+        var elem = document.getElementById('version-' +  args_obj.versioncontrols[i])
+        $(elem).attr("checked", true)
+      }
+    }*/
+
+    $('input.date[name="start"]').val(args_obj.start);
+    $('input.date[name="end"]').val(args_obj.end);
+  }else{
+    // set defaults
+
+    /*
+    $('#type-rps').prop('checked', true);
+    $('.versioncontrols input[type="checkbox"]').prop('checked', true);
+    $('.versions input[type="checkbox"]').prop('checked', true);
+    */
+  }
+
+
+  /*
+  $('#selectallversions').click(function(){
+    $('.v, .av').attr('checked', true);
+  })
+
+  $('#selectnoneversions').click(function(){
+    $('.v, .av').attr('checked', false);
+  })*/
+
+  $('form input').live('change', wait_and_load);
+  $('.hidecontrols').click(function(){
+    $('#controls_basic').hide()
+    //$('#controls_versions').hide()
+    $('#controls_date').hide()
+  })
+  $('.optiontabs > li').click(function(){
+    var t = $(this).text();
+    $('#controls_basic').toggle(t=="Tests")
+    //$('#controls_versions').toggle(t=="Versions")
+    $('#controls_date').toggle(t=="Date Range")
+  })
+
+  $('.versioncontrols input[type="checkbox"]').click(function() {
+    var parts = $(this).attr('id').split('-');
+    var type = parts.shift()
+    var value = parts.join("-");
+    var on = $(this).is(':checked');
+
+    $('.versions input[type="checkbox"]').each(function() {
+      var parts = $(this).attr('id').split(':');
+      var v = parts[1];
+      var b = parts[2];
+      var o = parts[3];
+
+      // this checkbox is on if: its corresponding version, bits, and os checkboxes
+      // are all checked, or if nothing is checked in each category
+      var on = ($('#version-' + v).is(':checked') || $('.versioncontrols input.v:checked').length == 0) &&
+               ($('#bits-' + b).is(':checked') || $('.versioncontrols input.b:checked').length == 0) &&
+               ($('#os-' + o).is(':checked') || $('.versioncontrols input.o:checked').length == 0) &&
+               $('.versioncontrols input[type="checkbox"]:checked').length > 0;
+      $(this).prop('checked', on);
+      wait_and_load
+    });
+  });
+
+
+  $('input.date').datepicker({dateFormat: "yy-mm-dd"});
+  $('#chart').mousemove(function(){
+    if(!graph) return;
+    var x = graph.getSelection();
+    //console.log(graph.getValue(x, 0), graph.getValue(x, 1), graph.getValue(x, 2))
+    if(x>=0){
+      var hash = hashes[x]
+      $('#message').html('')
+        .append($('<a></a>').text(hash).attr("href", "https://github.com/mongodb/mongo/commit/" + hash).attr("target", "_blank"))
+        .append($('<span></span>').text(": " + messages[hash]))
+    }
+  })
+  $('#edit').click(function(){
+    $('#controls_basic').show()
+  })
+});
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+  <button id="edit">Edit Plot</button><br/>
+<span class="descheading">Tests:</span>
+<div id="plotdescription_tests"></div>
+<!--<span class="descheading">Versions:</span>-->
+<div id="plotdescription_versions"></div>
+<span class="descheading">Range:</span>
+<div id="plotdescription_other"></div>
+<div id="chartaround" align="center">
+  <div id="chartwrap">
+    <div id="info"></div>
+    <div id="chart">
+    </div>
+    <div id="url"></div>
+  </div>
+</div>
+<div id="message" style="height:100px"></div>
+<form>
+<div id="controls_basic" class="modal hide" style="display:none;">
+  <div class="inner">
+    <div class="hidecontrols btn">&larr; Hide</div>
+    <ul class="optiontabs">
+      <li class="active">Tests</li>
+      <!--<li>Versions</li>-->
+      <li>Date Range</li>
+    </ul>
+    <!--
+    <label>Plot:</label>
+    <div class="type">
+      <input type="radio" id="type-millis" name="type" value="millis"/> <label for="type-millis">Millis</label>
+      <input type="radio" id="type-rps" name="type" value="rps"/> <label for="type-rps">RPS</label>
+    </div>-->
+    <label>Tests:</label>
+    <div class="columns tests">
+      {% for test in tests %}
+      <div class="column">
+        <input type="checkbox" id="test-{{test}}" name="{{test}}" value="yes"/> <label for="test-{{test}}">{{test}}</label>
+      </div>
+      {% if loop.cycle(False, False, True) %}<br style="clear:both"/>{% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<!-- Disable versions (not needed?) -->
+<div id="controls_date" style="display:none; height:300px;">
+  <div class="inner">
+    <div class="hidecontrols btn">&larr; Hide</div>
+    <ul class="optiontabs">
+      <li>Tests</li>
+      <li class="active">Date Range</li>
+    </ul>
+    <label>In range:</label>
+    <div class="date">
+      <input type="text" class="date" name="start" value="{{start.strftime('%Y-%m-%d')}}" id="datepickerstart"> &nbsp;
+      <input type="text" class="date" name="end" value="{{end.strftime('%Y-%m-%d')}}" id="datepickerend">
+    </div>
+  </div>
+</div>
+</form>
+
+</div>
+{% endblock %}
