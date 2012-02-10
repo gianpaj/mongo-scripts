@@ -171,7 +171,6 @@ class Pstats(CorpBase):
         return [x['_id'] for x in db[collection].find(fields=['_id'])]
 
     def GET(self):
-        print "hey!!!"
         self._update_baseline()
         self._update_distincts()
 
