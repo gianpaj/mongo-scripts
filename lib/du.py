@@ -127,12 +127,16 @@ class DU:
         date = msg["headers"]["date"]
 
         f = msg["headers"]["from"]
+        print("%s %s" % ( f , sub ) )
         u = None
         user = None
 
         if sub.find( "-" ) >= 0:
             user = sub.split( "-" )[1].strip();
-            u = self.getUser( user )
+            try:
+                u = self.getUser( user )
+            except:
+                u = None
 
         if u == None and f.find( "<" ) >= 0:
             f = f.partition( "<" )[2].partition( ">" )[0]
