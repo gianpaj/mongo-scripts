@@ -40,10 +40,10 @@ web.config.wwwdb = wwwdb
 web.config.usagedb = usagedb
 web.config.mongowwwdb = mongowwwdb
 web.config.pstatsdb = pstatsdb
-from pstats import Pstats, PstatsCSV
+from perfstats import Pstats, PstatsCSV
 
 # import other handlers
-import pstats
+import perfstats
 
 
 myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
