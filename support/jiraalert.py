@@ -77,7 +77,7 @@ queries = [
     # ------ cs sla issues ----------
 
     { "name" : "SLA in danger - not assigned" ,
-      "sms" : True ,
+      "sms" : False ,
       "who" : "AO" ,
       "digest" : False ,
       "freq" : 2 ,
