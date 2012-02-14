@@ -67,15 +67,23 @@ class JiraMulti(CorpBase):
     def getIssues(self,keyList):
         res = {}
         for key in keyList:
-            res[key] = self.getIssueDICT(key)
+            key = key.strip()
+            if len(key) > 0:
+                res[key] = self.getIssueDICT(key)
         return res
     
     def getIssueDICT(self,key):
-        issue = myjira.getIssue( key )
+
         small = {}
-        small["assignee"] = issue["assignee"]
-        small["status"] = issue["status"]
-        small["fixVersions"] = [ x["name"] for x in issue["fixVersions"] ]
+        
+        try:
+            issue = myjira.getIssue( key )
+            small["assignee"] = issue["assignee"]
+            small["status"] = issue["status"]
+            small["fixVersions"] = [ x["name"] for x in issue["fixVersions"] ]
+        except Exception,e:
+            small["error"] = str(e)
+
         return small
 
 class CorpFavicon:
