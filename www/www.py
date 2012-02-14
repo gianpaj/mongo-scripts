@@ -1,6 +1,12 @@
 import logging
 import os
 import sys
+import pprint
+
+try:
+    import json
+except:
+    import simplejson as json
 
 import web
 import pymongo
@@ -48,6 +54,28 @@ import perfstats
 
 myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
 myjira = jira.JiraConnection()
+
+class JiraMulti(CorpBase):
+    
+    @authenticated
+    def GET(self,pageParams):
+        res = self.getIssues( web.input()["issues"].split( "," ) )
+        return json.dumps( res )
+
+    
+    def getIssues(self,keyList):
+        res = {}
+        for key in keyList:
+            res[key] = self.getIssueDICT(key)
+        return res
+    
+    def getIssueDICT(self,key):
+        issue = myjira.getIssue( key )
+        small = {}
+        small["assignee"] = issue["assignee"]
+        small["status"] = issue["status"]
+        small["fixVersions"] = [ x["name"] for x in issue["fixVersions"] ]
+        return small
 
 class CorpFavicon:
     def GET(self):
@@ -166,6 +194,7 @@ urls = (
     "/pstats/csv", PstatsCSV,
     "/buildBoard", BuildBoard,
     "/jirarep", JiraReport,
+    "/jiramulti", JiraMulti,
     "/engineer/(.*)", JiraEngineerReport,# TODO fix urls
     "/customer/(.*)", JiraCustomerReport,# TODO fix urls
     "/favicon.ico", CorpFavicon,
@@ -186,6 +215,9 @@ if __name__ == "__main__":
             for z in eng_group:
                 print(z)
                 print( "\t" + str( the_crowd.getUser( z ) ) )
+        elif cmd == "jiramultitest":
+            jm = JiraMulti()
+            pprint.pprint( jm.getIssues(sys.argv[2].split( "," )) )
         else:
             print( "unknown www command: " + cmd )
 else:
