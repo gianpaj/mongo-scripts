@@ -59,12 +59,9 @@ class JiraMulti(CorpBase):
     
     @authenticated
     def GET(self,pageParams):
-        web.header('Content-type','text/javascript')
+        web.header('Content-type','text/json')
         res = self.getIssues( web.input()["issues"].split( "," ) )
-        
-        callbackname = web.input()["jsoncallback"]
-        
-        return "%s(%s)" % ( callbackname , json.dumps( res , sort_keys=True, indent=4 ) )
+        return json.dumps( res , sort_keys=True, indent=4 )
 
     
     def getIssues(self,keyList):
