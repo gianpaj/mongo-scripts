@@ -59,8 +59,9 @@ class JiraMulti(CorpBase):
     
     @authenticated
     def GET(self,pageParams):
+        web.header('Content-type','text/javascript')
         res = self.getIssues( web.input()["issues"].split( "," ) )
-        return json.dumps( res )
+        return "jiraMultiCallback( " + json.dumps( res , sort_keys=True, indent=4 ) + " )"
 
     
     def getIssues(self,keyList):
