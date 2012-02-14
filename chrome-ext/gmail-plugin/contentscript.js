@@ -39,39 +39,123 @@ function setMyHTML( html ) {
 
 }
 
+var lastMultiUrl = null;
+
+function displayStatus( s ) {
+    s = parseInt( s );
+    
+    switch ( s ) {
+    case 1: return "Open";
+    case 3: return "In Progress";
+    case 4: return "Reopened";
+    case 10006: return "Waiting for Customer"
+    }
+
+    return s;
+}
+
+function jiraMultiCallback( data ) {
+    console.log( data );
+    
+    var nodes = findAllJiraThings();
+
+    for ( var key in data ) {
+        var match = null;
+        for ( var i=0; i<nodes.length; i++ ) {
+            if ( nodes[i].key != key )
+                continue;
+            match = nodes[i];
+            break;
+        }
+        
+        if ( ! match ) {
+            console.log( "no match for: " + key );
+            continue;
+        }
+
+        var small = match.large.find( "span.y2" );
+        
+        var issue = data[key];
+        
+        
+
+        var newhtml = "&nbsp;<b>A</b>: " + issue["assignee"] + " <b>S</b>:" + displayStatus( issue["status"] ) + " <b>fix</b>: " + issue["fixVersions"];
+
+        small.html( newhtml );
+    }
+}
+
+function findAllJiraThings() {
+    var all = []
+    
+    var r = /.MongoDB-JIRA. +\(([A-Z]+\-\d+)\)/;
+
+    $( "#canvas_frame" ).contents().find( "div.av" ).each(
+        function(index) {
+            if ( $(this).html() != "mongo-jira" )
+                return;
+            
+            var x = $(this);
+            
+            var res = null;
+            for ( var j=0; j<12; j++ ) {
+                x = x.parent();
+                var html = x.html();
+                res = r.exec( html );
+                if ( res )
+                    break;
+            }
+            
+            if ( ! res )
+                return;
+            
+            all.push( { label : $(this) , large : x , key : res[1] } )
+
+        }
+    );
+    
+    return all;
+}
+
 var doWork = function() {
 
     // You can probably combine the document scan for read and unread into one find.
 
-    /*
-    // This is for read email.
-    $('#canvas_frame').contents().find('span.yP').each(function(index) {
-        if ($(this).attr('email') != 'dan@10gen.com') return;
-        $(this).css('color', '#FF0000');
-    });
-
-    // This is for unread email.
-    $('#canvas_frame').contents().find('span.zF').each(function(index) {
-        if ($(this).attr('email') != 'dan@10gen.com') return;
-        $(this).css('color', '#FF0000');
-    });
-*/
-
     var srch = "[mongodb-user]";
+    var srchIndex = document.title.indexOf( srch );
 
-    var idx = document.title.indexOf( srch );
-    if ( idx < 0 ) {
+    if ( document.title.indexOf( "Inbox" ) >= 0 ) {
         setMyHTML( "" );
-        return;
-    }
-    
-    var subject = document.title.substring( idx + srch.length );
-    subject = rsplitOn( subject , "@" );
-    subject = rsplitOn( subject , "-" );
-    subject = subject.trim();
+        
+        var nodes = findAllJiraThings();
+        
+        var url = "https://corp.10gen.com/jiramulti?issues=";        
 
-    
-    setMyHTML("<iframe width='600' height='70' src='https://corp.10gen.com/gggiframe?subject=" + escape( subject ) + "'></iframe>" )
+        for ( var i=0; i<nodes.length; i++ ) {
+            url += nodes[i].key + ","
+        }
+        
+        url += "&t=" + Math.floor( (new Date()).getTime() / 300000 );
+        
+        if ( lastMultiUrl != url ) {
+            console.log( url )
+            lastMultiUrl = url;
+            $.getJSON( url  , jiraMultiCallback );
+        }
+
+    }
+    else if ( srchIndex >= 0 ) {
+        var subject = document.title.substring( srchIndex + srch.length );
+        subject = rsplitOn( subject , "@" );
+        subject = rsplitOn( subject , "-" );
+        subject = subject.trim();
+        
+        setMyHTML("<iframe width='600' height='70' src='https://corp.10gen.com/gggiframe?subject=" + escape( subject ) + "'></iframe>" )
+    }
+    else {
+        setMyHTML( "" );
+    }
+
 }
 
 var highlight = setInterval( doWork , 5000 );

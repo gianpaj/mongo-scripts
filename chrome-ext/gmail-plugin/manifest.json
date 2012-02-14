@@ -3,6 +3,6 @@
     "description": "makes mail better",
     "version": "0.1.1",
     "icons": { "128": "icon_128.png", "48": "icon_48.png", "16": "icon_16.png" },
-    "permissions": [ "*://mail.google.com/" ],
+    "permissions": [ "*://mail.google.com/" , "*://*.10gen.com/" ],
     "content_scripts": [ { "matches": ["*://mail.google.com/*"], "js": ["jquery-1.4.4.min.js", "contentscript.js"] } ]
 }
