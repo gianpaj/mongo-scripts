@@ -48,13 +48,20 @@ function displayStatus( s ) {
     case 1: return "Open";
     case 3: return "In Progress";
     case 4: return "Reopened";
+    case 5: return "Resolved";
+    case 6: return "Closed";
     case 10006: return "Waiting for Customer"
+    case 10007: return "Waiting for bug fix"
     }
 
     return s;
 }
 
+jiraData = null;
+
 function jiraMultiCallback( data ) {
+    jiraData = data
+
     console.log( data );
     
     var nodes = findAllJiraThings();
@@ -76,10 +83,21 @@ function jiraMultiCallback( data ) {
         var small = match.large.find( "span.y2" );
         
         var issue = data[key];
-        
-        
 
-        var newhtml = "&nbsp;<b>A</b>: " + issue["assignee"] + " <b>S</b>:" + displayStatus( issue["status"] ) + " <b>fix</b>: " + issue["fixVersions"];
+        var newhtml = "&nbsp;<b>";
+        if ( issue["error"] )
+            newhtml += issue["error"]
+
+        newhtml += displayStatus( issue["status"] ) + "&nbsp;";
+        newhtml += "P" + issue["priority"] + "&nbsp;";
+
+        if ( issue["assignee"] ) 
+            newhtml += issue["assignee"] + "&nbsp;";
+        
+        if ( issue["fixVersions"].length )
+            newhtml += issue["fixVersions"]
+        
+        newhtml += "</b>";
 
         small.html( newhtml );
     }
@@ -137,10 +155,13 @@ var doWork = function() {
         
         url += "&t=" + Math.floor( (new Date()).getTime() / 300000 );
         
-        if ( lastMultiUrl != url ) {
+        if ( ! jiraData || lastMultiUrl != url ) {
             console.log( url )
             lastMultiUrl = url;
             $.getJSON( url  , jiraMultiCallback );
+        }
+        else {
+            jiraMultiCallback( jiraData );
         }
 
     }
