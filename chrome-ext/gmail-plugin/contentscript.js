@@ -94,8 +94,12 @@ function jiraMultiCallback( data ) {
         if ( issue["assignee"] ) 
             newhtml += issue["assignee"] + "&nbsp;";
         
-        if ( issue["fixVersions"].length )
+        if ( issue["fixVersions"] && issue["fixVersions"].length )
             newhtml += issue["fixVersions"]
+
+        if ( issue["customer"] && issue["customer"].length )
+            newhtml += issue["customer"]
+
         
         newhtml += "</b>";
 
