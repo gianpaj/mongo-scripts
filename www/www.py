@@ -78,9 +78,17 @@ class JiraMulti(CorpBase):
         
         try:
             issue = myjira.getIssue( key )
+            #pprint.pprint( issue )
+
             small["assignee"] = issue["assignee"]
             small["status"] = issue["status"]
             small["fixVersions"] = [ x["name"] for x in issue["fixVersions"] ]
+            small["priority"] = issue["priority"]
+
+            for x in issue["customFieldValues"]:
+                if  x["customfieldId"] == "customfield_10030":
+                    small["customer"] = x["values"]
+
         except Exception,e:
             small["error"] = str(e)
 
