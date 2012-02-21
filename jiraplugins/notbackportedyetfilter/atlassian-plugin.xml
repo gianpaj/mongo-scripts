@@ -1,0 +1,13 @@
+<atlassian-plugin key="com.mongo.jira.plugin" name="Not Backported Yet Filter Plugin">
+    <plugin-info>
+        <description>This plugin will show issues not backported yet</description>
+        <version>1.0</version>
+        <vendor name="10gen Inc" url="http://www.10gen.com"/>
+    </plugin-info>
+
+    <web-item key="filterBackportNotDone" name="Not backported yet" section="system.preset.filters">
+        <label key="Not backported yet" />
+        <link>/secure/IssueNavigator.jspa?reset=true&amp;jqlQuery=project+%3D+SERVER+AND+Backport+%3D+Yes+ORDER+BY+status+ASC%2C+key+DESC</link>
+    </web-item>
+
+</atlassian-plugin>
