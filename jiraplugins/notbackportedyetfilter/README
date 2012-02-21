@@ -1,0 +1,4 @@
+atlassian-plugin.xml needs to be packaged as a single JAR file. Run the following: 
+jar -cvf filterNotBackportedYet.jar atlassian-plugin.xml
+Refer documentation on how to install a plugin using a jar.
+One way to do is to drop the jar in the installed-plugins folder of your JIRA installtion. Exact location of this folder might differ depending on the JIRA version.
