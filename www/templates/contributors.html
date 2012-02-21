@@ -7,6 +7,7 @@
 $(document).ready(function()
     {
         $("#contributors").tablesorter();
+            contributors
     }
 );
 
@@ -16,7 +17,7 @@ $(document).ready(function()
 {% block content %}
 
 <table id="contributors">
-
+<thead>
   <tr>
     <th>Name</th>
     <th>github_username</th>
@@ -26,7 +27,8 @@ $(document).ready(function()
     <th>address</th>
     <th>phone #</th>
   </tr>
-
+</thead>
+<tbody>
   {% for c in contributors %}
   <tr>
     <td>{% if c.full_name %}{{ c.full_name }}{% else %}{{ c.first_name }} {{ c.last_name }}{% endif %}</td>
@@ -38,6 +40,7 @@ $(document).ready(function()
     <td>{{ c.phone_number }}</td>
   </tr>
   {% endfor %}
+</tbody>
 </table>
 
 {% endblock %}
