@@ -15,10 +15,10 @@ public class CrowdRadiusServer {
         RadiusServer server = new RadiusServer() {
                 // Authorize localhost/testing123
                 public String getSharedSecret(InetSocketAddress client) {
-                    if (client.getAddress().getHostAddress().equals("127.0.0.1"))
+                    //if (client.getAddress().getHostAddress().equals("127.0.0.1"))
                         return "testing123";
-                    else
-                        return null;
+                        //else
+                        //return null;
                 }
 		
                 // Authenticate mw

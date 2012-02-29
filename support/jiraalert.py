@@ -76,12 +76,20 @@ queries = [
 
     # ------ cs sla issues ----------
 
+    { "name" : "New CS" , 
+      "sms" : True ,
+      "who" : "AO" , 
+      "digest" : False ,
+      "freq" : 1 , 
+      "filter" : last_comment_from_10gen ,
+      "jql" : csBigFilter + " AND assignee is EMPTY" } ,
+
     { "name" : "SLA in danger - not assigned" ,
       "sms" : False ,
       "who" : "AO" ,
       "digest" : False ,
       "freq" : 2 ,
-      "jql" : csBigFilter + " AND assignee is EMPTY and created <= -30m" } ,
+      "jql" : csBigFilter + " AND assignee is EMPTY" } ,
 
     { "name" : "SLA in danger - blocker needs response" ,
       "who" : "AO" ,
@@ -216,6 +224,33 @@ def getEmail( person ):
     personToEmail[person] = str(getUserProfile(person)["mail"])
     return str(personToEmail[person])
 
+theTwilio = None
+
+def sendSMS( who , query , issue ):
+    global theTwilio
+
+    msg = "%s %s -- %s" % ( issue["key"] , issue["summary"] , query["name"] )
+
+    number = None
+
+    if who == "eliot":
+        number = "+16462567013"
+    elif who == "dan@10gen.com":
+        number = "+19172241091"
+    elif who == "spf13":
+        number = "+12036445132"
+    else:
+        print( "CANNOT FIND SMS FOR: %s" % who )
+        return
+
+    print( "sending sms to %s msg[%s]" % ( who , msg ) )
+    
+    if not theTwilio:
+        theTwilio = lib.sms.Twilio()
+
+    if not inDebug:
+        theTwilio.sms( number , msg )
+
 def debug(msg):
     if True:
         print( msg )
@@ -313,9 +348,7 @@ def run( digest ):
                 p[name].append( issue )
 
                 if "sms" in q and q["sms"]:
-                    profile = getUserProfile(w)
-                    print(profile)
-                    raise Exception( "sms not supported yet" )
+                    sendSMS( w , q , issue )
 
     return messages
 
