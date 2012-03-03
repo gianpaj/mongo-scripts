@@ -119,6 +119,14 @@ queries = [
       "jql" : csBigFilter + " AND  updated <= -24h AND issuetype = 'Problem Ticket'" ,
       "who" : "AO" ,
       "sms" : False ,
+      "filter" : last_comment_from_10gen ,
+      "digest" : True  } ,
+
+
+    { "name": "CS problems not touched in 3 days " ,
+      "jql" : csBigFilter + " AND  updated <= -72h AND issuetype = 'Problem Ticket'" ,
+      "who" : "AO" ,
+      "sms" : False ,
       "digest" : True  } ,
 
     { "name": "CS questions not touched in 2 days" ,
@@ -193,6 +201,7 @@ def expandWho( issue , who ):
                 all.append( n )
                 continue
             t = "S"
+            issue["addedTriage"] = True
 
 
         if t == "S":
@@ -391,15 +400,19 @@ def sendEmails( messages , managerSummary , digest ):
                 ind += "\t" + simple
                 if issue["latest_comment"] and issue["latest_commenter"]:
                     latest_comment = truncate(issue["latest_comment"]["body"], 160).replace("\n", " ")
-                    mgr += "\n\t\t\tLatest Comment on %s: [by %s] %s" % (issue["latest_comment"]["created"],
-                                                                         issue["latest_commenter"],
-                                                                         latest_comment + "\n\t\n\n\n")
-                    ind += "\n\t\t\tLatest Comment on %s: [by %s] %s" % (issue["latest_comment"]["created"],
-                                                                         issue["latest_commenter"],
-                                                                         latest_comment + "\n\t\n\n\n")
+                    
+
+
+                    cmdPiece = "\n\t\t\tLatest Comment on %s: [by %s] %s\n\n\n" % (issue["latest_comment"]["created"],
+                                                                                   issue["latest_commenter"],
+                                                                                   latest_comment )
+
+                    #mgr += cmdPiece
+                    #ind += cmdPiece
+
                 else:
-                    mgr += '\n'
-                    ind += '\n'
+                    #mgr += '\n'
+                    #ind += '\n'
                     pass
 
 
