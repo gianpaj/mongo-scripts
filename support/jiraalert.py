@@ -410,11 +410,10 @@ def sendEmails( messages , managerSummary , digest ):
                     #mgr += cmdPiece
                     #ind += cmdPiece
 
-                else:
-                    #mgr += '\n'
-                    #ind += '\n'
-                    pass
 
+                mgr += '\n'
+                ind += '\n'
+                #end issue loop
 
             mgr += "\n"
             ind += "\n"
