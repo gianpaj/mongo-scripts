@@ -95,8 +95,9 @@
  
           // ops
           person( "Lily" , "VP Finance" , "Max" ) ,
+          person( "Martin", "VP HR, Training, Recruiting", "Max")
           person( "Ops" , list("Julia", "Jennifer", "Esther", "Allyson", "Isabelle") , "Lily" ) ,
-          person( "HR" , list( "Kirsten" ) , "Lily" ) ,
+          person( "HR" , list( "Kirsten" ) , "Martin" ) ,
           person( "Fin/Acctg" , list( "Caitlin" ) , "Lily" ) ,
 
           // eu ???
@@ -104,7 +105,7 @@
           person( "Europe Sales", list ("Renaud", "Allan", "Tim"), "Gerry") ,
  
           // recruiting
-          person ("Recruiting", list ("Stacy", "Craig", "Adrienne", "Thameka") , "Max") ,
+          person ("Recruiting", list ("Stacy", "Craig", "Adrienne", "Thameka") , "Martin") ,
         ]);
         var chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
         chart.draw(data, {allowHtml:true});
