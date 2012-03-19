@@ -24,7 +24,6 @@ sys.path.append( here.rpartition( "/" )[0] + "/support" )
 from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb
 from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, CodeReviewCommit,\
     CodeReviewCommits, CodeReviewPostReceiveHook, CodeReviewPatternTest
-from buildboard import BuildBoard
 
 import google_group_to_jira
 import jira
@@ -209,7 +208,6 @@ urls = (
     "/codeReview/postReceiveHook", CodeReviewPostReceiveHook,
     "/pstats", Pstats,
     "/pstats/csv", PstatsCSV,
-    "/buildBoard", BuildBoard,
     "/jirarep", JiraReport,
     "/jiramulti", JiraMulti,
     "/engineer/(.*)", JiraEngineerReport,# TODO fix urls
