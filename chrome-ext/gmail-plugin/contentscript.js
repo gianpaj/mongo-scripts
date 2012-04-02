@@ -49,7 +49,7 @@ function displayStatus( s ) {
     case 3: return "In Progress";
     case 4: return "Reopened";
     case 5: return "<span style='color:purple;'>Resolved</span>";
-    case 5: return "<span style='color:purple;'>Closed</span>";
+    case 6: return "<span style='color:purple;'>Closed</span>";
     case 10006: return "<span style='color:pink;'>waiting for customer</span>";
     case 10007: return "<span style='color:pink;'>waiting for bug fix</span>";
     }
