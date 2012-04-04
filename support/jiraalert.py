@@ -238,7 +238,7 @@ theTwilio = None
 def sendSMS( who , query , issue ):
     global theTwilio
 
-    msg = "%s %s -- %s" % ( issue["key"] , issue["summary"] , query["name"] )
+    msg = "%s %s %s -- %s" % ( issue["key"] , getCompany(issue), [issue["summary"] , query["name"] )
 
     number = None
 
