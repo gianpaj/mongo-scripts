@@ -10,6 +10,8 @@ except:
 
 import web
 import pymongo
+import gridfs
+import bson
 
 web.config.debug = False
 
@@ -21,7 +23,7 @@ if here not in sys.path:
 sys.path.append( here.rpartition( "/" )[0] + "/lib" )
 sys.path.append( here.rpartition( "/" )[0] + "/support" )
 
-from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb
+from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb, corpdb
 from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, CodeReviewCommit,\
     CodeReviewCommits, CodeReviewPostReceiveHook, CodeReviewPatternTest
 
@@ -106,6 +108,14 @@ class CorpNormal(CorpBase):
     def GET(self, pageParams, p=''):
         if p == "logout":
             return web.redirect( "/" )
+
+        if p == "gridfsimg":
+            gfs = gridfs.GridFS( corpdb )
+            f = gfs.get( bson.ObjectId( web.input()["id"] ) )
+            if not f:
+                return
+            web.header('Content-type','image/jpeg')
+            return f.read()
 
         if p in dir(self):
             getattr(self,p)(pageParams)
@@ -198,6 +208,56 @@ class CorpNormal(CorpBase):
 
     def contributors(self,pp):
         pp["contributors"] = wwwdb.contributors.find()
+
+
+    def phonebook(self,pp):
+        pp["people"] = corpdb.phonebook.find()
+
+    def person(self,pp):
+        inp = web.input()
+
+        person = corpdb.phonebook.find_one( { "_id" : inp["id"] } )
+
+        pp["images"] = corpdb.fs.files.find( { "user" : inp["id"] } )
+        
+        # --- edit ----
+        if "edit" in inp and "true" == inp["edit"]:
+            pp["edit"] = True
+        else:
+            pp["edit"] = False
+
+        if "first_name" in inp:
+            for x in person.keys():
+                person[x] = inp[x]
+            corpdb.phonebook.save(person)
+
+        pp["person"] = person
+
+        # --- image upload ----
+        
+        if "myfile" in inp:
+            x = web.input(myfile={})["myfile"]
+
+            gfs = gridfs.GridFS( corpdb )
+            web.debug(x)
+            fid = gfs.put( x.value , filename = x.filename , user = inp["id"] )
+            corpdb.fs.files.create_index( "user" )
+
+        # --- canEdit ----
+        
+        canEdit = False
+        
+        if pp["user"] == person["jira_username"]:
+            canEdit = True
+        else:
+            me = corpdb.phonebook.find_one( { "jira_username" : pp["user"] } )
+            if me:
+                if me["title"] == "CTO":
+                    canEdit = True
+                if me["areas_of_focus"].find( "hr" ) >= 0:
+                    canEdit = True
+
+        pp["canEdit"] = canEdit
 
 urls = (
     "/codeReview/patternTest/(.+)/(.+)/(.+)", CodeReviewPatternTest,

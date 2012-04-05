@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<script src="/static/jquery-1.4.0.min.js"></script>
+<script src="/static/jquery.tablesorter.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/tablesortertheme/style.css">
+{% endblock %}
+
+
+{% block content %}
+
+<table id="dltable" class="tablesorter">
+
+  <thead>
+    <tr>
+      <th>First</th>
+      <th>Last</th>
+      <th>Primary Email</th>
+      <th>Primary Phone</th>
+      <th>Twitter</th>
+    </tr>
+  </thead>
+  
+  <tbody>
+    
+    {% for person in people %}
+    
+    <tr>
+      <td><a href="/person?id={{ person._id }}">{{ person.first_name }}</a></td>
+      <td>{{ person.last_name }}</td>
+      <td><a href="mailto:{{ person.primary_email }}">{{ person.primary_email }}</a></td>
+      <td>{{ person.primary_phone }}</td>
+      <td><a href="http://www.twitter.com/{{ person.twitter|replace( '@' , '' ) }}">{{ person.twitter }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
+
+{% block extrabody %}
+<script type="text/javascript">
+    $(document).ready(function() {
+      $("#dltable").tablesorter();
+    });
+</script>
+{% endblock %}
