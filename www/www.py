@@ -247,7 +247,7 @@ class CorpNormal(CorpBase):
         
         canEdit = False
         
-        if pp["user"] == person["jira_username"]:
+        if pp["user"] == person["jira_username"] or pp["user"] == person["primary_email"]:
             canEdit = True
         else:
             me = corpdb.phonebook.find_one( { "jira_username" : pp["user"] } )
