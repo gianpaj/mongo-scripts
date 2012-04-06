@@ -218,6 +218,10 @@ class CorpNormal(CorpBase):
 
         person = corpdb.phonebook.find_one( { "_id" : inp["id"] } )
 
+        if "deletephoto" in inp:
+            gfs = gridfs.GridFS( corpdb )
+            gfs.delete( bson.ObjectId( web.input()["deletephoto"] ) )
+
         pp["images"] = corpdb.fs.files.find( { "user" : inp["id"] } )
         
         # --- edit ----

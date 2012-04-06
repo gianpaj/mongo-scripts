@@ -24,7 +24,13 @@
 </table>
 
 {% for img in images %}
-<a href="/gridfsimg?id={{ img._id }}"><img width=80 src="/gridfsimg?id={{ img._id }}"></a><bR>
+<a href="/gridfsimg?id={{ img._id }}"><img width=80 src="/gridfsimg?id={{ img._id }}"></a>
+
+{% if edit %}
+<a href="/person?id={{ person._id }}&deletephoto={{ img._id }}">delete photo</a>
+{% endif %}
+
+<br>
 {% endfor %}
 
 {% if edit %}
