@@ -241,9 +241,7 @@ class CorpNormal(CorpBase):
         
         if "myfile" in inp:
             x = web.input(myfile={})["myfile"]
-
             gfs = gridfs.GridFS( corpdb )
-            web.debug(x)
             fid = gfs.put( x.value , filename = x.filename , user = inp["id"] )
             corpdb.fs.files.create_index( "user" )
 
