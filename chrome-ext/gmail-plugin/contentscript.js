@@ -79,7 +79,7 @@ function jiraMultiCallback( data ) {
     console.log( data );
     
     var nodes = findAllJiraThings();
-
+    console.log( "number of nodes: " + nodes.length )
     for ( var key in data ) {
         var match = null;
         for ( var i=0; i<nodes.length; i++ ) {
