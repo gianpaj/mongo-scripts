@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if edit %}
+<b style="color:red">Warning: still in beta, may wipe all data</b>
+<form method="post" action="/person">
+<input type="hidden" name="id" value="{{ person._id }}" >
+{% endif %}
+
+<table>
+  {% for n in  person.keys()|sort %}
+  <tr>
+    <th>{{ n }}</th>
+    <td>
+      {% if edit %}
+      <input name="{{ n }}" value="{{ person[n] }}" />
+      {% else %}
+      {{ person[n] }}
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% for img in images %}
+<a href="/gridfsimg?id={{ img._id }}"><img width=80 src="/gridfsimg?id={{ img._id }}"></a>
+
+{% if edit %}
+<a href="/person?id={{ person._id }}&deletephoto={{ img._id }}">delete photo</a>
+{% endif %}
+
+<br>
+{% endfor %}
+
+{% if edit %}
+<input type="submit">
+</form>
+
+{% elif canEdit %}
+
+<a href="/person?id={{ person._id}}&edit=true">EDIT</a>
+
+<form enctype="multipart/form-data" action="/person?id={{ person._id }}&upload=1" method="post">
+  <input type="file" name="myfile" />
+  <input type="submit">
+</form>
+
+{% endif %}
+
+{% endblock %}

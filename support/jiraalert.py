@@ -238,7 +238,7 @@ theTwilio = None
 def sendSMS( who , query , issue ):
     global theTwilio
 
-    msg = "%s %s -- %s" % ( issue["key"] , issue["summary"] , query["name"] )
+    msg = "%s %s %s -- %s" % ( issue["key"] , getCompany(issue), issue["summary"] , query["name"] )
 
     number = None
 
@@ -248,6 +248,10 @@ def sendSMS( who , query , issue ):
         number = "+19172241091"
     elif who == "spf13":
         number = "+12036445132"
+    elif who == "nyc1":
+        number = "+17189098546"
+    elif who == "nyc2":
+        number = "+19172975956"
     else:
         print( "CANNOT FIND SMS FOR: %s" % who )
         return
@@ -358,6 +362,9 @@ def run( digest ):
 
                 if "sms" in q and q["sms"]:
                     sendSMS( w , q , issue )
+                    # hack to send new CS to first responder phones
+                    sendSMS( 'nyc1' , q , issue )
+                    sendSMS( 'nyc2' , q , issue )
 
     return messages
 

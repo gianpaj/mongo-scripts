@@ -48,13 +48,27 @@ function displayStatus( s ) {
     case 1: return "Open";
     case 3: return "In Progress";
     case 4: return "Reopened";
-    case 5: return "Resolved";
-    case 6: return "Closed";
-    case 10006: return "Waiting for Customer"
-    case 10007: return "Waiting for bug fix"
+    case 5: return "<span style='color:purple;'>Resolved</span>";
+    case 6: return "<span style='color:purple;'>Closed</span>";
+    case 10006: return "<span style='color:pink;'>waiting for customer</span>";
+    case 10007: return "<span style='color:pink;'>waiting for bug fix</span>";
     }
 
     return s;
+}
+
+function displayPriority( p ) {
+    p = parseInt( p );
+    var imgName = null;
+    if ( p == 1 )
+        imgName = "blocker";
+    else if ( p == 2 )
+        imgName = "critical";
+
+    if ( imgName )
+        return "<img src='https://jira.mongodb.org/images/icons/priority_" + imgName + ".gif'/>";
+
+    return "P" + p;
 }
 
 jiraData = null;
@@ -65,7 +79,7 @@ function jiraMultiCallback( data ) {
     console.log( data );
     
     var nodes = findAllJiraThings();
-
+    console.log( "number of nodes: " + nodes.length )
     for ( var key in data ) {
         var match = null;
         for ( var i=0; i<nodes.length; i++ ) {
@@ -89,7 +103,7 @@ function jiraMultiCallback( data ) {
             newhtml += issue["error"]
 
         newhtml += displayStatus( issue["status"] ) + "&nbsp;";
-        newhtml += "P" + issue["priority"] + "&nbsp;";
+        newhtml += displayPriority( issue["priority"] ) + "&nbsp;";
 
         if ( issue["assignee"] ) 
             newhtml += issue["assignee"] + "&nbsp;";
