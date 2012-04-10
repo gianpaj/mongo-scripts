@@ -19,7 +19,7 @@ sys.path.append( path )
 import lib.jira
 import lib.crowd
 import lib.aws
-import lib.sms
+#import lib.sms
 import settings
 
 conn = pymongo.Connection('jira.10gen.cc');
@@ -35,8 +35,8 @@ email_template_str = """
 {% endfor %}
 """
 
-#recips = ["scott@10gen.com", "mikeo@10gen.com"]
-recips = ["mikeo@10gen.com"]
+recips = ["scott@10gen.com", "mikeo@10gen.com"]
+#recips = ["mikeo@10gen.com"]
 
 email_template = Template(email_template_str)
 jira = lib.jira.JiraConnection()
@@ -105,8 +105,10 @@ def get_issues(limit_time=None):
 
 
 def main():
+    issues = get_issues()
+    for issue in issues:
+        print issue['key'], issue['summary'], issue['created']
     latest_ticket = last_alert_noncs.find_one({"_id":"latest_noncs"})
-    print latest_ticket;
     if latest_ticket:
         timecheck = latest_ticket['created']
         print "latest time", timecheck
