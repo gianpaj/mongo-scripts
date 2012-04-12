@@ -162,8 +162,24 @@ class StackOverflowImport(object):
                     self.db.questions.update({'_id': question['_id']}, {'$set': {'answers.%d.in_jira' % i: True}})
 
         # jira constants
+        #
+        # it's crazy, but these are actually represented
+        # as strings by the JIRA SOAP API
+        OPEN = '1'
+        IN_PROGRESS = '3'
+        WAITING_FOR_CUSTOMER = '10006'
         CLOSED = '6'
-        RESOLVE_AND_CLOSE = '121'
+
+        # map current state to action to "close & resolve";
+        # None here means take no action, either because
+        # it is not possible in the current workflow, or
+        # because it makes no sense (eg when already closed)
+        CLOSE_ACTIONS = {
+            OPEN: '121',
+            IN_PROGRESS: None,     # TODO: define this workflow step?
+            WAITING_FOR_CUSTOMER: '111',
+            CLOSED: None,
+        }
 
         # close items for answered questions
         for question in self.db.questions.find({'_id': {'$in': list(newly_answered_questions)}}):
@@ -172,10 +188,11 @@ class StackOverflowImport(object):
                 continue
 
             ticket = jira.getIssue(question['jira'])
-            if ticket['status'] != CLOSED:
+            action = CLOSE_ACTIONS.get(ticket['status'])
+            if action is not None:
                 # close and resolve
                 print "closing ticket", question['jira']
-                jira.progressWorkflowAction(question['jira'], RESOLVE_AND_CLOSE)
+                jira.progressWorkflowAction(question['jira'], action)
 
 
 if __name__ == '__main__':
