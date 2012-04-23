@@ -248,6 +248,8 @@ def sendSMS( who , query , issue ):
         number = "+19172241091"
     elif who == "spf13":
         number = "+12036445132"
+    elif who == "bill":
+        number = "+16095402326"
     elif who == "nyc1":
         number = "+17189098546"
     elif who == "nyc2":
@@ -362,10 +364,11 @@ def run( digest ):
 
                 if "sms" in q and q["sms"]:
                     sendSMS( w , q , issue )
-                    # hack to send new CS to first responder phones
-                    sendSMS( 'nyc1' , q , issue )
-                    sendSMS( 'nyc2' , q , issue )
 
+            # hack to send new CS to first responder phones
+            if "sms" in q and q["sms"]:
+                sendSMS( 'nyc1' , q , issue )
+                sendSMS( 'nyc2' , q , issue )
     return messages
 
 def getCompany(issue):
