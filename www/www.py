@@ -23,7 +23,8 @@ if here not in sys.path:
 sys.path.append( here.rpartition( "/" )[0] + "/lib" )
 sys.path.append( here.rpartition( "/" )[0] + "/support" )
 
-from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb, corpdb
+from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb, corpdb, ftsdb
+
 from codeReview import CodeReviewAssignmentRules, CodeReviewAssignmentRule, CodeReviewCommit,\
     CodeReviewCommits, CodeReviewPostReceiveHook, CodeReviewPatternTest
 
@@ -31,6 +32,7 @@ import google_group_to_jira
 import jira
 from jirarep import JiraReport, JiraEngineerReport, JiraCustomerReport
 import jinja2
+
 
 # setup web env
 env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(here, "templates")))
@@ -47,24 +49,27 @@ web.config.wwwdb = wwwdb
 web.config.usagedb = usagedb
 web.config.mongowwwdb = mongowwwdb
 web.config.pstatsdb = pstatsdb
+web.config.ftsdb = ftsdb
 from perfstats import Pstats, PstatsCSV
 
 # import other handlers
 import perfstats
+import clienthub
+
 
 
 myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
 myjira = jira.JiraConnection()
 
 class JiraMulti(CorpBase):
-    
+
     @authenticated
     def GET(self,pageParams):
         web.header('Content-type','text/json')
         res = self.getIssues( web.input()["issues"].split( "," ) )
         return json.dumps( res , sort_keys=True, indent=4 )
 
-    
+
     def getIssues(self,keyList):
         res = {}
         for key in keyList:
@@ -72,11 +77,11 @@ class JiraMulti(CorpBase):
             if len(key) > 0:
                 res[key] = self.getIssueDICT(key)
         return res
-    
+
     def getIssueDICT(self,key):
 
         small = {}
-        
+
         try:
             issue = myjira.getIssue( key )
             #pprint.pprint( issue )
@@ -223,7 +228,7 @@ class CorpNormal(CorpBase):
             gfs.delete( bson.ObjectId( web.input()["deletephoto"] ) )
 
         pp["images"] = corpdb.fs.files.find( { "user" : inp["id"] } )
-        
+
         # --- edit ----
         if "edit" in inp and "true" == inp["edit"]:
             pp["edit"] = True
@@ -238,7 +243,7 @@ class CorpNormal(CorpBase):
         pp["person"] = person
 
         # --- image upload ----
-        
+
         if "myfile" in inp:
             x = web.input(myfile={})["myfile"]
             gfs = gridfs.GridFS( corpdb )
@@ -246,9 +251,9 @@ class CorpNormal(CorpBase):
             corpdb.fs.files.create_index( "user" )
 
         # --- canEdit ----
-        
+
         canEdit = False
-        
+
         if pp["user"] == person["jira_username"] or pp["user"] == person["primary_email"]:
             canEdit = True
         else:
