@@ -1,0 +1,161 @@
+<html>
+
+<h1>{{client.name}}</h1>
+
+<dl>
+  <dt>Client Name</dt>
+  <dd>{{client.name}}</dd>
+
+  {% if client.has_mms %}
+  <dt>MMS</dt>
+  <dd>
+    <a href="https://mms.10gen.com/links/customer?id={{client.jira_group}},425989">MMS Dashboard</a>
+  </dd>
+  {% endif %}
+
+  <dt>Account Contact</dt>
+  <dd>
+    {% if client.account_contact %}
+    {{client.display_account_contact()}}
+    {% elif client.account_contact_email %}
+    {{client.account_contact_email}} <span class="helper">(no JIRA user!)</span>
+    {% else %}
+    <span class="helper">None set in Salesforce</span>
+    {% endif %}
+    <br/>
+  </dd>
+
+  <dt>Primary Engineer</dt>
+  <dd>
+    {% if client.primary_eng %}
+    {{client.display_engineering_contact()}}
+    {% else %}
+    <span class="helper">None selected</span>
+    {% endif %}
+  </dd>
+
+  <dt>Secondary Engineers</dt>
+  <dd>
+    {% if client.secondary_engs %}
+    {{client.display_secondary_engineers()}}
+    {% else %}
+    <span class="helper">None selected</span>
+    {% endif %}
+  </dd>
+</dl>
+
+{% set sf_account = client.get_sf_account() %}
+
+<h2>Paid Support</h2>
+{% if sf_account and sf_account.get('suspended', False) %}
+<h3 class="warning"><strong>Client is suspended{% if sf_account.get('suspended_reason', None) %} for {{sf_account.get('suspended_reason', 'unknown')}}{% endif %}.</strong>
+<br/>Contact <a href="mailto:salesops@10gen.com">salesops@10gen.com</a> for more information.</h3>
+{% endif %}
+<table class="tablesorter contracts">
+  <thead>
+    <tr>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Type</th>
+      <th># Servers</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for contract in client.get_sf_contracts() %}
+    <tr class="{{contract.end and (contract.active and "active" or "inactive") or "noend"}}">
+      <td class="start">{{contract['start']|datetimeformat('%Y-%m-%d')}}</td>
+      <td class="end">{{contract['end']|datetimeformat('%Y-%m-%d')|default('<em>none set</em>')}}</td>
+      <td class="type">{{contract['type']}}{% if contract.end and not contract.active %} (expired){% endif %}</td>
+      <td class="num">{{contract['num_servers']}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="5">
+        {% if not client.sf_account_id %}
+        No Salesforce Account associated. <a href="{{link('clientedit', client._id)}}?message=Select+a+Salesforce+Account">Add one now</a>.
+        {% else %}
+          {% if not client.get_sf_contracts() %}
+          No active support contracts.
+          {% endif %}
+          {% endif %}
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<h2>Paid Services</h2>
+{% if sf_account and sf_account.get('suspended', False) %}
+<h3 class="warning"><strong>Client is suspended{% if sf_account.get('suspended_reason', None) %} for {{sf_account.get('suspended_reason', 'unknown')}}{% endif %}.</strong>
+<br/>Contact <a href="mailto:salesops@10gen.com">salesops@10gen.com</a> for more information.</h3>
+{% endif %}
+<table class="tablesorter services">
+  <thead>
+    <tr>
+      <th>Ordered Date</th>
+      <th>Service</th>
+      <th>Quantity</th>
+      <th>Delivered</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for service in client.get_sf_services() %}
+    <tr>
+      <td>{{service['ordered']|datetimeformat('%Y-%m-%d')}}</td>
+      <td>{{service['type']}}</td>
+      <td>{{service['quantity']|noNone}}</td>
+      <td>{{service['delivered']|noNone}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="5">
+        {% if not client.sf_account_id %}
+        No Salesforce Account associated. <a href="{{link('clientedit', client._id)}}?message=Select+a+Salesforce+Account">Add one now</a>.
+        {% else %}
+          {% if not client.get_sf_services() %}
+          No services.
+          {% endif %}
+        {% endif %}
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<h2 style="float:left">Client Contacts</h2>
+<table class="tablesorter contacts">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Title</th>
+      <th>Phone</th>
+      <th>JIRA User</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for contact in client.get_contacts() %}
+    <tr>
+      <td>
+        {{contact['name']}}
+        {% if client.contact_is_primary(contact.get('id', None)) %}(<em>Primary Contact</em>)
+        {% elif client.contact_is_secondary(contact.get('id', None)) %}(<em>Secondary Contact</em>)
+        {% endif %}
+      </td>
+      <td>{% if 'email' in contact %}<a href="mailto:{{contact['email']}}">{{contact['email']}}</a>{% endif %}</td>
+      <td>{{contact['title']}}</td>
+      <td>{{contact['phone']}}</td>
+      <td>
+        {% if 'jira_username' in contact %}
+        <a href="https://jira.mongodb.org/secure/ViewProfile.jspa?name={{contact['jira_username']}}">{{contact['jira_username']}}</a>
+        {% else %}&nbsp;
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tbody>
+</table>
+
+</html>

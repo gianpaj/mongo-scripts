@@ -1,0 +1,117 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}{{client.name}} - {{super()}}{% endblock %}
+
+{% block morestyles %}
+    <link rel="stylesheet" type="text/css" href="{{'/static/css/ui/redmond/jquery-ui-1.8.12.custom.css'|staticurl}}"/>
+{% endblock %}
+
+{% block morescripts %}
+    <script type="text/javascript" src="{{'/static/js/jquery-ui-1.8.min.js'|staticurl}}"></script>
+    <script type="text/javascript">
+      function collapsible() {
+        var fieldset = this;
+        var open = "{{'/static/clienthub/images/open.png'|staticurl}}";
+        var close = "{{'/static/clienthub/images/close.png'|staticurl}}";
+        $(fieldset).wrapInner('<div class="innerarea"/>');
+        $(fieldset).prepend($(fieldset).find('legend'));
+        $(fieldset).find('legend').append('<img class="collapser" src="' + close + '"/>');
+        $(fieldset).find('img.collapser').toggle(
+          function() {
+            $(fieldset).find('img.collapser').attr('src', open);
+            $(fieldset).find('div.innerarea').slideUp();
+          },
+          function() {
+            $(fieldset).find('img.collapser').attr('src', close);
+            $(fieldset).find('div.innerarea').slideDown();
+          }
+        );
+      }
+      $(document).ready(function() {
+        $('a.delete').click(function() { return confirm("Are you sure you want to delete this document?"); });
+        $('input[type="submit"]').click(function() {
+          $('form input#_unset_checkbox').remove();
+          var unset_checkboxes = [];
+          $('input[type="checkbox"]').each(function() {
+            if (!$(this).attr('checked')) {
+              unset_checkboxes[unset_checkboxes.length] = $(this).attr('name');
+            }
+          });
+          $('form').append('<input type="hidden" name="_unset_checkbox" id="_unset_checkbox"/>');
+          $('form input#_unset_checkbox').val(unset_checkboxes.join(','));
+          return true;
+        });
+        $('input.datepicker-YYYY-MM-DD').datepicker({dateFormat:"yy-mm-dd"});
+        $('form fieldset').each(collapsible);
+      });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{{client.name}}</h1>
+
+{% block doctitle %}{% endblock %}
+
+<p><a href="{{link('clientdocdelete', client._id, doc['_type'], doc['_id'])}}" class="delete">Delete this document</a></p>
+
+{% if not skipform %}
+<form method="POST"{{form_enctype}}>
+{% endif %}
+
+{% if not skip_engagement_details %}
+  <fieldset>
+    <legend>Engagement Details</legend>
+      <dl>
+        <dt>Author</dt>
+        <dd>
+          <select name="author" multiple="multiple">
+            {%- for user in xgenners %}
+            <option value="{{user['username']}}">{{user['displayName']}}</option>
+            {% endfor %}
+          </select>
+        </dd>
+        <dt>Engagement Date</dt>
+        <dd>
+          <input type="text" name="date" class="datepicker-YYYY-MM-DD"/>
+        </dd>
+        <dt>Created</dt>
+        <dd>
+          <input type="text" name="created" disabled="disabled"/>
+        </dd>
+        <dt>Last Updated</dt>
+        <dd>
+          <input type="text" name="updated" disabled="disabled"/>
+        </dd>
+        <dt>Summary</dt>
+        <dd>
+          <div class="helper">Shows up in documents table in main client view</div>
+          <textarea name="summary"></textarea>
+        </dd>
+        {% block extra_engagement_details %}{% endblock %}
+      </dl>
+  </fieldset>
+{% endif %}
+
+  {% block details %}{% endblock %}
+
+{% if not skipform %}
+  <div style="padding-left:133px"><input type="submit" value="Save"/></div>
+  <div style="padding-left:133px"><input type="submit" name="save-and-stay" value="Save and Stay"/></div>
+</form>
+{% endif %}
+
+{% if legacy_fields %}
+<h2 style="margin-top:1.5em">Legacy Fields</h2>
+<p>These fields are present in the document, but no longer part of the template:</p>
+
+<dl>
+  {% for name, value in legacy_fields.iteritems() %}
+  <dt>{{name}}</dt>
+  <dd>{{value}}</dd>
+  {% endfor %}
+</dl>
+{% endif %}
+
+{% endblock %}
+

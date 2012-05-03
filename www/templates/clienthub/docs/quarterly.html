@@ -1,0 +1,58 @@
+{% extends "clienthub/doc.html" %}
+
+{% block title %}Quarterly Checkin - {{super()}}{% endblock %}
+
+{% block doctitle %}
+<h2>Quarterly Checkin</h2>
+
+<p>Pre-requisites:</p>
+<ul>
+  <li>Familiarize yourself with the client: Review most recent notes, onboarding form</li>
+  <li>Check with other engineers if this is a new customer (for you)</li>
+  <li>Check most recent JIRA tickets BEFORE calling</li>
+  <li>Check in with account manager ({{client.display_account_contact()}}) to coordinate communications</li>
+</ul>
+
+<p>Goals are:</p>
+<ul>
+  <li>Check in with every commercial support customer</li>
+  <li>Maintain our relationship as a trusted advisor</li>
+  <li>Get a temperature reading of their use and deployment of MongoDB</li>
+</ul>
+{% endblock %}
+
+{% import 'clienthub/docs/_macros.html' as macros %}
+
+{% block details %}
+
+  <fieldset>
+    <legend>Server Foundation</legend>
+    <textarea name="foundation">
+## Mongo and Driver Versions
+* Upgrade Plans?
+* High level stack overview
+
+## Hardware and OS
+
+## Replication Setup
+
+## Sharding Setup
+
+## Backup and Recovery Strategy
+* Using journalling
+
+## Monitoring Strategy
+* Using MMS?
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Overall Feedback/Follow-up Notes</legend>
+    <textarea name="feedback" class="short"></textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}Edit {{client.name|default('New Client')}} - {{super()}}{% endblock %}
+
+{% block morestyles %}
+    <link rel="stylesheet" href="{{'/static/css/chosen.css'|staticurl}}"></script>
+{% endblock %}
+
+{% block morescripts %}
+    <script type="text/javascript" src="{{'/static/js/chosen.jquery.min.js'|staticurl}}"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $('select[name="sf_account_id"]').change(function() {
+          if (this.options[this.selectedIndex].value !== "") {
+            var name = this.options[this.selectedIndex].text;
+            $('input[name="sf_account_name"]').val(name);
+          } else {
+            $('input[name="sf_account_name"]').val(null);
+          }
+        });
+
+        $('select').chosen({no_results_text: "No matches"});
+      });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ client.name|default('New Client') }}</h1>
+
+{% if message %}
+<h4 class="message">{{message}}</h4>
+{% endif %}
+
+<form method="POST">
+  <dl class="clientedit">
+    <dt>Client Name *</dt>
+    <dd><input type="text" name="name" value="{{client.name}}"/></dd>
+
+    <dt>Main JIRA Group</dt>
+    <dd>
+      <select name="jira_group" data-placeholder="Choose a group...">
+        <option value="">--------</option>
+        {%- for group in groups %}
+        <option value="{{group['id']}}"{% if client.jira_group == group['id'] %} selected="selected"{% endif %}>{{group['name']}}</option>
+        {%- endfor -%}
+      </select>
+    </dd>
+
+    <dt>Associated Groups</dt>
+    <dd>
+      <select name="associated_jira_groups" multiple="multiple" data-placeholder="Choose groups...">
+        {%- for group in groups %}
+        <option value="{{group['id']}}"{% if group['id'] in client.associated_jira_group_names %} selected="selected"{% endif %}>{{group['name']}}</option>
+        {%- endfor -%}
+      </select>
+      {% if groups_expiry %}<br/><span class="helper">Cached until {{groups_expiry|datetimeformat('%Y-%m-%d %I:%M %p')}}. <a href="{{link('clientcacherefresh', client._id, 'all_groups,jira_groups')}}">Refresh now</a>.</span>{% endif %}
+    </dd>
+
+    <dt>Salesforce Account</dt>
+    <dd>
+      <select name="sf_account_id">
+        <option value="">--------</option>
+        {%- for account in sf_accounts %}
+        <option value="{{account['id']}}"{% if client.sf_account_id == account['id'] %} selected="selected"{% endif %}>{{account['name']}}</option>
+        {%- endfor -%}
+      </select>
+      {# auto-filled by javascript when the sf_account_id selection changes #}
+      <input type="hidden" name="sf_account_name" value="{{client.sf_account_name}}"/>
+      {% if sf_expiry %}<br/><span class="helper">Cached until {{sf_expiry|datetimeformat('%Y-%m-%d %I:%M %p')}}. <a href="{{link('clientcacherefresh', client._id, 'sf_accounts')}}">Refresh now</a>.</span>{% endif %}
+    </dd>
+
+    <dt>Primary Eng</dt>
+    <dd>
+      <select name="primary_eng">
+        <option value="">--------</option>
+        {%- for user in xgenners %}
+        <option value="{{user['username']}}"{% if client.primary_eng == user['username'] %} selected="selected"{% endif %}>{{user['displayName']}}</option>
+        {%- endfor -%}
+      </select>
+      {% if xgenners_expiry %}<br/><span class="helper">Cached until {{xgenners_expiry|datetimeformat('%Y-%m-%d %I:%M %p')}}. <a href="{{link('clientcacherefresh', client._id, 'xgenners')}}">Refresh now</a>.</span>{% endif %}
+    </dd>
+
+    <dt>Secondary Engs</dt>
+    <dd>
+      <select name="secondary_engs" multiple="multiple">
+        {%- for user in xgenners %}
+        <option value="{{user['username']}}"{% if client.secondary_engs and user['username'] in client.secondary_engs %} selected="selected"{% endif %}>{{user['displayName']}}</option>
+        {%- endfor -%}
+      </select>
+      {% if xgenners_expiry %}<br/><span class="helper">Cached until {{xgenners_expiry|datetimeformat('%Y-%m-%d %I:%M %p')}}. <a href="{{link('clientcacherefresh', client._id, 'xgenners')}}">Refresh now</a>.</span>{% endif %}
+    </dd>
+
+    <dt>&nbsp;</dt>
+    <dd><input type="submit" value="Save"/></dd>
+  </dl>
+
+</form>
+
+
+
+{% endblock %}
+

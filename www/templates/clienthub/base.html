@@ -1,0 +1,58 @@
+{% extends "internal.html" %}
+{% set wide = True %}
+{% set disabletrackers = True %}
+
+{% block title %}10gen Client Hub{% endblock %}
+
+{% block leftnav %}
+
+  <div class="suplimental">
+    <div class="subnav">
+      <h2>Welcome {{auth_user()}}</h2>
+      <ul>
+        <li><a href="{{link('logout')}}">Log Out</a></li>
+        <li{% if page_is('clienthub') %} class="current"{% endif %}><a href="{{link('clienthub')}}">My Clients</a></li>
+        <li{% if page_is('allclients') %} class="current"{% endif %}><a href="{{link('allclients')}}">Full Client List</a></li>
+        <li{% if page_is('documentsearch') %} class="current"{% endif %}><a href="{{link('documentsearch')}}">Document Search</a></li>
+        <li{% if page_is('clienthubreports') %} class="current"{% endif %}><a href="{{link('clienthubreports')}}">Reports</a></li>
+        <li{% if page_is('jiratool') %} class="current"{% endif %}><a href="{{link('jiratool')}}">JIRA Administration Tool</a></li>
+      </ul>
+    </div>
+
+    {% if client %}
+    <div class="subnav">
+      <h2>{{client.name|abbrev(25)}}</h2>
+      <ul>
+        <li{% if page_is('clientview') or page_is('clientedit') %} class="current"{% endif %}><a href="{{link('clientview', client._id)}}">Overview</a></li>
+        <li><a href="{{client|jira_opencases_link}}">Open JIRA Cases</a></li>
+        <li><a href="{{client|jira_allcases_link}}">All JIRA Cases</a></li>
+        <li><a href="{{client|jira_voted_watched_link}}">Voted/Watched JIRA Cases</a></li>
+        <li><a href="/clienthub/view/{{client._id}}/export/">Export JIRA case data to excel</a></li>
+      </ul>
+    </div>
+    {% endif %}
+
+  </div>
+
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{{'/static/css/tablesorter/style.css'|staticurl}}"/>
+    <link rel="stylesheet" type="text/css" href="{{'/static/admin/css/admin.css'|staticurl}}"/>
+    <link rel="stylesheet" type="text/css" href="{{'/static/clienthub/css/clienthub.css'|staticurl}}"/>
+    <link rel="stylesheet" type="text/css" href="{{'/static/clienthub/css/dataTables.css'|staticurl}}"/>
+    {% block morestyles %}{% endblock %}
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{{'/static/js/jquery.tablesorter.min.js'|staticurl}}"></script>
+    <script type="text/javascript" src="{{'/static/js/jquery.tablesorter.pager.js'|staticurl}}"></script>
+    <script type="text/javascript" src="{{'/static/js/jquery.dataTables.min.js'|staticurl}}"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        setInterval(function() { $.ajax('/admin/heartbeat'); }, 60000);
+      });
+    </script>
+    {% block morescripts %}{% endblock %}
+{% endblock %}
+
