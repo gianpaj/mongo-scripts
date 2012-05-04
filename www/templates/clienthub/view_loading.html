@@ -2,7 +2,7 @@
 
 {% block title %}Loading {{client.name}} - {{super()}}{% endblock %}
 
-{% block scripts %}
+{% block morescripts %}
 <script type="text/javascript">
   $(document).ready(function() {
     window.location.href = window.location.href + "?loadcache=1";

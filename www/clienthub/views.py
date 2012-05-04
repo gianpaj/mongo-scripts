@@ -111,7 +111,7 @@ class ClientList(object):
     #    - table_search (str)
 
     @authenticated
-    def GET(self, *args):
+    def GET(self, pageParams, *args):
         clients = [Client()._from_db(rec) for rec in db.clients.find()]
 
         cs_groups = jira_api.getGroupsInProjectRole('Customer', 'CS')
@@ -141,7 +141,7 @@ class ClienthubRedirector(app.page, CorpBase):
     path = '/clienthub/link/(.+)/(.+)'
 
     @authenticated
-    def GET(self, identifier_type, identifier, *args):
+    def GET(self, pageParams, identifier_type, identifier, *args):
         if identifier_type in ('jira', 'jira_group'):
             clients = db.clients.find({'jira_group': identifier})
         elif identifier_type == 'name':
@@ -164,7 +164,7 @@ class ClientDelete(app.page, CorpBase):
     path = '/clienthub/delete/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, *args):
+    def GET(self, pageParams, client_id, *args):
         client = Client(client_id)
         if not client._id:
             raise web.seeother(link('clienthub'))
@@ -178,7 +178,7 @@ class ExportClientView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/export/'
 
     @authenticated
-    def GET(self, client_id, *args):
+    def GET(self, pageParams, client_id, *args):
         client = Client(client_id)
         if not client._id:
             raise web.seeother('/clienthub')
@@ -233,7 +233,7 @@ class ClientViewSalesForce(app.page, CorpBase):
     path = '/clienthub/view/salesforce/([^/]+)'
 
     @authenticated
-    def GET(self, salesforce_id, *args):
+    def GET(self, pageParams, salesforce_id, *args):
         client  = db.clients.find_one({'sf_account_id':{'$regex':'^' + salesforce_id}}) #We add three extra letters to the sfid when importing it, so relax the terms slighty
         if not client:
             raise web.seeother('/clienthub')
@@ -251,9 +251,7 @@ class ClientView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, *args):
-        import pdb
-        pdb.set_trace()
+    def GET(self, pageParams, client_id, *args):
         client = Client(client_id)
         if not client._id:
             raise web.seeother('/clienthub')
@@ -279,7 +277,7 @@ class ClientDocView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, doc_type, doc_id, *args):
+    def GET(self, pageParams, client_id, doc_type, doc_id, *args):
         client = Client(client_id)
         if not client._id:
             raise web.seeother(link('clienthub'))
@@ -389,7 +387,7 @@ class ClientDocView(app.page, CorpBase):
 
 
     @authenticated
-    def POST(self, client_id, doc_type, doc_id):
+    def POST(self, pageParams, client_id, doc_type, doc_id):
         client = Client(client_id)
         if not client._id:
             raise web.seeother(link('clienthub'))
@@ -487,7 +485,7 @@ class ClientDocDelete(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete'
 
     @authenticated
-    def GET(self, client_id, doc_type, doc_id, *args):
+    def GET(self, pageParams, client_id, doc_type, doc_id, *args):
         doc_id = ObjectId(doc_id)
         doc = db.clients.docs.find_one({'_id': doc_id})
         if not doc:
@@ -511,7 +509,7 @@ class ClientEdit(app.page, CorpBase):
     path = '/clienthub/edit/(.+)'
 
     @authenticated
-    def GET(self, client_id, *args):
+    def GET(self, pageParams, client_id, *args):
         if client_id == 'new':
             client = Client(is_new=True)
         else:
@@ -553,7 +551,7 @@ class ClientEdit(app.page, CorpBase):
         )
 
     @authenticated
-    def POST(self, client_id):
+    def POST(self, pageParams, client_id):
         if client_id == 'new':
             client = Client(is_new=True)
         else:
@@ -609,7 +607,7 @@ class ClientUploadView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, file_id, filename, *args):
+    def GET(self, pageParams, client_id, file_id, filename, *args):
         try:
             file_id = ObjectId(file_id)
             fp = gridfs.GridFS(db, 'clients.uploads').get(file_id)
@@ -639,7 +637,7 @@ class ClientCacheRefresh(app.page, CorpBase):
     }
 
     @authenticated
-    def GET(self, client_id, cache_types, *args):
+    def GET(self, pageParams, client_id, cache_types, *args):
         client = Client(client_id)
 
         for cache_type in cache_types.split(','):
@@ -658,7 +656,7 @@ class ClientContactUpdate(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/contact/([^/]+)/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, contact_id, action, *args):
+    def GET(self, pageParams, client_id, contact_id, action, *args):
         client = Client(client_id)
         if action == 'setprimary':
             client.set_primary_contact(contact_id)

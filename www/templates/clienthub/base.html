@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{{'/static/tablesortertheme/style.css'|staticurl}}"/>
+    <link rel="stylesheet" type="text/css" href="{{'/static/dataTables.css'|staticurl}}"/>
+    <link rel="stylesheet" type="text/css" href="{{'/static/clienthub.css'|staticurl}}"/>
+    <link rel="stylesheet" type="text/css" href="{{'/static/jquery-ui-1.8.17.custom.css'|staticurl}}"/>
+    <link rel="stylesheet" type="text/css" href="{{'/static/chosen.css'|staticurl}}"/>
+    {% block morestyles %}{% endblock %}
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{{'/static/jquery-1.7.js' | staticurl }}"></script>
+    <script type="text/javascript" src="{{'/static/jquery-ui-1.8.17.custom.min.js' | staticurl }}"></script>
+    <script type="text/javascript" src="{{'/static/jquery.tablesorter.min.js'|staticurl}}"></script>
+    <script type="text/javascript" src="{{'/static/jquery.tablesorter.pager.js'|staticurl}}"></script>
+    <script type="text/javascript" src="{{'/static/jquery.dataTables.min.js'|staticurl}}"></script>
+    <script type="text/javascript" src="{{'/static/chosen.jquery.min.js'|staticurl}}"></script>
+    {% block morescripts %}{% endblock %}
+{% endblock %}
+
