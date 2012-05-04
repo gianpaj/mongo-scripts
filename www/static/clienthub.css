@@ -1,5 +1,14 @@
 table.tablesorter, div#pager, div#searchbar {
-  width:700px;
+  width:75%;
+  margin-left: auto;
+  margin-right: auto;
+
+}
+
+.clientedit{
+    margin-right:20%;
+    float:right;
+    font-size:85%;
 }
 div#searchbar span#new {
   float:right;
@@ -44,6 +53,7 @@ div#pager span.next, div#pager span.last {
 }
 
 div.new {
+    margin-right: 20%;
   float:right;
   font-size:90%;
   padding-right:12px;
@@ -111,9 +121,11 @@ table.tablesorter thead th {
   padding-right:20px !important;
 }
 h1, h2, h3 {
-  clear:both;
+    margin-left: 10%;
+    clear:both;
 }
 dl {
+    margin-left: 15%;
   width:auto;
 }
 h4.message {
