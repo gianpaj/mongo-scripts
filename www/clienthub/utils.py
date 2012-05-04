@@ -66,3 +66,4 @@ salesforce_api = SalesforceApi(settings.salesforce['username'],
                                settings.salesforce['security_token'])
 
 crowd_api = CrowdAPI(settings.crowdAppUser, settings.crowdAppPassword)
+

@@ -3,6 +3,7 @@ import os
 import sys
 import pprint
 
+
 try:
     import json
 except:
@@ -35,16 +36,62 @@ from jirarep import JiraReport, JiraEngineerReport, JiraCustomerReport
 import jinja2
 
 
+
+from util import _url_split, url_cmp
+
+
+
+
+
+class auto_application(web.auto_application):
+    # overrides application.add_mapping to
+    # ensure that URLs are considered in an
+    # order that puts more specific URLs first
+
+    # URLs here (include leading slash) are not
+    # logged as 404s in the notfound() method
+
+    ignored_404s = set([
+        '/favicon.ico',
+        '/robots.txt',
+    ])
+
+    def __init__(self, *args, **kwargs):
+        web.auto_application.__init__(self, *args, **kwargs)
+        self._link_map = {}
+
+    def add_mapping(self, path, cls):
+        # sort mappings by specificity, with
+        # most-specific first
+        web.auto_application.add_mapping(self, path, cls)
+
+        # well, this is silly -- self.mapping is
+        # a sequence of [url, cls, url, cls, ...]
+        # rather than a sequence of 2-tuples
+        pairs = [(self.mapping[i], self.mapping[i+1]) for i in range(0, len(self.mapping), 2)]
+        pairs.sort(cmp=url_cmp, key=lambda pair: pair[0])
+        mapping = []
+        for pair in pairs:
+            mapping.extend(pair)
+        self.mapping = tuple(mapping)
+
+        # also set a dictionary of controller class
+        # name (lowercased) to split url, to accelerate
+        # the link() function
+        self._link_map[cls.__name__.lower()] = tuple(_url_split(path or cls.path))
+
+
+
+
 # setup web env
 env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(here, "templates")))
 web.config.debug = False
-app = web.auto_application()
+app = auto_application()
 web.config.app = app
 
 
 # share some globals through web.config
 
-web.config.app = app
 web.config.env = env
 web.config.wwwdb = wwwdb
 web.config.usagedb = usagedb
@@ -55,7 +102,7 @@ from perfstats import Pstats, PstatsCSV
 
 # import other handlers
 import perfstats
-
+import clienthub
 
 
 
@@ -281,10 +328,25 @@ urls = (
     "/engineer/(.*)", JiraEngineerReport,# TODO fix urls
     "/customer/(.*)", JiraCustomerReport,# TODO fix urls
     "/favicon.ico", CorpFavicon,
+    '/clienthub', clienthub.views.ClientHub,
+    '/clienthub/all', clienthub.views.AllClients,
+    '/clienthub/link/(.+)/(.+)', clienthub.views.ClienthubRedirector,
+    '/clienthub/view/([^/]+)/export/', clienthub.views.ExportClientView,
+    '/clienthub/view/salesforce/([^/]+)', clienthub.views.ClientViewSalesForce,
+    '/clienthub/view/([^/]+)', clienthub.views.ClientView,
+    '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)', clienthub.views.ClientDocView,
+    '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', clienthub.views.ClientDocDelete,
+    '/clienthub/edit/(.+)', clienthub.views.ClientEdit,
+    '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)', clienthub.views.ClientUploadView,
     "/(.*)", CorpNormal,
 )
 
-app = web.application(urls, globals())
+
+
+
+
+for url, cls in zip(urls[0::2], urls[1::2]):
+    app.add_mapping(url, cls)
 logfilename = os.path.join(here, 'www-corp.log')
 logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(message)s', filename=logfilename,level=logging.INFO)
 logging.info('Logger up')

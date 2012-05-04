@@ -31,11 +31,23 @@ from BeautifulSoup import BeautifulSoup
 
 
 
-
+import filters
 from .utils import link, jira_api, salesforce_api, crowd_api
 from .models import Client
 
 from corpbase import authenticated, CorpBase
+
+
+env.globals.update(link=link)
+
+def auth_user():
+    # return the current username, or None
+    # if no user is logged in
+    c = web.webapi.cookies()
+    return c.get("auth_user", None)
+
+env.globals.update(auth_user=auth_user)
+
 
 
 jql_url = 'https://jira.mongodb.org/secure/IssueNavigator!executeAdvanced.jspa?runQuery=true&clear=true&jqlQuery='
@@ -129,7 +141,7 @@ class ClienthubRedirector(app.page, CorpBase):
     path = '/clienthub/link/(.+)/(.+)'
 
     @authenticated
-    def GET(self, identifier_type, identifier):
+    def GET(self, identifier_type, identifier, *args):
         if identifier_type in ('jira', 'jira_group'):
             clients = db.clients.find({'jira_group': identifier})
         elif identifier_type == 'name':
@@ -152,7 +164,7 @@ class ClientDelete(app.page, CorpBase):
     path = '/clienthub/delete/([^/]+)'
 
     @authenticated
-    def GET(self, client_id):
+    def GET(self, client_id, *args):
         client = Client(client_id)
         if not client._id:
             raise web.seeother(link('clienthub'))
@@ -166,7 +178,7 @@ class ExportClientView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/export/'
 
     @authenticated
-    def GET(self, client_id):
+    def GET(self, client_id, *args):
         client = Client(client_id)
         if not client._id:
             raise web.seeother('/clienthub')
@@ -221,7 +233,7 @@ class ClientViewSalesForce(app.page, CorpBase):
     path = '/clienthub/view/salesforce/([^/]+)'
 
     @authenticated
-    def GET(self, salesforce_id):
+    def GET(self, salesforce_id, *args):
         client  = db.clients.find_one({'sf_account_id':{'$regex':'^' + salesforce_id}}) #We add three extra letters to the sfid when importing it, so relax the terms slighty
         if not client:
             raise web.seeother('/clienthub')
@@ -239,7 +251,9 @@ class ClientView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)'
 
     @authenticated
-    def GET(self, client_id):
+    def GET(self, client_id, *args):
+        import pdb
+        pdb.set_trace()
         client = Client(client_id)
         if not client._id:
             raise web.seeother('/clienthub')
@@ -265,7 +279,7 @@ class ClientDocView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, doc_type, doc_id):
+    def GET(self, client_id, doc_type, doc_id, *args):
         client = Client(client_id)
         if not client._id:
             raise web.seeother(link('clienthub'))
@@ -473,7 +487,7 @@ class ClientDocDelete(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete'
 
     @authenticated
-    def GET(self, client_id, doc_type, doc_id):
+    def GET(self, client_id, doc_type, doc_id, *args):
         doc_id = ObjectId(doc_id)
         doc = db.clients.docs.find_one({'_id': doc_id})
         if not doc:
@@ -497,7 +511,7 @@ class ClientEdit(app.page, CorpBase):
     path = '/clienthub/edit/(.+)'
 
     @authenticated
-    def GET(self, client_id):
+    def GET(self, client_id, *args):
         if client_id == 'new':
             client = Client(is_new=True)
         else:
@@ -595,7 +609,7 @@ class ClientUploadView(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, file_id, filename):
+    def GET(self, client_id, file_id, filename, *args):
         try:
             file_id = ObjectId(file_id)
             fp = gridfs.GridFS(db, 'clients.uploads').get(file_id)
@@ -625,7 +639,7 @@ class ClientCacheRefresh(app.page, CorpBase):
     }
 
     @authenticated
-    def GET(self, client_id, cache_types):
+    def GET(self, client_id, cache_types, *args):
         client = Client(client_id)
 
         for cache_type in cache_types.split(','):
@@ -644,7 +658,7 @@ class ClientContactUpdate(app.page, CorpBase):
     path = '/clienthub/view/([^/]+)/contact/([^/]+)/([^/]+)'
 
     @authenticated
-    def GET(self, client_id, contact_id, action):
+    def GET(self, client_id, contact_id, action, *args):
         client = Client(client_id)
         if action == 'setprimary':
             client.set_primary_contact(contact_id)
@@ -665,7 +679,7 @@ class DocumentSearch(app.page, CorpBase):
     path = '/clienthub/docsearch'
 
     @authenticated
-    def GET(self):
+    def GET(self, *args):
         terms = web.input().get('search', '')
         results = None
         error = None
