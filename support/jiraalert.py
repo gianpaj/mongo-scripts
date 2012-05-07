@@ -66,8 +66,8 @@ def last_comment_from_10gen( jira , issue ):
     try:
         comments = jira.getComments( issue["key"] )
     except sax.SAXParseException:
-        mydebug( "error getting comments")
-        return False
+        #jira returned a blank xml document for the comments. Try again and hope that jira is feeling better.
+        comments = jira.getComments( issue["key"] )
     if comments is None or len(comments) == 0:
         mydebug( "no comments" )
         return False
@@ -326,7 +326,8 @@ def run( digest ):
         if digest != q["digest"]:
             continue
 
-        for issue in jira.getIssuesFromJqlSearch( q["jql"] , 1000 ):
+        issues = jira.getIssuesFromJqlSearch( q["jql"] , 1000 ) #ensure that soap finishes the request before starting another one
+        for issue in issues:
 
             if issue["key"] in seenAlready:
                 debug( "\t\t\t skipping because already seen" )
