@@ -10,6 +10,7 @@ import urllib2
 import time
 import datetime
 import traceback
+from xml import sax
 
 path = os.path.dirname(os.path.abspath(__file__))
 path = path.rpartition( "/" )[0]
@@ -62,7 +63,11 @@ def last_comment_from_10gen( jira , issue ):
     def mydebug(s):
         print( "last_comment_from_10gen [%s] %s " % ( issue["key"] , s ) )
 
-    comments = jira.getComments( issue["key"] )
+    try:
+        comments = jira.getComments( issue["key"] )
+    except sax.SAXParseException:
+        mydebug( "error getting comments")
+        return False
     if comments is None or len(comments) == 0:
         mydebug( "no comments" )
         return False
@@ -76,11 +81,11 @@ queries = [
 
     # ------ cs sla issues ----------
 
-    { "name" : "New CS" , 
+    { "name" : "New CS" ,
       "sms" : True ,
-      "who" : "AO" , 
+      "who" : "AO" ,
       "digest" : False ,
-      "freq" : 1 , 
+      "freq" : 1 ,
       "filter" : last_comment_from_10gen ,
       "jql" : csBigFilter + " AND assignee is EMPTY" } ,
 
@@ -259,7 +264,7 @@ def sendSMS( who , query , issue ):
         return
 
     print( "sending sms to %s msg[%s]" % ( who , msg ) )
-    
+
     if not theTwilio:
         theTwilio = lib.sms.Twilio()
 
@@ -410,7 +415,7 @@ def sendEmails( messages , managerSummary , digest ):
                 ind += "\t" + simple
                 if issue["latest_comment"] and issue["latest_commenter"]:
                     latest_comment = truncate(issue["latest_comment"]["body"], 160).replace("\n", " ")
-                    
+
 
 
                     cmdPiece = "\n\t\t\tLatest Comment on %s: [by %s] %s\n\n\n" % (issue["latest_comment"]["created"],
@@ -455,7 +460,6 @@ def test_sms():
 if __name__ == "__main__":
 
     digest = False
-
     for x in sys.argv:
         if x == "debug":
             inDebug = True
