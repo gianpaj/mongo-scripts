@@ -105,6 +105,7 @@ div.popup ul li {
   border-bottom:1px solid #ccc;
   font-family:sans-serif;
   font-size:90%;
+  list-style: none;
 }
 div.popup ul li:hover {
   background-color:#eee;
@@ -112,6 +113,7 @@ div.popup ul li:hover {
 div.popup ul li > * {
   display:block;
   padding:2px 5px;
+
 }
 table.tablesorter {
   clear:both;
@@ -220,4 +222,13 @@ table.contracts tr.inactive td {
 table.contracts tr.noend td.end {
   color:#c33;
   font-weight:bold;
+}
+
+
+.datatables_wrapper {
+    width: 75%;
+    margin-right: auto;
+    margin-left: auto;
+
+
 }
