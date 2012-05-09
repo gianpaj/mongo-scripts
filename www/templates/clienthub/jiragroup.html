@@ -65,7 +65,7 @@
       <td><a href="https://jira.mongodb.org/secure/ViewProfile.jspa?name={{user.name}}">{{user.name}}</a></td>
       <td><a href="https://jira.mongodb.org/secure/ViewProfile.jspa?name={{user.name}}">{{user.email}}</a></td>
       <td>
-        <a class="confirm" msg="Are you sure you want to remove {{user.fullname}} from this group?" href="{{link('removejirauserfromgroup', group.name, user.name)}}"><img src="{{'/static/admin/images/delete.png'|staticurl}}" alt="Remove from group" title="Remove from group"/></a>
+        <a class="confirm" msg="Are you sure you want to remove {{user.fullname}} from this group?" href="{{link('removejirauserfromgroup', group.name, user.name)}}"><img src="{{'/static/delete.png'|staticurl}}" alt="Remove from group" title="Remove from group"/></a>
       </td>
     </tr>
     {% endfor %}

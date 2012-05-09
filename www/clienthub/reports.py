@@ -20,7 +20,7 @@ from .utils import link, jira_api, salesforce_api, crowd_api
 
 from .models import Client
 
-from corpbase import authenticated
+from corpbase import authenticated, CorpBase
 
 def last_by(things, key):
     if not things:
@@ -308,11 +308,11 @@ class CountClients(Report):
         }
         auxdb.reports.save(run_record)
 
-class QuarterlyCheckins(Report):
-    name = 'quarterlycheckins'
-    display_name = 'Quarterly Checkins'
+class ClientCheckins(Report):
+    name = 'ClientCheckin'
+    display_name = 'Client Checkins'
     _description = """
-    Summary information on the most recent quarterly
+    Summary information on the most recent
     checkin for each client.
     """
 
@@ -398,7 +398,7 @@ class QuarterlyCheckins(Report):
                     ticket_info = checkin_key
 
 
-                checkin_docs = db.clients.docs.find({'client_id': client._id, '_type': 'quarterly'})
+                checkin_docs = db.clients.docs.find({'client_id': client._id, '_type': 'clientcheckin'})
                 checkin_docs = list(checkin_docs)
                 if checkin_docs:
                     checkin_doc = last_by(checkin_docs, 'created')['_id']
@@ -420,7 +420,7 @@ class QuarterlyCheckins(Report):
             row['_id'] = client._id
 
             if row['Last Checkin Doc']:
-                row['_link_Last Checkin Doc'] = link('clientdocview', client._id, 'quarterly', row['Last Checkin Doc'])
+                row['_link_Last Checkin Doc'] = link('clientdocview', client._id, 'clientcheckin', row['Last Checkin Doc'])
                 row['Last Checkin Doc'] = str(row['Last Checkin Doc'])[:8] + '...'
 
             if row['Last Checkin Ticket']:
@@ -436,16 +436,16 @@ class QuarterlyCheckins(Report):
         auxdb.reports.save(run_record)
 
 
-REPORTS = (CSConfig, CountClients, QuarterlyCheckins)
+REPORTS = (CSConfig, CountClients, ClientCheckins)
 
 # convert it to a dict by name
 REPORTS = dict((r.name, r()) for r in REPORTS)
 
-class ClientHubReports(app.page):
+class ClientHubReports(app.page, CorpBase):
     path = '/clienthub/reports'
 
     @authenticated
-    def GET(self):
+    def GET(self, PageParams):
         reports = REPORTS.values()
         reports.sort(key=lambda r: r.name)
 
@@ -454,11 +454,11 @@ class ClientHubReports(app.page):
             reports=reports,
         )
 
-class ClientHubScheduleReport(app.page):
+class ClientHubScheduleReport(app.page, CorpBase):
     path = '/clienthub/reports/([^/]+)/schedule'
 
     @authenticated
-    def GET(self, reportname):
+    def GET(self, pageParams, reportname):
         report = REPORTS[reportname]
 
         web.header('Content-Type', 'text/html')
@@ -467,7 +467,7 @@ class ClientHubScheduleReport(app.page):
         )
 
     @authenticated
-    def POST(self, reportname):
+    def POST(self, pageParams, reportname):
         report = REPORTS[reportname]
 
         notify_users = web.input().get('notify', '')
@@ -478,10 +478,10 @@ class ClientHubScheduleReport(app.page):
 
         raise web.seeother(link('clienthubreports'))
 
-class ClientHubViewReport(app.page):
+class ClientHubViewReport(app.page, CorpBase):
     path = '/clienthub/reports/([^/]+)/view'
 
-    def GET(self, report_run_id):
+    def GET(self, pageParams, report_run_id):
         result = auxdb.reports.find_one({'_id': ObjectId(report_run_id)})
         if not result:
             raise web.seeother(link('clienthubreports'))

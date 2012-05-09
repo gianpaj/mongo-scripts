@@ -13,7 +13,7 @@ mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
 corpdb = pymongo.Connection(settings.corpdb_host).corp
 pstatsdb = pymongo.Connection(settings.pstats_host).perf
 pstatsdb.authenticate(settings.pstats_username, settings.pstats_password)
-ftsdb =  pymongo.connection.Connection(settings.fts_host, slave_okay=True)
+ftsdb =  pymongo.connection.Connection(settings.fts_host, slave_okay=True).www
 #setup crowd
 import crowd
 the_crowd = crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )

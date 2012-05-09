@@ -10,7 +10,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 devel = os.path.exists(os.path.join(here, 'devel'))
 
 if devel:
-    jirareports_host = pstats_host = usagedb_host = wwwdb_host = mongowwwdb_host = corpdb_host = "localhost"
+    jirareports_host = pstats_host = usagedb_host = wwwdb_host = mongowwwdb_host = corpdb_host = fts_host = "localhost"
 else:
     usagedb_host = "jira.10gen.cc"
     wwwdb_host = "localhost"

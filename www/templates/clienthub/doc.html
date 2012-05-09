@@ -2,17 +2,12 @@
 
 {% block title %}{{client.name}} - {{super()}}{% endblock %}
 
-{% block morestyles %}
-    <link rel="stylesheet" type="text/css" href="{{'/static/css/ui/redmond/jquery-ui-1.8.12.custom.css'|staticurl}}"/>
-{% endblock %}
-
 {% block morescripts %}
-    <script type="text/javascript" src="{{'/static/js/jquery-ui-1.8.min.js'|staticurl}}"></script>
     <script type="text/javascript">
       function collapsible() {
         var fieldset = this;
-        var open = "{{'/static/clienthub/images/open.png'|staticurl}}";
-        var close = "{{'/static/clienthub/images/close.png'|staticurl}}";
+        var open = "{{'/static/open.png'|staticurl}}";
+        var close = "{{'/static/close.png'|staticurl}}";
         $(fieldset).wrapInner('<div class="innerarea"/>');
         $(fieldset).prepend($(fieldset).find('legend'));
         $(fieldset).find('legend').append('<img class="collapser" src="' + close + '"/>');
