@@ -1,0 +1,47 @@
+{% extends "clienthub/doc.html" %}
+
+{% block title %}Consulting Report - {{super()}}{% endblock %}
+
+{% block doctitle %}
+<h2>Consulting Engagement Report</h2>
+{% endblock %}
+
+{% import 'clienthub/docs/_macros.html' as macros %}
+
+{% block details %}
+
+  {{ macros.consult_fields() }}
+
+  <fieldset>
+    <legend>Consulting Topics</legend>
+    <textarea name="application">
+## High level application description
+
+## Mongo Deployment Notes
+* Primary Dev Language(s):
+* MongoDB version:  
+* Number of servers:
+* Platform:
+* Number of shards:
+
+## Topics Covered: (schema design, optimization, deployment, performance, developer or admin training, driver development, etc)
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Follow-Ups</legend>
+    <textarea name="followup">
+* Marketing:
+* Services:
+* Sales:
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+{% endblock %}
+

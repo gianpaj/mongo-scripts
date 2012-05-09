@@ -1,0 +1,33 @@
+{% extends "clienthub/doc.html" %}
+
+{% block title %}Chat Log - {{super()}}{% endblock %}
+
+{% set skipform=True %}
+{% set skip_engagement_details=True %}
+
+{% block doctitle %}
+<h2>{{doc['summary']}}</h2>
+{% endblock %}
+
+{% block details %}
+<table class="tablesorter">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>User</th>
+      <th>Message</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for message in doc['chat'] %}
+    <tr>
+      <td>{{message['time']|datetimeformat('%Y-%m-%d %I:%M %p')}}</td>
+      <td>{{message['user']}}</td>
+      <td>{{message['content']|escape}}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+

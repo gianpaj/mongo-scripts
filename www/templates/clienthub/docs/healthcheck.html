@@ -1,0 +1,140 @@
+{% extends "clienthub/doc.html" %}
+
+{% block title %}Health Check - {{super()}}{% endblock %}
+
+{% block doctitle %}
+<h2>Health Check</h2>
+
+<h4 style="margin-top:1em; margin-bottom:0.3em">Instructions:</h4>
+<ul>
+  <li>Contact the client (email, phone, skype, etc)</li>
+  <li>Confirm any specific areas client wants to cover (e.g. Replica Set config for multi data center)</li>
+  <li>Ensure client has a JIRA account</li>
+  <li>Create a JIRA ticket to track (this also gives client the ability to upload diagrams, etc)
+    <ul>
+      <li>For an existing commercial support customer, create this ticket in "Commercial Support" as a "Task"</li>
+      <li>For a non-commercial support customer, create this ticket in "Community Proviate" as a "Task"</li>
+    </ul>
+  </li>
+  <li>Ask client to install MMS since this is an essential element to get an accurate picture of client's deployment</li>
+  <li>Confirm the date of the initial consult for the health check and any follow up</li>
+  <li>Ask for more detailed information specific to customer requirements (network diagram, etc)</li>
+</ul>
+
+{% endblock %}
+
+{% import 'clienthub/docs/_macros.html' as macros %}
+
+{% block details %}
+
+  {{ macros.consult_fields() }}
+
+  <fieldset>
+    <legend>Foundation</legend>
+    <textarea name="foundation">
+* Mongo Version: (e.g. ...)
+* Mongo Usage: (user facing? admin tasks? reporting?)
+* Usage Growth:
+* RAID: (include # spindles)
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Mongo Setup</legend>
+    <textarea name="mongo_setup">
+## Replication
+
+* 3 or more replicas?:
+* Replication setup: (distribution of nodes, network partition, multiple data centers, etc)
+
+### Notes:
+
+
+## Sharding
+* # mongos's:
+* Shard setup: (where are the mongos's hosted?)
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Data Access Patterns</legend>
+    <textarea name="data_access">
+## Schema Review
+
+
+## Indexes
+
+
+## Common Queries
+
+
+## Slow Queries
+
+
+## Profiler
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Drivers</legend>
+    <textarea name="drivers">
+* Driver(s) in use:
+* Application environment: (what container/server is the client using?)
+* Write concern: (has the client set one?)
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Backups</legend>
+    <textarea name="backups">
+* Fsync + Lock?:
+* Mongodump?:
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Operations</legend>
+    <textarea name="operations">
+* Monitoring strategy:
+* Monitoring tools: (munin, zabbix, cacti, other?)
+* Using MMS?:
+* Filesystem:
+* RAID:
+* System tools installed:
+** iostat:
+
+* Make sure the client knows how to use and interpret mongostats.
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <h4 style="margin-top:1.5em; margin-bottom:0.3em">Outcomes</h4>
+  <ul>
+    <li>The health check may span several days. Make sure all correspondance is handled through JIRA in order to keep a record of the health check details.</li>
+  </ul>
+
+  <h4 style="margin-top:1.5em; margin-bottom:0.3em">Account for Time Spent on the Consult</h4>
+  <ul>
+    <li>This includes emails, phone calls, etc. Be reasonable, this is what the customer is expecting, but be accurate, since we need to understand the cost of doing a health check.</li>
+  </ul>
+
+  <h4 style="margin-top:1.5em; margin-bottom:0.3em">Write-Up and Recommendations</h4>
+  <ul>
+    <li>Your write-up needs to be approved by Steve, Dan, or Alvin before it is sent to the customer.</li>
+    <li>Template: <a href="https://github.com/10gen/commercial-support/blob/master/health_check_template.doc?raw=true">.doc</a> or <a href="https://github.com/10gen/commercial-support/blob/master/health_check_template.docx?raw=true">.docx</a> (right-click, save as, ...).</li>
+  </ul>
+
+{% endblock %}

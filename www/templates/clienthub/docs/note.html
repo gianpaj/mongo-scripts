@@ -1,0 +1,20 @@
+{% extends "clienthub/doc.html" %}
+
+{% block title %}Note - {{super()}}{% endblock %}
+
+{% block doctitle %}
+<h2>{{doc['title']|default('New Note')}}</h2>
+{% endblock %}
+
+{% block details %}
+  <fieldset>
+    <legend>Note</legend>
+    <dl>
+      <dt>Title</dt>
+      <dd><input type="text" name="title"/></dd>
+      <dt>Note</dt>
+      <dd><textarea name="note"></textarea></dd>
+    </dl>
+  </fieldset>
+{% endblock %}
+

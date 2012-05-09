@@ -1,0 +1,52 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}New Group - JIRA Tool - {{super()}}{% endblock %}
+
+{% block morestyles %}
+<style type="text/css">
+  div.content form ul li {
+    list-style:none;
+    padding:0px;
+    background:none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Add Existing User to "{{group_name}}"</h1>
+{% if msg and not is_new %}
+<p><span class="error-message">{{msg}}</span></p>
+{% endif %}
+<form method="POST">
+  <dl>
+    <dt>Username</dt>
+    <dd><input type="text" name="username"/></dd>
+    <dt>&nbsp;</dt>
+    <dd><input type="submit" value="Add to Group"/></dd>
+  </dl>
+  <input type="hidden" name="is_new" value="false"/>
+</form>
+<br style="clear:both"/>
+
+
+<h1 style="margin-top:1em">Create New User and Add to "{{group_name}}"</h1>
+{% if msg and is_new %}
+<p><span class="error-message">{{msg}}</span></p>
+{% endif %}
+<form method="POST">
+  <dl>
+    <dt>Username</dt>
+    <dd><input type="text" name="username"/></dd>
+    <dt>Real Name</dt>
+    <dd><input type="text" name="realname"/></dd>
+    <dt>Email</dt>
+    <dd><input type="text" name="email"/></dd>
+    <dt>&nbsp;</dt>
+    <dd><input type="submit" value="Create and Add to Group"/></dd>
+  </dl>
+  <input type="hidden" name="is_new" value="true"/>
+</form>
+
+{% endblock %}
+

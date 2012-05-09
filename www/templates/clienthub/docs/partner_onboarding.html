@@ -1,0 +1,67 @@
+{% extends "clienthub/doc.html" %}
+
+{% block title %}Partner Onboarding Checklist - {{super()}}{% endblock %}
+
+{% block doctitle %}
+  <h2>Partner Onboarding Checklist</h2>
+  <p><strong>Purpose of this call:</strong> This is an introduction to the 10gen engineering/support team.  We value our Partners as an extension of the 10gen technical team; as such we're here to help and advise as the Partner builds expertise in MongoDB.  This call is intended to provide the basis for an ongoing engineer-to-engineer relationship, explain the support process, and record an overview of the partner's background/skills/expertise.</p>
+{% endblock %}
+
+{% block extra_engagement_details %}
+      <dt>Customer Attendees</dt>
+      <dd><textarea name="customer_attendees"></textarea></dd>
+{% endblock %}
+
+{% import 'clienthub/docs/_macros.html' as macros %}
+
+{% block details %}
+    <h2>Support Explanation</h2>
+    <p>Silver level support: 4 hour response time 9am-9pm EST</p>
+    <p>File all issues in https://jira.mongodb.org/browse/PARTNER</p>
+    <p>Explain relationship between SERVER project, driver projects, and the PARTNER project</p>
+    <p>Focused on support for research and development, not production issues</p>
+    <p>4 seats in a public training - contact sales rep to schedule</p>
+    <p>Request that someone from the company sign up for http://groups.google.com/group/mongodb-announce</p>
+
+  <fieldset>
+    <legend>Partner Background</legend>
+    <dl>
+      <dt>Partner Type</dt>
+      <dd>
+        <div class="helper">Is this a systems integrator, consulting group, or digital agency?</div>
+        <textarea name="partner_type"></textarea>
+      </dd>
+      <dt>Prior Training</dt>
+      <dd>
+        <div class="helper">What, if any, training have the Partner's engineers had from 10gen?</div>
+        <textarea name="prior_training"></textarea>
+      </dd>
+      <dt>Database Experience</dt>
+      <dd>
+        <div class="helper">Have the Partner's engineers worked with MongoDB before?  Other NoSQL solutions?  Other SQL solutions?</div>
+        <textarea name="database_experience"></textarea>
+      </dd>
+      <dt>Current Projects</dt>
+      <dd>
+        <div class="helper">Is the partner currently working on any MongoDB projects?</div>
+        <textarea name="current_projects"></textarea>
+      </dd>
+      <dt>Verticals</dt>
+      <dd>
+        <div class="helper">Does the partner typically focus on particular use-cases or verticals (health care, social networking, etc.)?</div>
+        <textarea name="verticals"></textarea>
+      </dd>
+      <dt>Company Size</dt>
+      <dd>
+        <div class="helper">How many employees does the Party have?  How many full-time engineers do they have?  Part-time?</div>
+        <textarea name="company_size"></textarea>
+      </dd>
+      <dt>Office Locations</dt>
+      <dd>
+        <div class="helper">Where are the Partner's office locations?  Where are the engineers who will be filing and following tickets?</div>
+        <textarea name="office_locations"></textarea>
+      </dd>
+    </dl>
+  </fieldset>
+
+{% endblock %}

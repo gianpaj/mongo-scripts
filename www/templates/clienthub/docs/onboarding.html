@@ -1,0 +1,104 @@
+{% extends "clienthub/doc.html" %}
+
+{% block title %}Onboarding Checklist - {{super()}}{% endblock %}
+
+{% block doctitle %}
+<h2>Onboarding Checklist</h2>
+<p><strong>Purpose of this call:</strong>This call is an introduction to the 10gen engineering/support team and serves two primary purposes.  First, to record a high-level overview of the customer's application architecture and, specifically, their MongoDB cluster.  During this process, you should attempt to identify any high-level problems (e.g. using version 2.0.1 when 2.0.4 is available) and encourage the client to get their details in MMS.  The second purpose is to ensure that the customer is familiar with our support infrastructure and best practices for requesting help during business hours (https://jira.mongodb.org/browse/CS) and after-hours (+1 646-201-9247 / +44 (0)20 300 49321).</p>
+{% endblock %}
+
+{% block extra_engagement_details %}
+      <dt>Customer Attendees</dt>
+      <dd><textarea name="customer_attendees"></textarea></dd>
+{% endblock %}
+
+{% import 'clienthub/docs/_macros.html' as macros %}
+
+{% block details %}
+  <fieldset>
+    <legend>Project Summary</legend>
+    <textarea name="proj_description" class="short">
+## High level overview and go-live dates
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Application, Platform, and Language</legend>
+    <textarea name="application">
+## Database Server
+
+* Hardware: 
+* OS and Version: 
+* Storage: 
+* RAID: (include # spindles)
+* Filesystem: 
+
+### Notes:
+
+
+## Client
+
+* Language:
+* Driver: (official, community, version)
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>MongoDB Setup</legend>
+    <textarea name="mongo_setup">
+## DB Info
+
+* Version:
+* Replication:
+* Sharding:
+* Journaliing:
+
+### Notes:
+
+
+### Schema
+* Collection notes:
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Administration</legend>
+    <textarea name="mongo_admin" class="short">
+* Monitoring strategy:
+* Using MMS:
+* Monitoring tools: 
+* Backup strategy:
+
+### Questions:
+* Knows how to run and interpret mongostats?
+* Written up and tested ops playbook?
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Future</legend>
+    <dl>
+      <dt>Application</dt>
+      <dd>
+        <div class="helper">Notes about application's future growth, go live dates, etc.</div>
+        <textarea name="app_future"></textarea>
+      </dd>
+      <dt>Follow-Up</dt>
+      <dd>
+        <div class="helper">Notes on things like training requirements, etc. Displays on Client Detail page.</div>
+        <textarea name="follow_up"></textarea>
+      </dd>
+    </dl>
+  </fieldset>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% macro consult_fields() %}
+  <fieldset>
+    <legend>Consulting Notes</legend>
+    <dl>
+      <dt>Client Representative</dt>
+      <dd>
+        <div class="helper">Who did you meet and what is their role/title</div>
+        <textarea name="client_rep"></textarea>
+      </dd>
+      <dt>Duration (hrs)</dt>
+      <dd><input type="text" name="duration"/></dd>
+      <dt>Travel Time (hrs)</dt>
+      <dd><input type="text" name="travel_time"/></dd>
+    </dl>
+  </fieldset>
+{% endmacro %}
