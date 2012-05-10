@@ -71,7 +71,7 @@ div.new.left {
     margin-right: auto;
 
 }
-div.new img, div.content img.collapser {
+div.new img, img.collapser {
   padding:0px;
   margin:0px;
   border:none;
@@ -139,32 +139,36 @@ dl {
 h4.message {
   color:#ff6600;
 }
-div.content img.collapser {
+img.collapser {
   margin-left:5px;
   position:relative;
   top:3px;
 }
 
-div.content fieldset div.innerarea > textarea {
+ fieldset div.innerarea > textarea {
   margin-left:10px;
   width:682px;
   height:325px;
   font-family:monospace;
 }
 
-div.content fieldset div.innerarea > textarea.short {
+ fieldset div.innerarea > textarea.short {
   height:175px;
 }
 
-div.content fieldset div.innerarea > div.helper {
+ fieldset div.innerarea > div.helper {
   padding:0 10px 0 10px;
 }
 
-div.content fieldset div.innerarea dl dd textarea,
-div.content fieldset div.innerarea dl dd input,
-div.content fieldset div.innerarea dl dd select
+ fieldset div.innerarea dl dd textarea,
+ fieldset div.innerarea dl dd input,
+ fieldset div.innerarea dl dd select
 {
   width:556px;
+}
+fieldset div.innerarea dl dd textarea {
+  height:325px;
+
 }
 
 table.datatable {
