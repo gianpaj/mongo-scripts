@@ -269,7 +269,7 @@ def sendSMS( who , query , issue ):
         theTwilio = lib.sms.Twilio()
 
     if not inDebug:
-        theTwilio.sms( number , msg )
+        theTwilio.sms( number , msg[:160] ) #sms's cannot be longer than 160 chars
 
 def debug(msg):
     if True:
