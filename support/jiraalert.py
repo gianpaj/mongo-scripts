@@ -26,6 +26,9 @@ import lib.sms
 import settings
 
 
+import logging
+logging.basicConfig(filename="/tmp/jiraalerts.log", level=logging.ERROR)
+
 # who
 #    A - assignee
 #    O - owner
@@ -67,7 +70,23 @@ def last_comment_from_10gen( jira , issue ):
         comments = jira.getComments( issue["key"] )
     except sax.SAXParseException:
         #jira returned a blank xml document for the comments. Try again and hope that jira is feeling better.
-        comments = jira.getComments( issue["key"] )
+        #Also turn on logging, in the hopes that we can catch the error in the act
+        logging.getLogger('suds.client').setLevel(logging.ERROR)
+        logging.getLogger('suds.transport').setLevel(logging.ERROR)
+        logging.getLogger('suds.xsd.schema').setLevel(logging.ERROR)
+        logging.getLogger('suds.wsdl').setLevel(logging.ERROR)
+        try:
+            comments = jira.getComments( issue["key"] )
+        except sax.SAXParseException:
+            #Jira isn't feeling good today. Return True to ensure that we don't spam people.
+            #A false negitive isn't ideal, but better than erroring and better than a false positive
+            return True
+        finally:
+            logging.getLogger('suds.client').setLevel(logging.DEBUG)
+            logging.getLogger('suds.transport').setLevel(logging.DEBUG)
+            logging.getLogger('suds.xsd.schema').setLevel(logging.DEBUG)
+            logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
+
     if comments is None or len(comments) == 0:
         mydebug( "no comments" )
         return False
