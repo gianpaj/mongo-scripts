@@ -29,6 +29,7 @@ import settings
 import logging
 logging.basicConfig(filename="/tmp/jiraalerts.log", level=logging.ERROR)
 
+
 # who
 #    A - assignee
 #    O - owner
@@ -62,6 +63,7 @@ def getAll10gen( jira ):
 
     return all10gen
 
+first = 1
 def last_comment_from_10gen( jira , issue ):
     def mydebug(s):
         print( "last_comment_from_10gen [%s] %s " % ( issue["key"] , s ) )
@@ -69,23 +71,26 @@ def last_comment_from_10gen( jira , issue ):
     try:
         comments = jira.getComments( issue["key"] )
     except sax.SAXParseException:
+        print("Exception!")
         #jira returned a blank xml document for the comments. Try again and hope that jira is feeling better.
         #Also turn on logging, in the hopes that we can catch the error in the act
-        logging.getLogger('suds.client').setLevel(logging.ERROR)
-        logging.getLogger('suds.transport').setLevel(logging.ERROR)
-        logging.getLogger('suds.xsd.schema').setLevel(logging.ERROR)
-        logging.getLogger('suds.wsdl').setLevel(logging.ERROR)
+        logging.getLogger('suds.client').setLevel(logging.DEBUG)
+        logging.getLogger('suds.transport').setLevel(logging.DEBUG)
+        logging.getLogger('suds.xsd.schema').setLevel(logging.DEBUG)
+        logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
         try:
             comments = jira.getComments( issue["key"] )
+            logging.error("---------SUCCESS ON SECOND TRY---------")
         except sax.SAXParseException:
             #Jira isn't feeling good today. Return True to ensure that we don't spam people.
             #A false negitive isn't ideal, but better than erroring and better than a false positive
+            logging.error("---------FAILURE ON SECOND TRY---------")
             return True
         finally:
-            logging.getLogger('suds.client').setLevel(logging.DEBUG)
-            logging.getLogger('suds.transport').setLevel(logging.DEBUG)
-            logging.getLogger('suds.xsd.schema').setLevel(logging.DEBUG)
-            logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
+            logging.getLogger('suds.client').setLevel(logging.ERROR)
+            logging.getLogger('suds.transport').setLevel(logging.ERROR)
+            logging.getLogger('suds.xsd.schema').setLevel(logging.ERROR)
+            logging.getLogger('suds.wsdl').setLevel(logging.ERROR)
 
     if comments is None or len(comments) == 0:
         mydebug( "no comments" )
@@ -345,7 +350,7 @@ def run( digest ):
         if digest != q["digest"]:
             continue
 
-        issues = jira.getIssuesFromJqlSearch( q["jql"] , 1000 ) #ensure that soap finishes the request before starting another one
+        issues = jira.getIssuesFromJqlSearch( q["jql"] , 1000 )
         for issue in issues:
 
             if issue["key"] in seenAlready:
@@ -366,7 +371,11 @@ def run( digest ):
             who = set(expandWho( issue , who ))
             debug( "\t" + str(who) )
 
-            comments = jira.getComments( issue["key"] )
+            try:
+                comments = jira.getComments( issue["key"] )
+                #prevent this from stopping execution of script. Not ideal, but better than a fail.
+            except sax.SAXParseException:
+                comments = None
             if comments is None or len(comments) == 0:
                 issue['latest_comment'] = None
                 issue['latest_commenter'] = None
