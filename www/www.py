@@ -64,10 +64,11 @@ class auto_application(web.auto_application):
         # sort mappings by specificity, with
         # most-specific first
         web.auto_application.add_mapping(self, path, cls)
-
+        return
         # well, this is silly -- self.mapping is
         # a sequence of [url, cls, url, cls, ...]
         # rather than a sequence of 2-tuples
+        print( "self.mapping: %s" % self.mapping )
         pairs = [(self.mapping[i], self.mapping[i+1]) for i in range(0, len(self.mapping), 2)]
         pairs.sort(cmp=url_cmp, key=lambda pair: pair[0])
         mapping = []
@@ -102,7 +103,7 @@ from perfstats import Pstats, PstatsCSV
 
 # import other handlers
 import perfstats
-import clienthub
+#import clienthub
 
 
 
@@ -328,16 +329,16 @@ urls = (
     "/engineer/(.*)", JiraEngineerReport,# TODO fix urls
     "/customer/(.*)", JiraCustomerReport,# TODO fix urls
     "/favicon.ico", CorpFavicon,
-    '/clienthub', clienthub.views.ClientHub,
-    '/clienthub/all', clienthub.views.AllClients,
-    '/clienthub/link/(.+)/(.+)', clienthub.views.ClienthubRedirector,
-    '/clienthub/view/([^/]+)/export/', clienthub.views.ExportClientView,
-    '/clienthub/view/salesforce/([^/]+)', clienthub.views.ClientViewSalesForce,
-    '/clienthub/view/([^/]+)', clienthub.views.ClientView,
-    '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)', clienthub.views.ClientDocView,
-    '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', clienthub.views.ClientDocDelete,
-    '/clienthub/edit/(.+)', clienthub.views.ClientEdit,
-    '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)', clienthub.views.ClientUploadView,
+#     '/clienthub', clienthub.views.ClientHub,
+#     '/clienthub/all', clienthub.views.AllClients,
+#     '/clienthub/link/(.+)/(.+)', clienthub.views.ClienthubRedirector,
+#     '/clienthub/view/([^/]+)/export/', clienthub.views.ExportClientView,
+#     '/clienthub/view/salesforce/([^/]+)', clienthub.views.ClientViewSalesForce,
+#     '/clienthub/view/([^/]+)', clienthub.views.ClientView,
+#     '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)', clienthub.views.ClientDocView,
+#     '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', clienthub.views.ClientDocDelete,
+#     '/clienthub/edit/(.+)', clienthub.views.ClientEdit,
+#     '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)', clienthub.views.ClientUploadView,
     "/(.*)", CorpNormal,
 )
 
