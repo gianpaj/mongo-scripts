@@ -70,7 +70,6 @@ def last_comment_from_10gen( jira , issue ):
     try:
         comments = jira.getComments( issue["key"] )
     except sax.SAXParseException:
-        print("Exception!")
         #jira returned a blank xml document for the comments. Try again and hope that jira is feeling better.
          #Also turn on logging, in the hopes that we can catch the error in the act
         logging.getLogger('suds.client').setLevel(logging.DEBUG)
