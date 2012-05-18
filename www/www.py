@@ -64,7 +64,6 @@ class auto_application(web.auto_application):
         # sort mappings by specificity, with
         # most-specific first
         web.auto_application.add_mapping(self, path, cls)
-
         # well, this is silly -- self.mapping is
         # a sequence of [url, cls, url, cls, ...]
         # rather than a sequence of 2-tuples

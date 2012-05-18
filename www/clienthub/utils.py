@@ -23,7 +23,7 @@ def link(controller, *args, **kwargs):
     # controller class (app.page sublcass), not a
     # reference to the controller class object
     app = web.config.app
-    split_path = list(app._link_map.get(controller.lower(), None))
+    split_path = list(app._link_map.get(controller.lower(), []))
     if not split_path:
         raise ValueError('unknown controller: %s' % controller)
 
