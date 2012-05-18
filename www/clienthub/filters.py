@@ -9,8 +9,6 @@ import pytz
 import web
 env = web.config.env
 
-import xgen.settings
-
 def filter(func):
     name = func.__name__
     env.filters[name] = func
@@ -38,7 +36,7 @@ def isfuture(value, extra_hours=0):
 
 
 @filter
-def staticurl(url, paramname='_ds', deploy_stamp=xgen.settings.GITHASH):
+def staticurl(url, paramname='_ds', deploy_stamp=None):
     '''
     Adds ``deploy_stamp`` as the ``paramname`` query string parameter of the
     given url for caching. Assumes arguments are already valid url components.
