@@ -33,8 +33,11 @@
 .dataTables_wrapper {
 	position: relative;
 	min-height: 302px;
+    width: 75%;
 	clear: both;
 	_height: 302px;
+    margin-right: auto;
+    margin-left: auto;
 	zoom: 1; /* Feeling sorry for IE */
 }
 
@@ -75,6 +78,7 @@
 	* width: 50px;
 	float: right;
 	text-align: right;
+    clear: right;
 }
 
 /* Pagination nested */

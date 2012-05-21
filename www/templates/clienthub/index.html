@@ -118,10 +118,11 @@
          {% if client.is_my_client(auth_user()) %}My Clients{% endif %}
          {{client.display_names(None)}}
        </td>
+
     </tr>
     {% endfor %}
   </tbody>
 </table>
-
+<br>
 {% endblock %}
 

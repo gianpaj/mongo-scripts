@@ -7,7 +7,6 @@ table.tablesorter, div#pager, div#searchbar {
 
 .clientedit{
     margin-right:20%;
-    float:right;
     font-size:85%;
 }
 div#searchbar span#new {
@@ -234,11 +233,3 @@ table.contracts tr.noend td.end {
   font-weight:bold;
 }
 
-
-.datatables_wrapper {
-    width: 75%;
-    margin-right: auto;
-    margin-left: auto;
-
-
-}
