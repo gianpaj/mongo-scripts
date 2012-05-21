@@ -115,10 +115,9 @@
 
         {# owners: use "My Clients" if user is in primary eng, secondary engs, or account_contact;
            also use list of full names for all users associated with an account #}
-{#         {% if client.is_my_client(auth_user()) %}My Clients{% endif %}
+         {% if client.is_my_client(auth_user()) %}My Clients{% endif %}
          {{client.display_names(None)}}
        </td>
-       #}
     </tr>
     {% endfor %}
   </tbody>
