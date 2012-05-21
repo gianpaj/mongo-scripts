@@ -44,7 +44,6 @@ def link(controller, *args, **kwargs):
     return url
 
 
-
 def cache_db():
     return pymongo.connection.Connection('localhost', 27017).clienthub_aux
 
