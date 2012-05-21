@@ -64,15 +64,19 @@ class auto_application(web.auto_application):
         # sort mappings by specificity, with
         # most-specific first
         web.auto_application.add_mapping(self, path, cls)
-        # well, this is silly -- self.mapping is
-        # a sequence of [url, cls, url, cls, ...]
-        # rather than a sequence of 2-tuples
-        pairs = [(self.mapping[i], self.mapping[i+1]) for i in range(0, len(self.mapping), 2)]
-        pairs.sort(cmp=url_cmp, key=lambda pair: pair[0])
-        mapping = []
-        for pair in pairs:
-            mapping.extend(pair)
-        self.mapping = tuple(mapping)
+        if web.__version__ == '0.36':
+            # in .36 self.mapping is a sequence of 2-tuples
+            self.mapping.sort(cmp=url_cmp, key=lambda pair: pair[0])
+        elif web.__version__ == '0.34':
+            # in .34 self.mapping is
+            # a sequence of [url, cls, url, cls, ...]
+            # rather than a sequence of 2-tuples
+            pairs = [(self.mapping[i], self.mapping[i+1]) for i in range(0, len(self.mapping), 2)]
+            pairs.sort(cmp=url_cmp, key=lambda pair: pair[0])
+            mapping = []
+            for pair in pairs:
+                mapping.extend(pair)
+            self.mapping = tuple(mapping)
 
         # also set a dictionary of controller class
         # name (lowercased) to split url, to accelerate
