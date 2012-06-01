@@ -35,7 +35,7 @@ email_template_str = """
 {% endfor %}
 """
 
-recips = ["scott@10gen.com", "mikeo@10gen.com"]
+recips = ["support-alerts@10gen.com", "mikeo@10gen.com"]
 #recips = ["mikeo@10gen.com"]
 
 email_template = Template(email_template_str)
