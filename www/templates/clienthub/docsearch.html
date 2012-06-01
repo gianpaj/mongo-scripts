@@ -1,0 +1,65 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}Document Search - {{super()}}{% endblock %}
+
+{% block morescripts %}
+    <script type="text/javascript">
+      var timer = null;
+      $(document).ready(function() {
+        var opts = {
+          iDisplayLength: -1,
+          aLengthMenu: [[50, 100, 500, -1], [50, 100, 500, "All"]],
+          bFilter: false,
+          aaSorting: [[0, "desc"]]
+        };
+        $('table.docsearch').dataTable(opts);
+      });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+<h1>Clienthub Document Search</h1>
+
+<p>
+  <form method="GET">
+    <dl>
+      <dt>Terms</dt>
+      <dd><input type="text" name="search" value="{{terms}}"/></dd>
+      <dt>&nbsp;</dt>
+      <dd><input type="submit" value="Search"/></dd>
+    </dl>
+  </form>
+</p>
+
+{% if error %}
+<h3 class="warning">{{error}}</h3>
+{% endif %}
+{% if results %}
+<h4 style="clear:both;padding:1.5em 0 0.5em">Found {{results|length}} documents for {{clients|length}} clients:</h4>
+<table class="tablesorter docsearch">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Client Name</th>
+      <th>Type</th>
+      <th>Author</th>
+      <th>Summary</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for result in results %}
+    <tr>
+      <td><nobr><a href="{{link('clientdocview', result.client._id, result._type, result._id)}}">{{result.created|datetimeformat('%Y-%m-%d')}}</a></nobr></td>
+      <td><a href="{{link('clientdocview', result.client._id, result._type, result._id)}}">{{result.client.name}}</a></td>
+      <td><a href="{{link('clientdocview', result.client._id, result._type, result._id)}}">{{result._type}}</a></td>
+      <td><a href="{{link('clientdocview', result.client._id, result._type, result._id)}}">{{result.client.display_names(result.author)}}</a></td>
+      <td><a href="{{link('clientdocview', result.client._id, result._type, result._id)}}">{{result.summary}}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% endblock %}
+

@@ -1,0 +1,37 @@
+{% extends "clienthub/doc.html" %}
+
+{% set form_enctype = ' enctype="multipart/form-data"' %}
+
+{% block title %}Upload - {{super()}}{% endblock %}
+
+{% block doctitle %}
+<h2>{{doc['title']|default('New Upload')}}</h2>
+{% endblock %}
+
+{% block details %}
+  <fieldset>
+    <legend>Upload</legend>
+    <dl>
+      <dt>Title</dt>
+      <dd><input type="text" name="title"/></dd>
+      <dt>Description</dt>
+      <dd><textarea name="description"></textarea></dd>
+      <dt>File</dt>
+      <dd><input type="file" name="attachment"/></dd>
+      {% if 'attachment' in doc %}
+      {% set a = doc['attachment'] %}
+      <dt>Current Version</dt>
+      {% if a['content_type'].startswith('image') %}
+      <dd><img src="{{link('clientuploadview', client['_id'], a['file_id'], a['filename'])}}"/></dd>
+      {% elif a['content_type'].startswith('text') %}
+      <dd>
+        <pre>{{attachment_content|undo_smartquotes|escape}}</pre>
+      </dd>
+      {% else %}
+      <dd><a href="{{link('clientuploadview', client['_id'], a['file_id'], a['filename'])}}">Download {{a['filename']}}</a></dd>
+      {% endif %}
+      {% endif %}
+    </dl>
+  </fieldset>
+{% endblock %}
+

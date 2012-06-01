@@ -1,25 +1,32 @@
-<html>
+<html >
 
   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>10gen internal corp site</title>
     {% block extrahead %}{% endblock %}
+    {% block scripts %}{% endblock %}
+    {% block styles %}{% endblock %}
   </head>
-  
+
   <body>
     <h4>10gen corp site</h4>
     <hr>
-    <a href="phonebook">Phonebook</a> |
-    <a href="newsletterSignups">Newsletter Signups</a> |
-    <a href="dlEvents">Download Events</a> |
-    <a href="dlDomains">Downloads by Domain</a> |
-    <a href="csSignups">Commercial Support Signups</a> |
-    <a href="contributors">Contributors</a> |
-    <a href="orgchart">Org Chart</a> |
-    <a href="codeReview">Code Review</a> |
-    <a href="jirarep">Jira Reports</a> |
-    <a href="pstats">Performance Stats</a>
+    <a href="/phonebook">Phonebook</a> |
+    <a href="/newsletterSignups">Newsletter Signups</a> |
+    <a href="/dlEvents">Download Events</a> |
+    <a href="/dlDomains">Downloads by Domain</a> |
+    <a href="/csSignups">Commercial Support Signups</a> |
+    <a href="/contributors">Contributors</a> |
+    <a href="/orgchart">Org Chart</a> |
+    <a href="/codeReview">Code Review</a> |
+    <a href="/jirarep">Jira Reports</a> |
+    <a href="/pstats">Performance Stats</a> |
+    <a href="/clienthub">Clienthub</a> |
     <hr>
-    
+    {% block extra_header %}
+    {% endblock %}
+
+
     {% block content %}
     {% endblock %}
 
@@ -27,7 +34,7 @@
     <div style="text-align: center; font-size: .8em">
       10gen internal - logged in as <b>{{ user }}</b> - <a href="/logout">logout</a>
     </div>
-    
+
     {% block extrabody %}{% endblock %}
 
   </body>

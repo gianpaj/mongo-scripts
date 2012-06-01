@@ -7,13 +7,13 @@ import settings
 
 #setup dbs
 jirareportsdb = pymongo.Connection( settings.jirareports_host ).jira
-wwwdb = pymongo.Connection( settings.wwwdb_host ).www
+wwwdb = pymongo.Connection(settings.wwwdb_host).www
 usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
 mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
 corpdb = pymongo.Connection(settings.corpdb_host).corp
 pstatsdb = pymongo.Connection(settings.pstats_host).perf
 pstatsdb.authenticate(settings.pstats_username, settings.pstats_password)
-
+ftsdb =  pymongo.connection.Connection(settings.fts_host, slave_okay=True).www
 #setup crowd
 import crowd
 the_crowd = crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )

@@ -10,6 +10,7 @@ import urllib2
 import time
 import datetime
 import traceback
+from xml import sax
 
 path = os.path.dirname(os.path.abspath(__file__))
 path = path.rpartition( "/" )[0]
@@ -23,6 +24,10 @@ import lib.aws
 import lib.sms
 
 import settings
+
+
+import logging
+logging.basicConfig(filename="/tmp/jiraalerts.log", level=logging.ERROR)
 
 
 # who
@@ -62,7 +67,29 @@ def last_comment_from_10gen( jira , issue ):
     def mydebug(s):
         print( "last_comment_from_10gen [%s] %s " % ( issue["key"] , s ) )
 
-    comments = jira.getComments( issue["key"] )
+    try:
+        comments = jira.getComments( issue["key"] )
+    except sax.SAXParseException:
+        #jira returned a blank xml document for the comments. Try again and hope that jira is feeling better.
+         #Also turn on logging, in the hopes that we can catch the error in the act
+        logging.getLogger('suds.client').setLevel(logging.DEBUG)
+        logging.getLogger('suds.transport').setLevel(logging.DEBUG)
+        logging.getLogger('suds.xsd.schema').setLevel(logging.DEBUG)
+        logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
+        try:
+            comments = jira.getComments( issue["key"] )
+            logging.error("---------SUCCESS ON SECOND TRY---------")
+        except sax.SAXParseException:
+            #Jira isn't feeling good today. Return True to ensure that we don't spam people.
+            #A false negitive isn't ideal, but better than erroring and better than a false positive
+            logging.error("---------FAILURE ON SECOND TRY---------")
+            return True
+        finally:
+            logging.getLogger('suds.client').setLevel(logging.ERROR)
+            logging.getLogger('suds.transport').setLevel(logging.ERROR)
+            logging.getLogger('suds.xsd.schema').setLevel(logging.ERROR)
+            logging.getLogger('suds.wsdl').setLevel(logging.ERROR)
+
     if comments is None or len(comments) == 0:
         mydebug( "no comments" )
         return False
@@ -76,11 +103,11 @@ queries = [
 
     # ------ cs sla issues ----------
 
-    { "name" : "New CS" , 
+    { "name" : "New CS" ,
       "sms" : True ,
-      "who" : "AO" , 
+      "who" : "AO" ,
       "digest" : False ,
-      "freq" : 1 , 
+      "freq" : 1 ,
       "filter" : last_comment_from_10gen ,
       "jql" : csBigFilter + " AND assignee is EMPTY" } ,
 
@@ -259,12 +286,12 @@ def sendSMS( who , query , issue ):
         return
 
     print( "sending sms to %s msg[%s]" % ( who , msg ) )
-    
+
     if not theTwilio:
         theTwilio = lib.sms.Twilio()
 
     if not inDebug:
-        theTwilio.sms( number , msg )
+        theTwilio.sms( number , msg[:160] ) #sms's cannot be longer than 160 chars
 
 def debug(msg):
     if True:
@@ -321,7 +348,8 @@ def run( digest ):
         if digest != q["digest"]:
             continue
 
-        for issue in jira.getIssuesFromJqlSearch( q["jql"] , 1000 ):
+        issues = jira.getIssuesFromJqlSearch( q["jql"] , 1000 )
+        for issue in issues:
 
             if issue["key"] in seenAlready:
                 debug( "\t\t\t skipping because already seen" )
@@ -341,7 +369,11 @@ def run( digest ):
             who = set(expandWho( issue , who ))
             debug( "\t" + str(who) )
 
-            comments = jira.getComments( issue["key"] )
+            try:
+                comments = jira.getComments( issue["key"] )
+                #prevent this from stopping execution of script. Not ideal, but better than a fail.
+            except sax.SAXParseException:
+                comments = None
             if comments is None or len(comments) == 0:
                 issue['latest_comment'] = None
                 issue['latest_commenter'] = None
@@ -410,7 +442,7 @@ def sendEmails( messages , managerSummary , digest ):
                 ind += "\t" + simple
                 if issue["latest_comment"] and issue["latest_commenter"]:
                     latest_comment = truncate(issue["latest_comment"]["body"], 160).replace("\n", " ")
-                    
+
 
 
                     cmdPiece = "\n\t\t\tLatest Comment on %s: [by %s] %s\n\n\n" % (issue["latest_comment"]["created"],
@@ -455,7 +487,6 @@ def test_sms():
 if __name__ == "__main__":
 
     digest = False
-
     for x in sys.argv:
         if x == "debug":
             inDebug = True

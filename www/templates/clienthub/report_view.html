@@ -1,0 +1,142 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}{{report.display_name}}, {{result['finished']|datetimeformat('%Y-%m-%d %H:%M:%S')}} - {{super()}}{% endblock %}
+
+{% block morestyles %}
+<style type="text/css">
+  table tbody td.error {
+    background-color:#fc9;
+  }
+  table tbody td.warning {
+    background-color:#ffc;
+  }
+</style>
+{% endblock %}
+
+
+{% block morescripts %}
+<script type="text/javascript">
+  var timer = null;
+  $(document).ready(function() {
+    var opts = {
+      sPaginationType: "full_numbers",
+      iDisplayLength: -1,
+      aLengthMenu: [[50, 100, 500, -1], [50, 100, 500, "All"]],
+      bStateSave: true,
+      fnStateLoadCallback: function() { return false; },
+      fnStateSaveCallback: function(settings, cookie_value) {
+        var hash_str = '';
+
+        var sorting = [];
+        settings.aaSorting.forEach(function(arr) { sorting[sorting.length] = arr[0]; sorting[sorting.length] = arr[1]; });
+
+        hash_str += 's:' + sorting.join(',') + ';'
+        hash_str += 'f:' + encodeURIComponent($('.dataTables_filter input').val()) + ';';
+        hash_str += 'p:' + (settings._iDisplayStart || 0) + ',' + (settings._iDisplayLength || -1) + ';';
+
+        if (timer != null)
+          clearTimeout(timer);
+        if (hash_str != "s:0,asc;f:;p:0,-1;")
+          timer = setTimeout(function() { window.location.hash = hash_str; }, 1000);
+        else if (window.location.hash != "")
+          window.location.hash = "";
+
+        return '';
+      }
+    }
+
+    if (window.location.hash != "") {
+      var parts = window.location.hash.substr(1).split(';');
+      var sortargs = parts[0].substr(2).split(',');
+      var sort = [];
+      for (var i=0; i<sortargs.length; i++) {
+        if (i % 2 == 0) {
+          // push a new subarray, and convert
+          // column index to int
+          sort[sort.length] = [];
+          sort[sort.length - 1][0] = parseInt(sortargs[i], 10);
+        } else {
+          // "asc" or "desc"
+          sort[sort.length - 1][1] = sortargs[i];
+        }
+      }
+
+      var filter = decodeURIComponent(parts[1].substr(2));
+      var page = parts[2].substr(2).split(',');
+
+      opts.aaSorting = sort;
+      opts.oSearch = {sSearch: filter, bSmart: true};
+
+      opts.iDisplayStart = parseInt(page[0], 10);
+      opts.iDisplayLength = parseInt(page[1], 10);
+    }
+
+    $('table.datatable').dataTable(opts);
+  });
+</script>
+{% endblock %}
+
+{% macro sl(row, column) -%}
+{%- if '_link_' + column in row -%}
+<a href="{{row['_link_' + column]}}">
+{%- elif '_id' in row -%}
+<a href="{{link('clientview', row['_id'])}}">
+{%- endif -%}
+{%- endmacro %}
+
+{% macro el(row, column) -%}
+{%- if '_link_' + column in row -%}
+</a>
+{%- elif '_id' in row -%}
+</a>
+{%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+
+<h1>{{report.display_name}}</h1>
+<h4>Results as of {{result['finished']|datetimeformat('%Y-%m-%d %H:%M')}} &mdash;
+  {% set scheduled = report.get_next() %}
+  {% if scheduled %}
+  Already scheduled
+  {% else %}
+  <a href="{{link('clienthubschedulereport', report.name)}}">Schedule again</a>
+  {% endif %}</h4>
+
+<table class="tablesorter datatable">
+  <thead>
+    <tr>
+      {% for field in result['out']['fields'] %}
+      {% if field != '_id' %}
+      <th>{{field}}</th>
+      {% endif %}
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in result['out']['rows'] %}
+    <tr>
+      {% for column in result['out']['fields'] %}
+      {% if column in row['_errors'] %}
+      {% set display="error" %}
+      {% elif column in row['_warnings'] %}
+      {% set display="warning" %}
+      {% else %}
+      {% set display="" %}
+      {% endif %}
+      <td class="{{display}}">{{sl(row, column)}}{{row[column]|noNone}}{{el(row, column)}}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+  {% if not result['out']['rows'] %}
+  <tfoot>
+    <tr>
+      <td colspan="{{len(result['fields'])}}">No result rows in report</td>
+    </tr>
+  </tfoot>
+  {% endif %}
+</table>
+
+{% endblock %}
+

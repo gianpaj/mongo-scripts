@@ -1,0 +1,50 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}JIRA Tool - {{super()}}{% endblock %}
+
+{% block morescripts %}
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $('table.datatable').dataTable({
+          sPaginationType: "full_numbers",
+          iDisplayLength: 100,
+          aLengthMenu: [[50, 100, 500, -1], [50, 100, 500, "All"]],
+          aaSorting: [[1, 'desc'], [2, 'asc']]
+        });
+      });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+<h1>JIRA Groups</h1>
+
+<div class="new left jiratool">
+  <a href="{{link('newjiragroup')}}"><img src="{{'/static/add.png'|staticurl}}" /> New Group</a>
+</div>
+<table class="datatable tablesorter groups">
+  <thead>
+    <tr>
+      <th>JIRA Group</th>
+      <th>Commercial Support</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for group in groups %}
+    <tr>
+      <td><a href="{{link('jiragroup', group['name'])}}">{{group['name']}}</a></td>
+      <td><a href="{{link('jiragroup', group['name'])}}">{% if group['is_cs'] %}Yes{% endif %}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="3">
+        Cached until {{expiry}}. <a href="{{link('jirarefresh')}}">Refresh now</a>.
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+{% endblock %}
+

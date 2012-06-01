@@ -1,0 +1,128 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}{{title}} - {{super()}}{% endblock %}
+
+{% block morescripts %}
+    <script type="text/javascript">
+      var timer = null;
+      $(document).ready(function() {
+        var opts = {
+          sPaginationType: "full_numbers",
+          iDisplayLength: -1,
+          aLengthMenu: [[50, 100, 500, -1], [50, 100, 500, "All"]],
+          aoColumnDefs: [
+            {bVisible: false, aTargets: [7]}
+          ],
+          oSearch: {sSearch: "{{table_search}}", bSmart: true},
+          bStateSave: true,
+          fnStateLoadCallback: function() { return false; },
+          fnStateSaveCallback: function(settings, cookie_value) {
+            var hash_str = '';
+
+            var sorting = [];
+            settings.aaSorting.forEach(function(arr) { sorting[sorting.length] = arr[0]; sorting[sorting.length] = arr[1]; });
+
+            hash_str += 's:' + sorting.join(',') + ';'
+            hash_str += 'f:' + encodeURIComponent($('.dataTables_filter input').val()) + ';';
+            hash_str += 'p:' + (settings._iDisplayStart || 0) + ',' + (settings._iDisplayLength || -1) + ';';
+
+            if (timer != null)
+              clearTimeout(timer);
+            if (hash_str != "s:0,asc;f:;p:0,-1;" && hash_str != "s:0,asc;f:My%20Clients;p:0,-1;")
+              timer = setTimeout(function() { window.location.hash = hash_str; }, 1000);
+            else if (window.location.hash != "")
+              window.location.hash = "";
+
+            return '';
+          }
+        };
+
+        if (window.location.hash != "") {
+          var parts = window.location.hash.substr(1).split(';');
+          var sortargs = parts[0].substr(2).split(',');
+          var sort = [];
+          for (var i=0; i<sortargs.length; i++) {
+            if (i % 2 == 0) {
+              // push a new subarray, and convert
+              // column index to int
+              sort[sort.length] = [];
+              sort[sort.length - 1][0] = parseInt(sortargs[i], 10);
+            } else {
+              // "asc" or "desc"
+              sort[sort.length - 1][1] = sortargs[i];
+            }
+          }
+
+          var filter = decodeURIComponent(parts[1].substr(2));
+          var page = parts[2].substr(2).split(',');
+
+          opts.aaSorting = sort;
+          opts.oSearch = {sSearch: filter, bSmart: true};
+
+          opts.iDisplayStart = parseInt(page[0], 10);
+          opts.iDisplayLength = parseInt(page[1], 10);
+        }
+
+        var clientsTable = $('table.clients').dataTable(opts);
+        var isDefault = "{{table_search}}" == "My Clients";
+
+        $('.dataTables_filter input').live('focus', function() {
+          if (isDefault) {
+            clientsTable.fnFilter('');
+            isDefault = false;
+          }
+        });
+      });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{{title}}</h1>
+
+<div id="searchbar">
+  <span id="new">
+    <a href="/clienthub/edit/new"><img src="{{'/static/add.png'|staticurl}}" />New</a>
+  </span>
+</div>
+
+<table class="tablesorter clients">
+  <thead>
+    <tr>
+      <th>Client Name</th>
+      <th>Last Updated</th>
+      <th>JIRA Group</th>
+      <th>SF Account</th>
+      <th>Primary Eng</th>
+      <th>Acct Contact</th>
+      <th>Is CS</th>
+      <th>Owners</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for client in clients %}
+    <tr>
+      <td><a href="{{link('clientview', client._id)}}">{{client.name}}</a></td>
+      <td><a href="{{link('clientview', client._id)}}">{{client.updated|datetimeformat('%Y-%m-%d %I:%M %p')}}</a></td>
+      <td><a href="{{link('clientview', client._id)}}">{{client.jira_group|noNone}}</a></td>
+      <td><a href="{{link('clientview', client._id)}}">{{client.sf_account_name|noNone}}</a></td>
+      <td><a href="{{link('clientview', client._id)}}">{{client.display_engineering_contact()}}</a></td>
+      <td><a href="{{link('clientview', client._id)}}">{{client.display_account_contact()}}</a></td>
+      <td><a href="{{link('clientview', client._id)}}">{% if
+      client.jira_group in cs_groups %}Yes{% endif %}</a></td>
+
+      <td>
+
+        {# owners: use "My Clients" if user is in primary eng, secondary engs, or account_contact;
+           also use list of full names for all users associated with an account #}
+         {% if client.is_my_client(auth_user()) %}My Clients{% endif %}
+         {{client.display_names(None)}}
+       </td>
+
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<br>
+{% endblock %}
+

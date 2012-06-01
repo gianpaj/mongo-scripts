@@ -1,0 +1,235 @@
+table.tablesorter, div#pager, div#searchbar {
+  width:75%;
+  margin-left: auto;
+  margin-right: auto;
+
+}
+
+.clientedit{
+    margin-right:20%;
+    font-size:85%;
+}
+div#searchbar span#new {
+  float:right;
+  font-size:90%;
+}
+div#searchbar span#new img {
+  padding:0px;
+  margin:0px;
+  border:none;
+  border-radius:0px;
+  -webkit-border-radius:0px;
+  -moz-border-radius:0px;
+  background:none;
+  margin-right:5px;
+  position:relative;
+  top:3px;
+}
+div#searchbar input {
+  width:auto;
+}
+div#searchbar input[type="text"] {
+  width:250px;
+}
+div#pager {
+  text-align:center;
+  margin-top:8px;
+}
+div#pager span.clickable {
+  cursor:pointer;
+  color:#696;
+  margin:0px 10px;
+  font-size:90%;
+}
+div#pager span.clickable:hover {
+  text-decoration:underline;
+}
+div#pager span.first, div#pager span.prev {
+  float:left;
+}
+div#pager span.next, div#pager span.last {
+  float:right;
+}
+
+div.new {
+    margin-right: 20%;
+  float:right;
+  font-size:90%;
+  padding-right:12px;
+  position:relative;
+  font-family:sans-serif;
+}
+div.new.left {
+  float:none;
+  display:block;
+  margin-bottom:15px;
+}
+.jiratool {
+    width: 69%;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+div.new img, img.collapser {
+  padding:0px;
+  margin:0px;
+  border:none;
+  border-radius:0px;
+  -webkit-border-radius:0px;
+  -moz-border-radius:0px;
+  background:none;
+  margin-right:5px;
+  position:relative;
+  top:3px;
+}
+span.clickable {
+  color:#696;
+  cursor:pointer;
+}
+span.clickable:hover {
+  text-decoration:underline;
+}
+div.popup {
+  display:none;
+  position:absolute;
+  border:1px solid #ccc;
+  border-bottom:none;
+  background-color:white;
+  margin:0px;
+  padding:0px;
+  width:145px;
+}
+div.popup ul {
+  margin:0px;
+  padding:0px;
+}
+div.popup ul li {
+  background:none;
+  margin:0px;
+  padding:0px;
+  border-bottom:1px solid #ccc;
+  font-family:sans-serif;
+  font-size:90%;
+  list-style: none;
+}
+div.popup ul li:hover {
+  background-color:#eee;
+}
+div.popup ul li > * {
+  display:block;
+  padding:2px 5px;
+
+}
+table.tablesorter {
+  clear:both;
+  margin-bottom:3em;
+}
+table.tablesorter thead th {
+  padding-right:20px !important;
+}
+h1, h2, h3 {
+    margin-left: 10%;
+    clear:both;
+}
+dl {
+    margin-left: 15%;
+  width:auto;
+}
+h4.message {
+  color:#ff6600;
+}
+img.collapser {
+  margin-left:5px;
+  position:relative;
+  top:3px;
+}
+
+ fieldset div.innerarea > textarea {
+  margin-left:10px;
+  width:682px;
+  height:325px;
+  font-family:monospace;
+}
+
+ fieldset div.innerarea > textarea.short {
+  height:175px;
+}
+
+ fieldset div.innerarea > div.helper {
+  padding:0 10px 0 10px;
+}
+
+ fieldset div.innerarea dl dd textarea,
+ fieldset div.innerarea dl dd input,
+ fieldset div.innerarea dl dd select
+{
+  width:556px;
+}
+fieldset div.innerarea dl dd textarea {
+  height:325px;
+
+}
+
+table.datatable {
+  width:100%;
+}
+
+h3.warning, h3.warning strong {
+  text-transform:none;
+  color:#c33;
+  font-size:105%;
+}
+
+select {
+  width:330px;
+}
+
+.dataTables_wrapper select {
+  width:auto;
+}
+
+dd .chzn-container-multi .chzn-choices .search-field input {
+  padding-bottom:0px;
+}
+
+input[type="text"] {
+  font-family:ff-meta-web-pro;
+  font-size:13px;
+}
+
+dd > input[type="text"] {
+  padding:3px 4px;
+}
+
+input[type="submit"], button {
+  font-family:ff-meta-web-pro;
+  font-size:16px;
+  padding:4px 20px;
+}
+
+div.horiz * {
+  font-family:ff-meta-web-pro;
+  font-size:14px;
+}
+
+div.horiz dt {
+  clear:none;
+}
+
+div.horiz dd {
+  margin:0 20px 0 5px;
+}
+
+div.horiz dt, div.horiz dd {
+  width:auto;
+}
+
+table.contracts tr.inactive td {
+  color:#888;
+}
+
+table.contracts tr.noend td.end {
+  color:#c33;
+  font-weight:bold;
+}
+

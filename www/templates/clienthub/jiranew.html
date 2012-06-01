@@ -1,0 +1,41 @@
+{% extends "clienthub/base.html" %}
+
+{% block title %}New Group - JIRA Tool - {{super()}}{% endblock %}
+
+{% block morestyles %}
+<style type="text/css">
+  div.content form ul li {
+    list-style:none;
+    padding:0px;
+    background:none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>New JIRA Group</h1>
+
+<form method="POST">
+  <dl>
+    <dt>Group Name</dt>
+    <dd><input type="text" name="group_name"/></dd>
+    <dt>Is CS</dt>
+    <dd><input type="checkbox" name="is_cs"/></dd>
+    <dt>First User</dt>
+    <dd style="width:auto">
+    <ul>
+      <li>Add a new user as first member of this group:</li>
+      <li><input type="text" name="first_user_username" placeholder="username"/></li>
+      <li><input type="text" name="first_user_realname" placeholder="real name"/></li>
+      <li><input type="text" name="first_user_email" placeholder="email address"/></li>
+      <li class="helper">(you can add additional users and existing users after creating the group)</li>
+    </ul>
+    </dd>
+  </dl>
+  <br style="clear:both"/>
+  <input type="submit" value="Create"/>
+</form>
+
+{% endblock %}
+
