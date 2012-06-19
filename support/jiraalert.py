@@ -309,7 +309,7 @@ def run( digest ):
 
     jira = lib.jira.JiraConnection()
 
-    conn = pymongo.Connection('jira.10gen.cc');
+    conn = pymongo.Connection('stats.10gen.cc');
     db = conn.jira_alert
     last_alert = db.last_alert
 

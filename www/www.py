@@ -109,7 +109,7 @@ import clienthub
 
 
 
-myggs = google_group_to_jira.ggs("jira.10gen.cc",False)
+myggs = google_group_to_jira.ggs("stats.10gen.cc",False)
 myjira = jira.JiraConnection()
 
 class JiraMulti(CorpBase):

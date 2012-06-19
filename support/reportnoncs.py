@@ -22,7 +22,7 @@ import lib.aws
 #import lib.sms
 import settings
 
-conn = pymongo.Connection('jira.10gen.cc');
+conn = pymongo.Connection('stats.10gen.cc');
 #conn = pymongo.Connection('localhost');
 db = conn.jira_alert
 last_alert_noncs = db.last_alert_noncs

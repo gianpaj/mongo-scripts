@@ -17,7 +17,7 @@ class StackOverflowImport(object):
     jira_cutoff = datetime(2011, 11, 20, 10, tzinfo=pytz.timezone('America/New_York'))
 
     def __init__(self):
-        conn = pymongo.Connection('jira.10gen.cc', tz_aware=True)
+        conn = pymongo.Connection('stats.10gen.cc', tz_aware=True)
         self.db = conn.support_so
 
         self.db.questions.ensure_index('updated')

@@ -14,7 +14,7 @@ import email
 import pymongo
 
 class gmail:
-    def __init__(self,emailaddr,pwd,mongo_host="jira.10gen.cc"):
+    def __init__(self,emailaddr,pwd,mongo_host="stats.10gen.cc"):
         self.emailaddr = emailaddr
         self.pwd = pwd;
 

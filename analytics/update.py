@@ -179,7 +179,7 @@ def skipLine( data ):
     return False
 
 
-conn = pymongo.Connection('jira.10gen.cc')
+conn = pymongo.Connection('stats.10gen.cc')
 db = conn.mongousage
 
 def getReverse( ip ):
