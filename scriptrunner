@@ -1,0 +1,208 @@
+#!/usr/bin/env python
+
+"""scriptrunner: run 10gen scripts safely on stats.10gen.cc (and others)
+
+This wrapper script manages pidfiles in /var/run to ensure that no more than
+1 copy (by default) of a given script runs at a time on the given machine.
+Using this, it is safe to schedule scripts frequently in a crontab.
+
+The target script need not be a Python script; scriptrunner will shell out
+to run the requested command line in a subshell regardless of what language
+the script (or command) is written in.
+
+It allows a configurable staleness policy, after which time a running copy
+of the same script will be terminated (by default, 30 minutes).
+
+Usage:
+
+    scriptrunner [-s staleness] [-n pidfile_name] [-p pidfile_root] -- command arg ...
+"""
+
+from os.path import abspath, basename, exists, join, splitext
+from os import getpid, remove
+from lockfile import LockFile, LockTimeout
+from psutil import pid_exists, Process
+from psutil.error import AccessDenied, NoSuchProcess
+import optparse
+import subprocess
+import sys
+import time
+import traceback
+
+def split_argv(argv):
+    """Split a command line with '--' into the first half, which are
+    arguments for scriptrunner, and the second half, which is the
+    exact command line for the target script.
+    """
+    try:
+        separator = argv.index('--')
+    except:
+        separator = len(argv)
+    return argv[:separator], argv[separator + 1:]
+
+def pidfile_name(options):
+    """Safely generate a short pidfile name from the given command
+    with the following properties:
+
+    * multiple invocations of pidfile_name() for the same command
+      will return the same pidfile name
+    * invocations of pidfile_name() for different commands will
+      reliably return different pidfile names
+    """
+    if options.name:
+        return options.name
+
+    command = options.command[0]
+
+    # if the command is a script with an interpreter,
+    # then use the second arg rather than the first
+    if any(interp in command for interp in ('python', 'bash', 'ruby')):
+        command = options.command[1]
+
+    filename = basename(command)
+    filename, _ = splitext(filename)
+
+    return filename
+
+def is_running(pid):
+    """Check if a process is running with process ID `pid`, and
+    that it's been run through scriptrunner.
+    """
+    if not pid_exists(pid):
+        return False
+    else:
+        # True if the process at the given pid was invoked
+        # using scriptrunner (approximately)
+        return any('scriptrunner' in part for part in Process(pid).cmdline)
+    return False
+
+def running_for(pid):
+    """Estimate how long, in minutes as a float, the other process
+    has been running for.
+    """
+    try:
+        proc = Process(pid)
+        return time.time() - proc.create_time
+    except NoSuchProcess:
+        # The process is no longer running; there's not a great
+        # option here, so we'll return 0, which will prevent
+        # acquire_pidfile() from attempting to kill a nonexistent
+        # process.
+        return 0.0
+
+def kill(pid):
+    """Send a TERM signal to the process at PID, and return
+    True if we could send the signal, or False otherwise.
+    """
+    try:
+        Process(pid).send_signal(SIGTERM)
+    except AccessDenied:
+        return False
+    except NoSuchProcess:
+        # pretend that we killed it; it's gone, which is what
+        # we really care about anyway.
+        return True
+    return True
+
+def acquire_pidfile(options):
+    """Check and acquire a pidfile, returning True if the process should
+    continue, or False if not. Makes no effort to distinguish between
+    different failure cases.
+    """
+    # the lockfile lets us safely acquire pidfiles; it is held only briefly
+    lock = abspath(join(options.pidfile_root, 'scriptrunner.lock'))
+
+    # the pidfile will exist as long as the target process is running, and
+    # will contain the pid of this process (the parent of the actual script)
+    pidfile = abspath(join(options.pidfile_root, pidfile_name(options)))
+
+    lk = LockFile(lock)
+    try:
+        lk.acquire(timeout=5)
+
+        if exists(pidfile):
+            try:
+                otherpid = file(pidfile, 'r').read().strip()
+                otherpid = int(otherpid)
+            except ValueError:
+                otherpid = None
+
+            if otherpid and is_running(otherpid):
+                if running_for(otherpid) > options.staleness:
+                    if not kill(otherpid):
+                        return False
+                else:
+                    return False
+
+            remove(pidfile)
+
+        # at this point we are clear to create the pidfile with our pid
+        file(pidfile, 'w').write('%d\n' % getpid())
+
+    except LockTimeout:
+        return False
+    finally:
+        lk.release()
+
+    return True
+
+def release_pidfile(options):
+    """Remove the pidfile so that future invocations of this command
+    can run. Assumes that we are the owner of the pidfile, and that
+    we should unconditionally remove it.
+    """
+    # the lockfile lets us safely acquire pidfiles; it is held only briefly
+    lock = abspath(join(options.pidfile_root, 'scriptrunner.lock'))
+
+    # the pidfile will exist as long as the target process is running, and
+    # will contain the pid of this process (the parent of the actual script)
+    pidfile = abspath(join(options.pidfile_root, pidfile_name(options)))
+
+    lk = LockFile(lock)
+    try:
+        lk.acquire(timeout=5)
+        remove(pidfile)
+
+    except LockTimeout:
+        # We can't raise here, as release_pidfile() is
+        # called inside a finally
+        traceback.print_exc()
+    finally:
+        lk.release()
+
+
+def main():
+    parser = optparse.OptionParser('%prog [OPTIONS] -- command [arg ...]')
+    parser.add_option('-s', '--staleness', metavar='MAX_STALENESS',
+                      action='store', dest='staleness', type='int', default=30,
+                      help='Other copies of this script running for more than MAX_STALENESS minutes will be killed [30]')
+    parser.add_option('-n', '--name', metavar='NAME',
+                      action='store', dest='name', default=None,
+                      help='Set the name of the pidfile [name of target script]')
+    parser.add_option('-p', '--pidfile-root', metavar='PIDFILE_ROOT',
+                      action='store', dest='pidfile_root', default='/var/run',
+                      help='Set the root directory for pidfile storage [/var/run]')
+
+    argv, command = split_argv(sys.argv[1:])
+    options, args = parser.parse_args(argv)
+
+    if args:
+        return "scriptrunner takes no positional arguments, did you mean to use '--'?"
+    elif not command:
+        return "You must specify target command after '--'"
+
+    options.command = command
+
+
+    if not acquire_pidfile(options):
+        return 1
+
+    try:
+        return subprocess.call(command)
+    finally:
+        release_pidfile(options)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+

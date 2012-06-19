@@ -1,0 +1,9 @@
+The cron scripts (represented in the crontab file) are run through the
+"scriptrunner" wrapper script. See the documentation in that file for more
+information about its usage and intent.
+
+You will also need to install the "lockfile" and "psutil" packages for
+scriptrunner to function. Please do so using:
+
+    sudo pip install -r requirements.txt
+
