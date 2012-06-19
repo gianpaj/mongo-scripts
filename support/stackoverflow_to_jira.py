@@ -1,3 +1,9 @@
+import sys
+from os.path import abspath, dirname, join
+
+here = dirname(__file__)
+sys.path.append(abspath(join(here, '..', 'lib')))
+
 from datetime import datetime, timedelta
 import pytz
 import pymongo
