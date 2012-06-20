@@ -14,8 +14,8 @@ MAILTO=noc@10gen.com
 0    *  * * *          /jira/corp/scriptrunner -- /usr/bin/python /jira/corp/support/jiraalert.py             > /tmp/jiraalert
 
 # FREE collectors
-##*/2  *  * * *          /jira/corp/scriptrunner -- /usr/bin/python /jira/corp/support/google_group_to_jira.py  > /tmp/gg
-##*/5  *  * * *          /jira/corp/scriptrunner -- /usr/bin/python /jira/corp/support/stackoverflow_to_jira.py > /tmp/stackoverflow
+*/2  *  * * *          /jira/corp/scriptrunner -- /usr/bin/python /jira/corp/support/google_group_to_jira.py  > /tmp/gg
+*/5  *  * * *          /jira/corp/scriptrunner -- /usr/bin/python /jira/corp/support/stackoverflow_to_jira.py > /tmp/stackoverflow
 
 # Shut down old/abandoned instances in aws-test EC2 account
 0    8  * * 1          /usr/bin/python /jira/ops/ec2/aws-test/weekly-instance-shutdown.py
