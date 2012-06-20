@@ -7,3 +7,5 @@ scriptrunner to function. Please do so using:
 
     sudo pip install -r requirements.txt
 
+You will also need to ensure that /var/run/10gen exists and is writeable by
+the user who runs these cronjobs ("ubuntu" on stats.10gen.cc)

@@ -2,9 +2,9 @@
 
 """scriptrunner: run 10gen scripts safely on stats.10gen.cc (and others)
 
-This wrapper script manages pidfiles in /var/run to ensure that no more than
-1 copy (by default) of a given script runs at a time on the given machine.
-Using this, it is safe to schedule scripts frequently in a crontab.
+This wrapper script manages pidfiles in /var/run/10gen to ensure that no
+more than 1 copy (by default) of a given script runs at a time on the given
+machine. Using this, it is safe to schedule scripts frequently in a crontab.
 
 The target script need not be a Python script; scriptrunner will shell out
 to run the requested command line in a subshell regardless of what language
@@ -180,8 +180,8 @@ def main():
                       action='store', dest='name', default=None,
                       help='Set the name of the pidfile [name of target script]')
     parser.add_option('-p', '--pidfile-root', metavar='PIDFILE_ROOT',
-                      action='store', dest='pidfile_root', default='/var/run',
-                      help='Set the root directory for pidfile storage [/var/run]')
+                      action='store', dest='pidfile_root', default='/var/run/10gen',
+                      help='Set the root directory for pidfile storage [/var/run/10gen]')
 
     argv, command = split_argv(sys.argv[1:])
     options, args = parser.parse_args(argv)
