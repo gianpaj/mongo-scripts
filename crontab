@@ -1,5 +1,10 @@
 MAILTO=noc@10gen.com
 
+## NOTE: do not edit this with `crontab -e`; this file is
+## tracked in git in the 10gen/corp repository. the correct
+## way to update it is by editing in the repository, git pull
+## the checkout in /jira, and `crontab /jira/corp/crontab`
+
 # Download analytics
 0    9  * * 1          /bin/bash        /jira/corp/analytics/run.csh                > /tmp/ann1
 0    11 1 * *          /bin/bash        /jira/corp/analytics/run.csh                > /tmp/ann2
