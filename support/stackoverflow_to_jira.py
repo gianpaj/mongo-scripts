@@ -2,7 +2,7 @@ import sys
 from os.path import abspath, dirname, join
 
 here = dirname(__file__)
-sys.path.append(abspath(join(here, '..', 'lib')))
+sys.path.append(abspath(join(here, '..')))
 
 from datetime import datetime, timedelta
 import pytz
