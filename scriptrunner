@@ -23,6 +23,7 @@ from os import getpid, remove
 from lockfile import LockFile, LockTimeout
 from psutil import pid_exists, Process
 from psutil.error import AccessDenied, NoSuchProcess
+from signal import SIGTERM
 import optparse
 import subprocess
 import sys
