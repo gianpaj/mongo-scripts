@@ -1,0 +1,41 @@
+{% extends "layouts/popup.html" %}
+
+{% block content %}
+
+<style>
+form {margin:0 0 5px;}
+</style>
+
+<br/>
+<br/>
+
+<form action="/employees/new" method="post" class="form-horizontal">
+	<fieldset>
+		
+		<div class="control-group">
+			<label class="control-label">First Name</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="first_name" id="first_name">
+				</div><!-- controls-->
+		</div><!-- control-group-->
+		
+		<div class="control-group">
+			<label class="control-label">Last Name</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="last_name" id="last_name">
+				</div><!-- controls-->
+		</div><!-- control-group-->
+		
+		<div class="control-group">
+			<label class="control-label">Email address</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="email_address" id="email_address">
+				</div><!-- controls-->
+		</div><!-- control-group-->
+	
+	</fieldset>
+		
+	<input type="submit" class ="btn btn-primary" style="float:right;">
+</form>
+
+{% endblock %}

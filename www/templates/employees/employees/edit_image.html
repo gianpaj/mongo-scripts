@@ -1,0 +1,30 @@
+{% extends "layouts/popup.html" %}
+
+{% block content %}
+
+<style>
+form {margin:0 0 0px;}
+</style>
+
+<br/>
+	<div class="employee-image">
+		<img src="/profileimage/{{ pp['employee']['jira_uname'] }}" onerror="ImgError(this, '{{pp['email_hash']}}');">
+	</div><!-- /.employee-image -->
+<br/>
+
+<form id="no_image_message" enctype="multipart/form-data" action="/employees/{{ pp['employee']['jira_uname'] }}/deleteimage" method="post" class="form-horizontal">
+	<input type="hidden" name="employee_id" value="{{ pp['employee']['jira_uname'] }}" >
+	<a id="delete" href="#" onclick="parentNode.submit()">Delete</a> this image and use gravatar instead.
+</form>
+
+<form enctype="multipart/form-data" action="/employees/{{ pp['employee']['jira_uname'] }}/editimage" method="post" class="form-horizontal">
+	<br/>
+	<label >Upload an image to override gravatar image.</label>
+	<input type="file" name="image_file" />
+	<br/>
+	<br/>
+	<input type="submit" class ="btn btn-primary" style="float:right;" value="Upload">
+</form>
+
+{% endblock %}
+

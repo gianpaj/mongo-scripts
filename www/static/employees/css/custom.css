@@ -1,0 +1,192 @@
+/* RESET */
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{background:transparent;border:0;font-size:100%;margin:0;outline:0;padding:0;vertical-align:baseline}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}:focus{outline:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}hr{display:none}
+/* BEGIN */
+body {
+	font: normal 14px/16px Arial,Helvetica,sans-serif;
+}
+a {
+	color: #000;
+	text-decoration: none;
+}
+a:hover {
+	color: #6d9a60;
+}
+#page {
+	width: 100%;
+}
+#page-content {
+	width: 948px;
+	margin: auto;
+}
+header.global-header h2 {
+	padding: 0;
+	margin-bottom: 30px;
+	font-size:24px;
+}	
+header.global-header {
+	border-bottom: dotted 1px #999;
+	padding: 10px 0 0 0;
+	float: left;
+	clear: both;
+	margin: 0 0 20px 0;
+}
+header.global-header .menu {
+	float: left;
+	clear: both;
+	margin: 0;
+	padding: 1px 0 1px 0;
+	border-top: dotted 1px #999;	
+}
+header.global-header .menu ul {
+	float: left;
+	clear: both;
+}	
+header.global-header .menu li {
+	float: left;
+	margin: 0;
+	font-size: 11px;
+	width: 158px;
+	height: 30px;
+	text-transform: uppercase;
+	line-height: 1.3em;
+}
+header.global-header .menu li a {
+	float: left;
+	display: block;
+	width: 100%;
+	height: 30px;
+	color: #999;
+}
+header.global-header .menu li a:hover {	
+	background: #000;
+	color: #fff;
+}	
+header.global-header .menu li a span {
+	float: left;
+	margin-top: 4px;
+	margin: 8px 0 0 10px;
+}
+header.page-header {
+	height: 162px;
+	position: relative;
+	padding: 10px 0 0 0;
+}
+header.team-page-header {
+	height: 100px;
+	position: relative;
+	padding: 10px 0 0 0;
+}
+header.page-header .edit {
+	margin: 6px 0 0 168px;
+	text-transform: uppercase;
+	font-size: 11px;
+}
+header.page-header .team-edit {
+	margin: 6px 0 0 0px;
+	text-transform: uppercase;
+	font-size: 11px;
+}
+.edit a {
+	color: #7CAE6C;
+}
+.team-edit a {
+	color: #7CAE6C;
+}
+.edit a:hover {
+	color: #cc0000;
+}
+.team-edit a:hover {
+	color: #cc0000;
+}	
+header.page-header .employee-header-info {
+	margin: 0 0 0 168px;
+}
+header.page-header .team-header-info {
+	margin: 0 0 0 168px;
+}	
+header.page-header h1 {
+	font-size: 200%;
+	line-height: 1.5em;
+	padding: 0;
+}
+header.page-header h1 .name {
+	
+}
+header.page-header h1 .description {
+	color: #6587AB;
+}	
+header.page-header .employee-image {
+	position: absolute;
+	top: 20px;
+	left: 0;
+}
+header.page-header .employee-image img {
+	max-width: 150px;
+	max-height: 150px;
+	border: solid 1px #ccc;
+}	
+section {
+	float: left;
+	clear: both;
+	width: 100%;
+}
+
+.employee-image img {
+	max-width: 150px;
+	max-height: 150px;
+	border: solid 1px #ccc;
+}
+
+.random-employee {
+	margin-left:auto;
+	margin-right:auto;
+	width:70%;
+	text-align:center;
+}
+
+dl {
+	float: left;
+	clear: both;
+	width: 780px;
+	margin: 0 0 0 168px;
+	border-top: dotted 1px #ccc;
+}
+dt {
+	float: left;
+	clear: left;
+	width: 220px;
+	font-weight: bold;
+	padding: 10px 0 10px 0;
+	margin-bottom: 1px;
+}	
+dt:after {
+	content: ": ";
+}
+dd {
+	float: right;
+	padding: 10px 0 10px 220px;	
+	margin: 0 0 0 -220px;
+	border-bottom: dotted 1px #ccc;
+	width: 560px;
+}
+.edit {
+	font-size: 12px;
+}
+footer.global-footer {
+	float: left;
+	clear: both;
+	border-top: dotted 1px #999;
+	padding: 10px 0 10px 0;
+	margin: 100px 0 10px 0;
+	width: 100%;
+	font-size: 12px;
+}
+footer.global-footer a {
+	color: #7CAE6C;
+	font-weight: bold;
+}
+footer.global-footer a:hover {
+	color: #cc0000;
+}	
+/* END */
+

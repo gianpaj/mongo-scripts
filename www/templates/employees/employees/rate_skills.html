@@ -1,0 +1,46 @@
+{% extends "layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/bootstrap.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Rate skills for <a href="/employees/{{ pp['employee']['jira_uname'] }}">{{ pp['employee']['first_name'] }} {{ pp['employee']['last_name']}}</a></h1>
+
+<br/>
+<br/>
+
+<form action="" method="post" class="form-horizontal">
+<input type="hidden" name="jira_uname" value="{{ pp['employee']['jira_uname'] }}" >
+
+<div class="row show-grid">
+	<div class="span6">
+		<fieldset>
+			{% for skill_id in pp['employee']['skills'] %}
+			<div class="control-group">
+				<label class="control-label">{{ pp['skills'][skill_id] }}</label>
+					<div class="controls">
+						<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
+							{% for i in range(1,6) %}
+								<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} >{{ i }}</option>
+							{% endfor %}
+						</select>
+					</div><!-- controls-->
+			</div><!-- control-group-->
+			{% endfor %}
+		</fieldset>
+	</div><!-- span6 -->
+
+</div>
+<br/>
+<input type="submit" class ="btn btn-primary" style="float:right;">
+</form>
+
+{% endblock %}

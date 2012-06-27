@@ -1,0 +1,30 @@
+{% extends "layouts/application.html" %}
+
+{% block content %}
+
+<header class="page-header">
+	<div class="team-header-info">
+		<h1>Skill: <span class="name">{{ pp['skill']['name'] }}</span></h1>
+		{% if pp['current_user_role'] == "manager" %}
+		<div class="team-edit"><a href="/skills/{{ pp['skill']['_id'] }}/edit">(Edit)</a><form enctype="multipart/form-data" action="/skills/{{ pp['skill']['_id'] }}/delete" method="post" class="form-horizontal"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form>
+		{% endif %}
+	</div>	
+</header>
+
+	<dl class="dl-horizontal">
+		<dt>Belongs to Skill Groups</dt>
+		{% for skill_group in pp['skill_groups'] %}
+			<dd><a href="/skillgroups/{{ skill_group['_id']}}">{{ skill_group['name']}}</a></dd>
+		{% endfor %}
+	
+	</dl>
+	<br/>&nbsp;
+	<dl class="dl-horizontal">
+		<dt>People skilled in {{ pp['skill']['name'] }}</dt>
+		{% for employee in pp['employees'] %}
+			<dd><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee['last_name']}}</a></dd>
+		{% endfor %}
+	
+	</dl>
+
+{% endblock %}

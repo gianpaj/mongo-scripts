@@ -1,0 +1,47 @@
+{% extends "layouts/application.html" %}
+
+{% block content %}
+
+<header class="page-header">
+	<div class="team-header-info">
+		<h1><span class="name">{{ pp['team']['name'] }}</span></h1>
+		<div class="team-edit"><a href="/teams/{{ pp['team']['_id'] }}/edit">(Edit)</a><form enctype="multipart/form-data" action="/teams/{{ pp['team']['_id'] }}/delete" method="post" class="form-horizontal"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form>
+	</div>	
+</header>
+
+	<dl class="dl-horizontal">
+		<dt>Members</dt>
+		{% for member in pp['team_members'] %}
+			<dd><a href="/employees/{{ member['_id']}}">{{ member['first_name']}} {{ member['last_name']}}</a></dd>
+		{% endfor %}
+	
+	</dl>
+	<br/>
+	<dl class="dl-horizontal">
+		<dt>Managed by</dt>
+		{% for managed_teams in pp['managed_teams'] %}
+			<dd><a href="/teams/{{ managed_teams['_id']}}">{{ managed_teams['name']}}</a></dd>
+		{% endfor %}
+	
+	</dl>
+	<br/>
+	
+	<dl class="dl-horizontal">
+		<dt>Managing</dt>
+		{% for managing_team in pp['managing_teams'] %}
+			<dd><a href="/teams/{{ managing_team['_id']}}">{{ managing_team['name']}}</a></dd>
+		{% endfor %}
+	
+	</dl>
+
+{% endblock %}
+
+
+
+
+
+
+		
+	
+
+

@@ -1,0 +1,44 @@
+{% extends "layouts/popup.html" %}
+
+{% block content %}
+
+<style>
+form {margin:0 0 5px;}
+</style>
+
+{% for email_address in pp['employee']['email_addresses'] %}
+	{% if pp['employee']['email_addresses'].index(email_address) ==   0 %} 
+		<b>{{ email_address }}</b><br/>
+	{% else %}
+
+	<form method="post" action="/employees/{{ pp['employee']['jira_uname']  }}/editemails">
+			{{ email_address }} 
+			<input type="hidden" name="_method" value="delete" />
+			<input type="hidden" name="jira_uname" value="{{ pp['employee']['jira_uname']  }}" >
+			<input type="hidden" name='email_address' value="{{ email_address }}" />
+			<a href="#" onclick="parentNode.submit()"> (delete) </a>
+	</form>
+	{% endif %}
+
+{% endfor %}
+
+<br/>
+<br/>
+<form action="/employees/{{ pp['employee']['jira_uname'] }}/editemails" method="post" class="form-horizontal">
+<input type="hidden" name="jira_uname" value="{{ pp['employee']['jira_uname'] }}" >
+
+<fieldset>
+	<label class="control-label">Enter new email address</label>
+	<div class="control-group">
+			<div class="controls">
+				<input type="text" class="input-large" name="email_address" value="" id="email_address">
+			</div><!-- controls-->
+	</div><!-- control-group-->
+</fieldset>
+
+<br/>
+<input type="submit" class ="btn btn-primary" style="float:right;">
+</form>
+
+
+{% endblock %}

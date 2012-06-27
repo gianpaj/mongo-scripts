@@ -1,0 +1,78 @@
+<!doctype html>
+
+<head>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<title>10gen internal corp site</title>
+
+	<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+
+
+
+	<script type='text/javascript'>
+	     google.load('visualization', '1', {packages:['orgchart']});
+	     google.setOnLoadCallback(drawChart);
+	
+	  	function nospace(x){
+        	return x.replace( / /g , "&nbsp;" );
+      	}
+
+      	function person( name , title , boss ) {
+          var x = name;
+          if ( title )
+             x = { v : name , f : nospace(name) + title };
+          return [ x , boss , '' ]
+      	}
+
+      	function list() {
+         	var h ="<br><small>";
+			team_members = arguments[0];
+			for (var key in team_members) {
+				h += "<a href='/employees/" + key + "'>"
+            	h += nospace(team_members[key]) + "</a><br>"                          
+         	}
+         	h += "</small>"
+         	return h;
+      	}	
+	
+	
+	     function drawChart() {
+	       var data = new google.visualization.DataTable();
+	       data.addColumn('string', 'Name');
+	       data.addColumn('string', 'Manager');
+		   data.addColumn('string', 'Team');
+	       data.addRows([
+			{% for node in pp['org_structure'] %}
+				person('{{ node[0] }}', list({{ pp['teams'][node[0]] }}), '{{node[1]}}' ),
+			{% endfor %}
+	       ]);
+	       var chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
+	       chart.draw(data, {allowHtml:true});
+
+	     }
+	   </script>
+</head>
+
+<body>
+
+	<div id="page">
+
+		<div id="page-content">
+
+			<header class="global-header">
+
+			    <h2><a href="/employees"><span>back</span></a></h2>
+
+			</header>
+
+
+
+			<section>
+				<div id='chart_div'></div>
+			</section>
+	
+		</div><!-- #page-content -->
+	
+	</div><!-- #page -->
+</body>
+</html>

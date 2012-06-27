@@ -1,0 +1,93 @@
+{% extends "layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<header class="page-header">
+	<div class="employee-header-info">
+		<h1>
+			<span class="name">{{ pp['employee']['first_name'] }} {{ pp['employee']['last_name'] }}</span>
+			<span class="description">{{ pp['employee']['title'] }}</span></h1>	
+			<h3>{{ ", ".join(pp['teams']) }} - {{ pp['employee']['office'] if pp['employee']['office'] }}</h3>
+	</div>	
+	<div class="employee-image">
+		<img src="/profileimage/{{ pp['employee']['jira_uname'] }}" onerror="ImgError(this, '{{pp["gravatar_hash"]}}');">
+	</div><!-- /.employee-image -->	
+	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}/edit">(Edit)</a>
+		<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills">(Rate Skills)</a></div>
+</header>
+
+	<dl class="dl-horizontal">
+		<dt>Skills</dt>
+			<dd>{{ ', '.join(pp['skills']) if pp['skills'] else "&nbsp;"}}</dd>
+		
+		<dt>Manager</dt>
+		{% if pp['managers'].__len__() > 0 %}
+			<dd>{% for manager in pp['managers'] %}
+				{{ manager.first_name }} {{ manager.last_name }}{% if pp['managers'].index(manager) != pp['managers'].__len__() - 1 %}, {% endif %}
+				{% endfor %}</dd>
+		{% else %}
+			<dd>&nbsp;</dd>
+		{% endif %}
+
+		{% for n in pp['display_keys'] %}
+			{% if pp['employee'][n] %}
+				<dt>{{ ' '.join(n.split('_')).capitalize() }}</dt>
+				{% if (n == "anniversary" or n == "birthday") and  pp['employee'][n] %}
+					<dd>{{ pp['employee'][n].strftime("%d-%m-%Y") }}</dd>
+				{% elif pp['employee'][n] %}
+					<dd>{{ pp['employee'][n] }}</dd>
+				{% else %}
+					<dd>&nbsp;</dd>
+				{% endif %}
+			{% endif %}
+		{% endfor %}
+
+
+
+	<div id="more_info" style="display:none;">
+
+		{% for n in pp['employee'].keys() %}
+			{% if n not in pp['display_keys'] and pp['employee'][n] and n not in pp['no_show'] %}
+				<dt>{{ ' '.join(n.split('_')).capitalize() }}</dt>
+				{% if (n == "anniversary" or n == "birthday") and  pp['employee'][n] %}
+					<dd>{{ pp['employee'][n].strftime("%d-%m-%Y") }}</dd>
+				{% elif pp['employee'][n] %}
+					<dd>{{ pp['employee'][n] }}</dd>
+				{% else %}
+					<dd>&nbsp;</dd>
+				{% endif %}
+			{% endif %}
+		{% endfor %}
+		
+	</div>	
+	
+</dl>
+
+<button class="btn" onclick="Expand();" style="float:right;margin: 7px 0px 0px 0px;">+</button>
+<button class="btn" onclick="Expand();" style="display:none;float:right;margin: 7px 0px 0px 0px;">-</button>
+
+
+	<script type="text/javascript" charset="utf-8">
+		function Expand(){
+			$("#more_info").slideToggle();
+			$(".btn").toggle();
+	    	return true;
+		}
+	</script>
+
+{% endblock %}
+
+
+
+
+
+
+		
+	
+
+

@@ -1,0 +1,30 @@
+{% extends "layouts/application.html" %}
+
+{% block content %}
+
+<header class="page-header">
+	<div class="team-header-info">
+		<h1>Skill Group: <span class="name">{{ pp['skill_group']['name'] }}</span></h1>
+		<div class="team-edit"><a href="/skillgroups/{{ pp['skill_group']['_id'] }}/edit">(Edit)</a>
+	</div>	
+</header>
+
+	<dl class="dl-horizontal">
+		<dt>Skills</dt>
+		{% for skill in pp['skills'] %}
+			<dd><a href="/skills/{{ skill['_id']}}">{{ skill['name']}}</a></dd>
+		{% endfor %}
+	
+	</dl>
+
+{% endblock %}
+
+
+
+
+
+
+		
+	
+
+
