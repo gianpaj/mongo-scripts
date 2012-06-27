@@ -134,8 +134,19 @@ class JiraMulti(CorpBase):
         small = {}
 
         try:
+            if key.find( "mongodb-user" ) >= 0:
+                topic = myggs.clean_topic( key )
+                simple_topic = myggs.simple_topic( topic )
+                
+                q = { "subject" : { "$in" : [ topic , simple_topic , key ] } ,
+                      "jira" : { "$exists" : True } }
+                
+                x = myggs.topics.find_one( q )
+                small["gg"] = str(x)
+                if x:
+                    key = x["jira"]
+
             issue = myjira.getIssue( key )
-            #pprint.pprint( issue )
 
             small["assignee"] = issue["assignee"]
             small["status"] = issue["status"]
