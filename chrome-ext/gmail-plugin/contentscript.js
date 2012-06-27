@@ -121,17 +121,32 @@ function jiraMultiCallback( data ) {
     }
 }
 
+/**
+* @return [ { label : <the actual label node> , large : <node holding whole row> , key : <identifier> } ]
+*/
 function findAllJiraThings() {
     var all = []
     
-    var r = /.MongoDB-JIRA. +\(([A-Z]+\-\d+)\)/;
+    var config = [ 
+        { r : /.MongoDB-JIRA. +\(([A-Z]+\-\d+)\)/ , l : "mongo-jira" } ,
+        { r : /(.mongodb-user. [\d\w\-\' ]+)/ , l : "google group" } 
+    ];
 
     $( "#canvas_frame" ).contents().find( "div.av" ).each(
         function(index) {
-            if ( $(this).html() != "mongo-jira" )
-                return;
             
-            var x = $(this);
+            var x = null;
+            var r = null;
+            
+            for ( var i=0; i<config.length; i++ ) {
+                if ( $(this).html() == config[i].l ) {
+                    x = $(this);
+                    r = config[i].r;
+                }
+            }
+
+            if ( ! x ) 
+                return;
             
             var res = null;
             for ( var j=0; j<12; j++ ) {
@@ -145,10 +160,12 @@ function findAllJiraThings() {
             if ( ! res )
                 return;
             
-            all.push( { label : $(this) , large : x , key : res[1] } )
-
+            var doc = { label : $(this) , large : x , key : res[1] };
+            all.push( doc );
         }
     );
+
+
     
     return all;
 }
@@ -168,7 +185,7 @@ var doWork = function() {
         var url = "https://corp.10gen.com/jiramulti?issues=";        
 
         for ( var i=0; i<nodes.length; i++ ) {
-            url += nodes[i].key + ","
+            url += escape( nodes[i].key ) + ","
         }
         
         url += "&t=" + Math.floor( (new Date()).getTime() / 300000 );
