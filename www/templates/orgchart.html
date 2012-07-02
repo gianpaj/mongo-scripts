@@ -66,7 +66,7 @@
           person( "CE" , list("Richard", "Chad C" ) , "Edouard" ) ,
  
           person( "Alvin" , "Director EMEA" , "Eliot" ) ,
-          person( "Europe SA", list ("Daniel", "Chris"), "Alvin") ,
+          person( "Europe SA", list ("Daniel", "Chris", "Marc"), "Alvin") ,
 
           person( "Jeff" , "Cloud" , "Eliot" ) ,
           person( "Cloud" , list( "Dan G." , "Matt S." , "Vladimir", "Steve B" ) , "Jeff" ) ,
@@ -82,7 +82,7 @@
  
           // sales
           person( "Ben" , "VP Sales" , "Max" ) ,
-          person( "West-Sales" , list("Anthony","Steven","Ali" , "Margaret", "Victoria", "Laurie", "Medhi", "Chad C") , "Ben" ) ,
+          person( "West-Sales" , list("Anthony","Steven","Ali" , "Margaret", "Victoria", "Laurie", "Mehdi", "Chad C", "Katie", "David") , "Ben" ) ,
           person( "East-Sales" , list("Jeff","Matt", "Sarah","Will" , "Tushar", "Tony") , "Ben" ) ,
           person( "Federal-Sales" , list("Will","Chris") , "Ben" ) ,
           person( "LATAM-Sales" , list("Marcello") , "Ben" ) ,
@@ -93,12 +93,11 @@
           person( "Erik" , "VP Marketing/Aliances" , "Max" ) ,
           person( "Andrew" , "VP Online Education" , "Max" ) ,
           person ("Jared", "Director Product Marketing", "Erik") ,
-          person ("Nosh", "Director Alliances", "Erik") ,
           person ("Meghan", "Manager Community Marketing", "Erik") ,
           person ("Paz", "Director European Marketing", "Erik") ,
           person ("Field Marketing", "Samantha", "Paz") ,
-          person ("Community Marketing" , list("Melia", "Meg", "Francesca", "Katie" ) , "Meghan" ) ,
-          person ("Product Marketing" , list("Soumen", "Sandeep", "Alex" ) , "Jared" ),
+          person ("Community Marketing" , list("Melia", "Meg", "Francesca", "Katie", "Justin" , "James") , "Meghan" ) ,
+          person ("Product Marketing", "Sandeep", "Jared" ),
           person ("Scot", "Marketing Ops", "Erik") ,
           person ("Adam", "APAJ", "Erik") ,
  
@@ -111,10 +110,12 @@
 
           // eu ???
           person( "Gerry" , "Director European Sales" , "Max" ) ,
-          person( "Europe Sales", list ("Renaud", "Allan", "Tim"), "Gerry") ,
+          person( "Europe Sales", list ("Renaud", "Allan", "Tim", "Bill B", "Matthew" ) , "Gerry") ,
  
           // recruiting
-          person ("Recruiting", list ("Stacy", "Craig", "Thameka", "Brandon", "Rockman") , "Martin") ,
+          person ( "Martin", "VP HR, Training, Recruiting", "Max")  ,
+          person ( "Rockman", "Dir Talent Acquisition" , "Martin")  ,
+          person ( "Recruiting", list ("Stacy", "Craig", "Thameka", "Brandon") , "Rockman" ) ,
         ]);
         var chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
         chart.draw(data, {allowHtml:true});
