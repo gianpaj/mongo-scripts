@@ -24,7 +24,7 @@ def editable_keys():
 			'first_name', 
 			'primary_phone', 
 			'title', 
-			'anniversary', 
+			'start_date', 
 			#'primary_email', 
 			'secondary_phone', 
 			'birthday', 
@@ -32,7 +32,9 @@ def editable_keys():
 			#'secondary_email', 
 			'primary_phone_provider', 
 			'primary_chat',
-			'skills']
+			'skills',
+			'skype_id',
+			'stackoverflow_id']
 
 
 def display_keys():
@@ -129,6 +131,29 @@ def org_structure(team={}, parent="", org_list=[]):
 		
 	return org_list
 	
+def org_structure_list(team=None):
+	if team is None:
+		team = corpdb.teams.find_one({"name":"CEO"})
+	org_list = ""
+	if 'managing_team_ids' in team.keys():
+		org_list = "<li>" + team['name'] + "<br/>"
+		for employee in corpdb.employees.find({"team_ids" : team['_id']}):
+			org_list = org_list + "<p><a href='employees/" + employee['jira_uname'] + "'>" + employee['first_name'] + " " + employee['last_name'] + "</a></p>" 
+		org_list = org_list + "<ul>"
+		managing_list = ""
+		for id in team['managing_team_ids']:
+			team = corpdb.teams.find_one({"_id" : ObjectId(id) })
+			managing_list = managing_list + org_structure_list(team)
+		org_list = org_list + managing_list + "</ul></li>"
+		
+	else:
+		org_list = "<li>"+team['name'] + "<br/>"
+		for employee in corpdb.employees.find({"team_ids" : team['_id']}):
+			org_list = org_list + "<p><a href='employees/" + employee['jira_uname'] + "'>" + employee['first_name'] + " " + employee['last_name'] + "</a></p>"
+		org_list = org_list + "</li>"
+
+	return org_list
+
 def email_hash(employee):
     if len(employee['email_addresses']) > 0:
         primary_email = employee['email_addresses'][0]

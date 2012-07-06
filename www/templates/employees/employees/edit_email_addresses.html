@@ -14,7 +14,7 @@ form {margin:0 0 5px;}
 	<form method="post" action="/employees/{{ pp['employee']['jira_uname']  }}/editemails">
 			{{ email_address }} 
 			<input type="hidden" name="_method" value="delete" />
-			<input type="hidden" name="jira_uname" value="{{ pp['employee']['jira_uname']  }}" >
+			<input type="hidden" name="id" value="{{ pp['employee']['jira_uname']  }}" >
 			<input type="hidden" name='email_address' value="{{ email_address }}" />
 			<a href="#" onclick="parentNode.submit()"> (delete) </a>
 	</form>

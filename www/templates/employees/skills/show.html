@@ -22,7 +22,7 @@
 	<dl class="dl-horizontal">
 		<dt>People skilled in {{ pp['skill']['name'] }}</dt>
 		{% for employee in pp['employees'] %}
-			<dd><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee['last_name']}}</a></dd>
+			<dd><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee['last_name']}}</a> <b>{% for i in range(employee['skills'][pp['skill']['_id']]) %}{{"*"}}{% endfor %}</b></dd>
 		{% endfor %}
 	
 	</dl>

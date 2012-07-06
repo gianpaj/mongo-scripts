@@ -15,7 +15,7 @@
 
 {% block content %}
 
-
+<br/>
 <form action="" method="post" class="form-horizontal" style="margin: 20px 10px 10px 10px;">
 	<fieldset>
 		<div class="control-group">
@@ -32,22 +32,21 @@
 	
 </form>
 
-{% if pp['random_employee'] %}
-	<div class="random-employee">
 
-	<h2>Meet your colleague:</h2>
-		<br/>
-		<div class="employee-image">
-			<img src="/profileimage/{{ pp['random_employee']['_id'] }}" onerror="ImgError(this, '{{pp["random_employee_hash"]}}');">
-		</div><!-- /.employee-image -->
+<div class="random-employee">
+
+<h2>Meet your colleague:</h2>
+	<br/>
+	<div class="employee-image">
+		<img src="/profileimage/{{ pp['random_employee']['jira_uname'] }}" onerror="ImgError(this, '{{pp["random_employee_hash"]}}');">
+	</div><!-- /.employee-image -->
 	
-		<br/>
-		<h3>
-			<span class="name"><a href="/employees/{{ pp['random_employee']['jira_uname'] }}">{{ pp['random_employee']['first_name']}} {{ pp['random_employee']['last_name']}}</a></span><span class="description">{% if pp['random_employee']['title'] %}{{ ", " + pp['random_employee']['title'] }}{% endif %}</span>
-		</h3>
+	<br/>
+	<h3>
+		<span class="name"><a href="/employees/{{ pp['random_employee']['jira_uname'] }}">{{ pp['random_employee']['first_name']}} {{ pp['random_employee']['last_name']}}</a></span><span class="description">{% if pp['random_employee']['title'] %}{{ ", " + pp['random_employee']['title'] }}{% endif %}</span>
+	</h3>
 
-	</div>
-{% endif %}
+</div>
 
 <!-- IF USER IS A MANAGER --> 
 <div style="float:right;">

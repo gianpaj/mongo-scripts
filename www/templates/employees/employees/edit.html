@@ -84,12 +84,20 @@
 					<div class="controls">
 						<input type="text" class="input-xlarge" name="primary_chat" value="{{ pp['employee']['primary_chat'] }}" id="primary_chat">
 					</div><!-- controls-->
-			</div><!-- controls-->	
+			</div><!-- controls-->
+						
+			<div class="control-group">
+				<label class="control-label">JIRA Username</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" name="jira_uname" value="{{ pp['employee']['jira_uname'] }}" id="jira_uname">
+					</div><!-- controls-->
+			</div><!-- control-group-->		
 
 			<div class="control-group">
 				<label class="control-label">Status</label>
 					<div class="controls">
-						<select name="employee_status" class="input-xlarge" value="{{ pp['employee']['employee_status'] }}" id="employee_status">
+						<select name="employee_status" data-placeholder="Employee status..." class="input-xlarge" value="{{ pp['employee']['employee_status'] }}" id="employee_status">
+							<option></option>
 							{% for status in pp['statuses'] %}
 								<option {% if status == pp['employee']['employee_status'] %} SELECTED {% endif %} >{{ status }}</option>
 							{% endfor %}
@@ -117,6 +125,20 @@
 						<input type="text" class="input-xlarge" name="secondary_phone_provider" value="{{ pp['employee']['secondary_phone_provider'] }}" id="secondary_phone_provider">
 					</div><!-- controls-->
 			</div><!-- control-group-->
+			
+			<div class="control-group">
+				<label class="control-label">Skype ID</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" name="skype_id" value="{{ pp['employee']['skype_id'] }}" id="skype_id">
+					</div><!-- controls-->
+			</div><!-- controls-->
+
+			<div class="control-group">
+				<label class="control-label">Stackoverflow ID</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" name="stackoverflow_id" value="{{ pp['employee']['stackoverflow_id'] }}" id="stackoverflow_id">
+					</div><!-- controls-->
+			</div><!-- controls-->
 			
 			<div class="control-group">
 				<label class="control-label">Intercall Code</label>
@@ -161,21 +183,19 @@
 						{% endif %}
 					</div><!-- controls-->
 			</div><!-- control-group-->
-			
+
+			{% for i, skill_group in pp['skill_groups_counter'] %}
 			<div class="control-group">
-				<label class="control-label">Skills</label>
+				<label class="control-label">{{ skill_group }} skills</label>
 					<div class="controls">
-						<select multiple="multiple" name="skills" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id = "skills">
-							{% for skill_group in pp['skill_groups'] %}
-								<optgroup label="{{ skill_group }}">
-									{% for skill in pp['skill_groups'][skill_group] %}
-										<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
-									{% endfor %}
-								</optgroup>
+						<select multiple="multiple" name="skill_group" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_{{i}}">
+							{% for skill in pp['skill_groups'][skill_group] %}
+								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
 							{% endfor %}
 						</select>
 					</div><!-- controls -->
-			</div><!-- control-group -->					
+			</div><!-- control-group -->
+			{% endfor %}					
 
 		{% if pp['employee']['role'] == "manager" %}
 			<div class="control-group">
@@ -206,7 +226,8 @@
 		<div class="control-group">
 			<label class="control-label">Office</label>
 				<div class="controls">
-					<select name="office" class="input-xlarge" value="{{ pp['employee']['office'] }}" id="office">
+					<select name="office" data-placeholder="Office..." class="input-xlarge" value="{{ pp['employee']['office'] }}" id="office">
+						<option></option>
 						{% for office in pp['offices'] %}
 							<option {% if office == pp['employee']['office'] %} SELECTED {% endif %} >{{ office }}</option>
 						{% endfor %}
@@ -222,9 +243,9 @@
 		</div><!-- controls-->
 						
 		<div class="control-group">
-			<label class="control-label">Anniversary</label>
+			<label class="control-label">Start Date</label>
 				<div class="controls">
-					<input type="text" class="input-xlarge" name="anniversary" value="{{ pp['anniversary'] }}" id="anniversary">
+					<input type="text" class="input-xlarge" name="start_date" value="{{ pp['start_date'] }}" id="start_date">
 				</div><!-- controls-->
 		</div><!-- controls-->
 
@@ -241,26 +262,29 @@
 					<input type="text" class="input-xlarge" name="onsip_conf_bridge" value="{{ pp['employee']['onsip_conf_bridge'] }}" id="onsip_conf_bridge">
 				</div><!-- controls-->
 		</div><!-- controls-->
-		
+
 	</fieldset>
+	<br/>
+	<input type="submit" class ="btn btn-primary" style="float:right;margin:20px;">
 </div><!-- span6 -->
 
 </div>
-<br/>
-<input type="submit" class ="btn btn-primary" style="float:right;">
+
 </form>
 
 <script type="text/javascript" charset="utf-8">
 	jQuery(function($){
-    	$('#employee_status').chosen();
-		$('#office').chosen();
+    	$('#employee_status').chosen({allow_single_deselect: true});
+		$('#office').chosen({allow_single_deselect: true});
 		$('#managing_ids').chosen();
-		$('#skills').chosen();
+		{% for i, skill_group in pp['skill_groups_counter'] %}
+			$('#skills_{{i}}').chosen();
+		{% endfor %}
 		$('#team_ids').chosen();
 	});
 	
 	$(document).ready(function() {
-    $("#anniversary").datepicker({dateFormat: 'dd-mm-yy' });
+    $("#start_date").datepicker({dateFormat: 'dd-mm-yy' });
 	$("#birthday").datepicker({dateFormat: 'dd-mm-yy' });
 	$("a#edit_email").fancybox();
 	$("a#edit_image").fancybox();

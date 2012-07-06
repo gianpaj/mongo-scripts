@@ -28,9 +28,11 @@
 				<label class="control-label">{{ pp['skills'][skill_id] }}</label>
 					<div class="controls">
 						<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
-							{% for i in range(1,6) %}
-								<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} >{{ i }}</option>
-							{% endfor %}
+								<option {% if 1 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=1>Learning</option>
+								<option {% if 2 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=2>Fair</option>
+								<option {% if 3 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=3>Average</option>
+								<option {% if 4 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=4>Excellent</option>
+								<option {% if 5 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=5>Guru</option>
 						</select>
 					</div><!-- controls-->
 			</div><!-- control-group-->

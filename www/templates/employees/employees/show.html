@@ -21,14 +21,21 @@
 		<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills">(Rate Skills)</a></div>
 </header>
 
+	{% if pp['employee']['skills'].__len__() > 0 %}
 	<dl class="dl-horizontal">
-		<dt>Skills</dt>
-			<dd>{{ ', '.join(pp['skills']) if pp['skills'] else "&nbsp;"}}</dd>
+		<dt>Skills</dt><dd>
+	 		{% for skill in pp['employee']['skills'] %}
+				<p><a href="/skills/{{pp['skills'][skill]['_id'] }}">{{ pp['skills'][skill]['name'] }}</a> {% for i in range(pp['employee']['skills'][skill]) %} {{ "*"}} {% endfor %}</p>
+			{% endfor %}
+			</dd>
+	</dl>
+	{% endif %}
+	<dl class="dl-horizontal" style="border-top:none;">
 		
 		<dt>Manager</dt>
 		{% if pp['managers'].__len__() > 0 %}
 			<dd>{% for manager in pp['managers'] %}
-				{{ manager.first_name }} {{ manager.last_name }}{% if pp['managers'].index(manager) != pp['managers'].__len__() - 1 %}, {% endif %}
+				<a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>{% if pp['managers'].index(manager) != pp['managers'].__len__() - 1 %}, {% endif %}
 				{% endfor %}</dd>
 		{% else %}
 			<dd>&nbsp;</dd>
@@ -37,7 +44,7 @@
 		{% for n in pp['display_keys'] %}
 			{% if pp['employee'][n] %}
 				<dt>{{ ' '.join(n.split('_')).capitalize() }}</dt>
-				{% if (n == "anniversary" or n == "birthday") and  pp['employee'][n] %}
+				{% if (n == "start_date" or n == "birthday") and  pp['employee'][n] %}
 					<dd>{{ pp['employee'][n].strftime("%d-%m-%Y") }}</dd>
 				{% elif pp['employee'][n] %}
 					<dd>{{ pp['employee'][n] }}</dd>
@@ -54,7 +61,7 @@
 		{% for n in pp['employee'].keys() %}
 			{% if n not in pp['display_keys'] and pp['employee'][n] and n not in pp['no_show'] %}
 				<dt>{{ ' '.join(n.split('_')).capitalize() }}</dt>
-				{% if (n == "anniversary" or n == "birthday") and  pp['employee'][n] %}
+				{% if (n == "start_date" or n == "birthday") and  pp['employee'][n] %}
 					<dd>{{ pp['employee'][n].strftime("%d-%m-%Y") }}</dd>
 				{% elif pp['employee'][n] %}
 					<dd>{{ pp['employee'][n] }}</dd>
@@ -71,6 +78,7 @@
 <button class="btn" onclick="Expand();" style="float:right;margin: 7px 0px 0px 0px;">+</button>
 <button class="btn" onclick="Expand();" style="display:none;float:right;margin: 7px 0px 0px 0px;">-</button>
 
+<div id="dus"></div>
 
 	<script type="text/javascript" charset="utf-8">
 		function Expand(){
@@ -78,6 +86,15 @@
 			$(".btn").toggle();
 	    	return true;
 		}
+		
+		$(document).ready(function() {
+			$.post('http://du.10gen.com/latest', {clientId: "{{pp['client_id']}}", email: "{{pp['employee']['jira_uname']}}", hash: "{{pp['hmac']}}"}, 
+				function(data) {
+					$('#dus').html(data);				
+				}
+			);
+			
+		});
 	</script>
 
 {% endblock %}

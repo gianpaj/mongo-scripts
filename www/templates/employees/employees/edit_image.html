@@ -13,7 +13,7 @@ form {margin:0 0 0px;}
 <br/>
 
 <form id="no_image_message" enctype="multipart/form-data" action="/employees/{{ pp['employee']['jira_uname'] }}/deleteimage" method="post" class="form-horizontal">
-	<input type="hidden" name="employee_id" value="{{ pp['employee']['jira_uname'] }}" >
+	<input type="hidden" name="jira_uname" value="{{ pp['employee']['jira_uname'] }}" >
 	<a id="delete" href="#" onclick="parentNode.submit()">Delete</a> this image and use gravatar instead.
 </form>
 

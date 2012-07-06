@@ -2,40 +2,75 @@
 
 {% block content %}
 
-<style>
-form {margin:0 0 5px;}
-</style>
+{% block js %}
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/chosen.jquery.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/chosen.css" />
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+{% endblock %}
+
 
 <br/>
-<br/>
 
-<form action="/employees/new" method="post" class="form-horizontal">
+<form action="/employees/new" method="post" class="form-horizontal" style="height:275px;width:500px;">
 	<fieldset>
 		
 		<div class="control-group">
-			<label class="control-label">First Name</label>
+			<label class="control-label">Team*</label>
+				<div class="controls">
+					<select data-placeholder="Select..." class="input-xlarge" name="team_id" id="team_id">
+						<option></option>
+					{% for team in pp['teams'] %}
+						<option value="{{ team['_id'] }}" >
+							{{ team['name'] }}</option>
+					{% endfor %}
+					</select>
+				</div><!-- controls -->
+		</div><!-- control-group -->
+		
+		<div class="control-group">
+			<label class="control-label">First Name*</label>
 				<div class="controls">
 					<input type="text" class="input-xlarge" name="first_name" id="first_name">
 				</div><!-- controls-->
 		</div><!-- control-group-->
 		
 		<div class="control-group">
-			<label class="control-label">Last Name</label>
+			<label class="control-label">Last Name*</label>
 				<div class="controls">
 					<input type="text" class="input-xlarge" name="last_name" id="last_name">
 				</div><!-- controls-->
 		</div><!-- control-group-->
 		
 		<div class="control-group">
-			<label class="control-label">Email address</label>
+			<label class="control-label">Email address*</label>
 				<div class="controls">
 					<input type="text" class="input-xlarge" name="email_address" id="email_address">
 				</div><!-- controls-->
 		</div><!-- control-group-->
+		
+		<div class="control-group">
+			<label class="control-label">JIRA Username*</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="jira_uname" id="jira_uname">
+				</div><!-- controls-->
+		</div><!-- control-group-->
+
 	
 	</fieldset>
-		
+<br/>		
 	<input type="submit" class ="btn btn-primary" style="float:right;">
 </form>
+
+<script type="text/javascript" charset="utf-8">
+	jQuery(function($){
+		$('#team_id').chosen();
+	});
+</script>
 
 {% endblock %}
