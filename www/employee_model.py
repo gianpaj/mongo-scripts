@@ -90,10 +90,12 @@ def get_managers(employee):
 def get_manager_hierarchy(employee):
 	manager_hierarchy = []
 	manager_list = []
-	while employee['last_name'] != "Merriman":
-		managers = get_managers(employee)
-		manager_list.append(managers[0]['_id'])
-		employee = managers[0]
+	managers = get_managers(employee)
+	if managers:
+		while employee['last_name'] != "Merriman":
+			manager_list.append(managers[0]['_id'])
+			employee = managers[0]
+			managers = get_managers(employee)
 	
 	for manager_id in reversed(manager_list):
 		manager = corpdb.employees.find_one(manager_id)

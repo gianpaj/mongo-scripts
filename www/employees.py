@@ -1124,8 +1124,11 @@ class EditProjectGroup:
              for attribute in form.keys():
                  if attribute.split("_")[0] == "employee" and attribute.split("_")[1] == "role":
                      selector = {"_id": ObjectId(project_group_id), "members.employee_id" : ObjectId(attribute.split("_")[2])}
-                     update = {"$set": {"members.$.role": form[attribute]}}
-                     corpdb.project_groups.update(selector, update, upsert=False, multi=True)
+                     update = {"$set": {"members.$.role": form[attribute]}} 
+                 else:
+                    selector = {"_id": ObjectId(project_group_id)}
+                    update = {"$set": {"name": form[attribute]}}
+                 corpdb.project_groups.update(selector, update, upsert=False, multi=True)
              raise web.seeother('/project_groups/' + str(pp['project_group']['_id']))
          raise web.seeother('/project_groups')
 
@@ -1135,7 +1138,11 @@ class NewProjectGroupMember:
         print "GET NewProjectGroupMember"
         pp = {}
         pp['project_group_id'] = project_group_id
-        pp['employees'] = corpdb.employees.find() # TODO, remove employees who are already members
+        project_group = corpdb.project_groups.find_one(ObjectId(project_group_id))
+        # get ids of all members of the project group
+        member_ids = map(lambda member: member['employee_id'], project_group['members'])
+        # only get the employees who are not already in the project group for dropdown
+        pp['employees'] = corpdb.employees.find({"_id": {"$nin": member_ids}})
         pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER']
         return render_template('project_groups/new_member.html', pp=pp)
 
