@@ -184,18 +184,38 @@
 					</div><!-- controls-->
 			</div><!-- control-group-->
 
-			{% for i, skill_group in pp['skill_groups_counter'] %}
 			<div class="control-group">
-				<label class="control-label">{{ skill_group }} skills</label>
+				<label class="control-label">TECH skills</label>
 					<div class="controls">
-						<select multiple="multiple" name="skill_group" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_{{i}}">
-							{% for skill in pp['skill_groups'][skill_group] %}
+						<select multiple="multiple" name="skills_TECH" data-placeholder="Select skills..." class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_TECH">
+							{% for skill in pp['skill_groups']['TECH'] %}
 								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
 							{% endfor %}
 						</select>
 					</div><!-- controls -->
 			</div><!-- control-group -->
-			{% endfor %}					
+			
+			<div class="control-group">
+				<label class="control-label">INDUSTRY skills</label>
+					<div class="controls">
+						<select multiple="multiple" name="skills_INDUSTRY" data-placeholder="Select skills..." class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_INDUSTRY">
+							{% for skill in pp['skill_groups']['INDUSTRY'] %}
+								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
+							{% endfor %}
+						</select>
+					</div><!-- controls -->
+			</div><!-- control-group -->
+			
+			<div class="control-group">
+				<label class="control-label">GENERAL skills</label>
+					<div class="controls">
+						<select multiple="multiple" name="skills_GENERAL" data-placeholder="Select skills..." class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_GENERAL">
+							{% for skill in pp['skill_groups']['GENERAL'] %}
+								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
+							{% endfor %}
+						</select>
+					</div><!-- controls -->
+			</div><!-- control-group -->				
 
 		{% if pp['employee']['role'] == "manager" %}
 			<div class="control-group">
@@ -277,9 +297,9 @@
     	$('#employee_status').chosen({allow_single_deselect: true});
 		$('#office').chosen({allow_single_deselect: true});
 		$('#managing_ids').chosen();
-		{% for i, skill_group in pp['skill_groups_counter'] %}
-			$('#skills_{{i}}').chosen();
-		{% endfor %}
+		$('#skills_TECH').chosen();
+		$('#skills_INDUSTRY').chosen();
+		$('#skills_GENERAL').chosen();
 		$('#team_ids').chosen();
 	});
 	

@@ -1,0 +1,32 @@
+{% extends "layouts/application.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
+
+<header class="page-header">
+	<div class="team-header-info">
+		<h1>Project Group: <span class="name">{{ pp['project_group']['name'] }}</span></h1>
+		<div class="team-edit"><a href="/project_groups/{{ pp['project_group']['_id'] }}/edit">(Edit)</a>
+	</div>	
+</header>
+
+	<dl class="dl-horizontal">
+		<dt>Members</dt>
+		{% for employee in pp['employees'] %}
+			<dd><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee ['last_name']}}</a>, {{employee['project_role']}}</dd>
+		{% endfor %}
+	
+	</dl>
+
+{% endblock %}
+
+
+
+
+
+
+		
+	
+
+ 

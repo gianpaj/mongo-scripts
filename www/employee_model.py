@@ -73,21 +73,32 @@ def generate_date(date_string):
 def get_managers(employee):
 	managers = []
 	if "manager_ids" in employee.keys():
-		print "manager_ids found in employee keys"
 		for manager in corpdb.employees.find({"_id" : { "$in" : employee['manager_ids']}}):
 			print "manager ids found"
 			managers.append(manager)
 	
 	if "team_ids" in employee.keys() and employee['team_ids']:
 		managing_team_ids = map(lambda team: team["_id"], corpdb.teams.find({"managing_team_ids": { "$in" : employee['team_ids']}})) # ids of teams managing teams employee belongs to
-		print "managing_team_ids: ", managing_team_ids
 		if managing_team_ids:
 			for manager in corpdb.employees.find({"team_ids": managing_team_ids}):
 				if manager not in managers:
 					managers.append(manager)
 
-	print "managers: ", managers
 	return managers
+
+
+def get_manager_hierarchy(employee):
+	manager_hierarchy = []
+	manager_list = []
+	while employee['last_name'] != "Merriman":
+		managers = get_managers(employee)
+		manager_list.append(managers[0]['_id'])
+		employee = managers[0]
+	
+	for manager_id in reversed(manager_list):
+		manager = corpdb.employees.find_one(manager_id)
+		manager_hierarchy.append(manager)
+	return manager_hierarchy
 
 # returns a list of teams(cursors)
 def get_teams(employee):
@@ -153,6 +164,7 @@ def org_structure_list(team=None):
 		org_list = org_list + "</li>"
 
 	return org_list
+
 
 def email_hash(employee):
     if len(employee['email_addresses']) > 0:

@@ -1,0 +1,94 @@
+{% extends "layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/chosen.jquery.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/chosen.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+{% block content %}
+
+	
+<header class="page-header">
+	<div class="team-header-info">
+		<h1>Project Group: <span class="name">{{ pp['project_group']['name'] }}</span></h1>
+	</div>	
+</header>
+
+<form action="" method="post" class="form-horizontal">
+<input type="hidden" name="project_group_id" value="{{ pp['project_group']['_id'] }}" >
+<div class="row-fluid">
+	<div class="span4"></div>
+	<div class="span8">
+
+		<fieldset>
+
+				<div class="control-group">
+					<label class="control-label">Name</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" name="name" value="{{ pp['project_group']['name'] }}" id="name">
+					</div><!-- controls-->
+				</div><!-- control-group-->	
+				
+				{% for employee in pp['employees'] %}
+					<div class="control-group">
+						<label class="control-label"><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee ['last_name']}}</a></label>
+						<div class="controls">
+							{% if employee['project_role'] != "LEAD" %}
+								<select name="employee_role_{{employee['_id']}}" data-placeholder="Role..." class="input-xlarge">
+									{% for role in pp['roles'] %}
+										<option value="{{role}}" {% if employee['project_role'] == role %} SELECTED %} {% endif %}>{{ role }}</option>
+									{% endfor %}
+								</select>
+							{% else %}
+								LEAD
+							{% endif %}
+						</div><!-- controls-->
+					</div><!-- control-group-->
+				{% endfor %}
+				
+				<div class="control-group">
+					<label class="control-label"><a href="/project_groups/{{pp['project_group']['_id']}}/new_member" id="new_group_member"><span>+ Group member</span></a></label>
+				</div><!-- control-group-->
+				
+			</fieldset>
+
+
+			<br/>
+			<input type="submit" class ="btn btn-primary" style="float:right;">
+		</form>
+	</div>
+</div>
+
+
+	<script type="text/javascript" charset="utf-8">
+		jQuery(function($){
+			$("a#new_group_member").fancybox();
+			var role_selects = $('select[name=role]');
+			role_selects[1].chosen();
+			for (i=0; i < role_selects.length; i++) {
+				console.log(role_selects[i]);
+				role_selects[i].chosen();
+			}
+	  });
+	</script>
+
+{% endblock %}
+
+
+
+
+
+
+		
+	
+
+ 

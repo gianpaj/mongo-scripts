@@ -107,6 +107,13 @@ urls = (
         '/skillgroups/(.*)/edit', 'EditSkillGroup',
 		'/skillgroups/(.*)', 'SkillGroups',
 		'/skillgroups', 'SkillGroups',
+		
+        '/project_groups/new', 'NewProjectGroup',
+        '/project_groups/(.*)/new_member', 'NewProjectGroupMember',
+        '/project_groups/(.*)/edit', 'EditProjectGroup',
+        '/project_groups/(.*)/delete', 'DeleteProjectGroup',
+        '/project_groups/(.*)', 'ProjectGroups',
+        '/project_groups', 'ProjectGroups',
 
         '/profileimage/(.*)', 'ProfileImage',
 )
@@ -259,7 +266,8 @@ class Employees:
 	                pp['teams'].append(link)
 
             pp['managers'] = employee_model.get_managers(pp['employee'])
-
+            pp['manager_hierarchy'] = employee_model.get_manager_hierarchy(pp['employee'])
+            print pp['manager_hierarchy']
             # Construct a list of skill names
             pp['skills'] = {}
             if 'skills' in pp['employee']:
@@ -321,14 +329,28 @@ class EditEmployee:
 
             #set up dict for skills and their groups
             pp['skill_groups'] = {}
-            for skill_group in corpdb.skill_groups.find():
-                pp['skill_groups'][skill_group['name']] = []
-                # need to do this because the embedded skills doc has keys on the string ObjectId
-                for skill in corpdb.skills.find({"groups": skill_group["_id"]}):
-                    skill['id'] = str(skill['_id'])
-                    pp['skill_groups'][skill_group['name']].append(skill)
+            tech_skill_group = corpdb.skill_groups.find_one({"name":"TECH"})
+            industry_skill_group = corpdb.skill_groups.find_one({"name":"INDUSTRY"})
+            general_skill_group = corpdb.skill_groups.find_one({"name":"GENERAL"})
 
-            pp['skill_groups_counter'] = zip(range(len(pp['skill_groups'])), pp['skill_groups'])
+            if tech_skill_group:
+                pp['skill_groups']['TECH'] = []
+                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}):
+                    skill['id'] = str(skill['_id'])
+                    pp['skill_groups']['TECH'].append(skill)
+
+            if industry_skill_group:
+                pp['skill_groups']['INDUSTRY'] = []
+                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}):
+                    skill['id'] = str(skill['_id'])
+                    pp['skill_groups']['INDUSTRY'].append(skill)
+
+		    if general_skill_group:
+		        pp['skill_groups']['GENERAL'] = []
+                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}):
+                    skill['id'] = str(skill['_id'])
+                    pp['skill_groups']['GENERAL'].append(skill)
+
             pp['teams'] = corpdb.teams.find()
 
             return render_template('employees/edit.html', pp=pp)
@@ -337,10 +359,7 @@ class EditEmployee:
     #@require_manager_or_self
     def POST(self, jira_uname): # maybe employee id?
         "POST EditEmployee"
-        form = web.input(managing_ids=[], skills={}, team_ids=[])
-        counter = 0
-        for skill_group in corpdb.skill_groups.find():
-             form = web.input(skill_group=[])
+        form = web.input(managing_ids=[], skills_TECH=[], skills_INDUSTRY=[], skills_GENERAL=[], team_ids=[])
         print form
         employee = corpdb.employees.find_one({"jira_uname": jira_uname})
 
@@ -348,12 +367,11 @@ class EditEmployee:
         if len(form['first_name']) > 0 and len(form['last_name']) > 0:
 
             for n in form.keys():
-                if n == "skills":
-                    for skill in form["skills"]:
-                        print employee.keys()
+                if n.split("_")[0] == "skills":
+                    for skill in form[n]:
                         if 'skills' not in employee:
                             employee['skills'] = {}
-                        if skill not in employee['skills'].keys():
+                        if skill not in employee['skills']:
                             employee["skills"][skill] = 1
 
                 elif n == "managing_ids":
@@ -373,7 +391,7 @@ class EditEmployee:
             #remove skills
             if employee['skills']:
                 for skill in employee['skills'].keys():
-                    if skill not in form['skills']:
+                    if skill not in form['skills_TECH'] and skill not in form['skills_INDUSTRY'] and skill not in form['skills_GENERAL']:
                         del employee['skills'][skill]
 
             #remove managed_employees
@@ -423,15 +441,30 @@ class EditEmployee:
 
             #set up dict for skills and their groups
             pp['skill_groups'] = {}
-            for skill_group in corpdb.skill_groups.find():
-                pp['skill_groups'][skill_group['name']] = []
-                # need to do this because the embedded skills doc has keys on the string ObjectId
-                for skill in corpdb.skills.find({"groups": skill_group["_id"]}):
+            tech_skill_group = corpdb.skill_groups.find_one({"name":"TECH"})
+            industry_skill_group = corpdb.skill_groups.find_one({"name":"INDUSTRY"})
+            general_skill_group = corpdb.skill_groups.find_one({"name":"GENERAL"})
+           
+            if tech_skill_group:
+                pp['skill_groups']['TECH'] = []
+                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups'][skill_group['name']].append(skill)
+                    pp['skill_groups']['TECH'].append(skill)
+           
+            if industry_skill_group:
+                pp['skill_groups']['INDUSTRY'] = []
+                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}):
+                    skill['id'] = str(skill['_id'])
+                    pp['skill_groups']['INDUSTRY'].append(skill)
 
-            pp['skill_groups_counter'] = zip(range(len(pp['skill_groups'])), pp['skill_groups'])
+            if general_skill_group:
+                pp['skill_groups']['GENERAL'] = []
+                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}):
+                    skill['id'] = str(skill['_id'])
+                    pp['skill_groups']['GENERAL'].append(skill)
+
             pp['teams'] = corpdb.teams.find()
+           
             pp['error_message'] = "You must have values for first and last name."
             return render_template('employees/edit.html', pp=pp)
 
@@ -474,7 +507,7 @@ class NewEmployee:
         print "GET NewEmployee"
         pp = {}
         pp['teams'] = corpdb.teams.find()
-        return render_template('employees/new_employee.html', pp=pp)
+        return render_template('employees/new.html', pp=pp)
 
     #@require_manager
     def POST(self):
@@ -896,7 +929,7 @@ class NewSkill:
     #@require_manager
     def GET(self):
         print "GET NewSkill"
-        return render_template('skills/new_skill.html')
+        return render_template('skills/new.html')
 
     #@require_manager
     def POST(self):
@@ -996,7 +1029,134 @@ class EditSkillGroup:
          raise web.seeother('/skillgroups')
 
 
+############################################################
+# Project Groups
+############################################################
+class ProjectGroups:
+   # TODO @require who?
+    def GET(self, project_group_id=""):
+        print "GET ProjectGroups"
+        pp = {}
+        if project_group_id:
+            pp['project_group'] = corpdb.project_groups.find_one(ObjectId(project_group_id))
 
+            if pp['project_group']:
+                pp['employees'] = []
+                for member in pp['project_group']['members']:
+                    employee = corpdb.employees.find_one(ObjectId(member['employee_id']))
+                    employee['project_role'] = member['role']
+                    pp['employees'].append(employee)
+                return render_template('project_groups/show.html', pp=pp)
+
+            else:
+                print "project group not found"
+                raise web.seeother('/project_groups')
+        else:
+            pp['project_groups'] = corpdb.project_groups.find()
+            pp['current_user_role'] = "manager"
+            return render_template('project_groups/index.html', pp=pp)
+
+    # TODO @require who?
+    def POST(self):
+        print "POST ProjectGroups index (search)"
+        form = web.input()
+        print form
+        pp = {}
+        pp['project_group'] = corpdb.project_groups.find_one(ObjectId(form['search']))
+        if pp['project_group'] is None:
+            raise web.seeother('/project_groups')
+        else:
+            print "project_group found"
+            raise web.seeother('/project_groups/' + form['search'])
+
+class NewProjectGroup:
+    # TODO @require who?
+    def GET(self):
+        print "GET NewProjectGroup"
+        pp = {}
+        pp['employees'] = corpdb.employees.find()
+        return render_template('project_groups/new.html', pp=pp)
+
+    # TODO @require who?
+    def POST(self):
+        print "POST NewProjectGroup"
+        form = web.input()
+        if len(form['name']) > 0 and len(form['lead']) > 0:
+            project_group = {'name': form['name'], 'members' : [{'employee_id': ObjectId(form['lead']), 'role': 'LEAD'}] }
+            try:
+                objectid = corpdb.project_groups.insert(project_group)
+            except:
+                print "project_group not inserted"
+            if objectid:
+                raise web.seeother('/project_groups/' + str(objectid) + "/edit")
+            else:
+                raise web.seeother('/project_groups')
+        raise web.seeother('/project_groups')
+
+
+class EditProjectGroup:
+     #@require_manager
+     def GET(self, project_group_id):
+         print "GET EditProjectGroup"
+         pp = {}
+         pp['project_group'] = corpdb.project_groups.find_one(ObjectId(project_group_id))
+         pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER']
+         if pp['project_group']:
+             pp['employees'] = []
+             for member in pp['project_group']['members']:
+                 employee = corpdb.employees.find_one(ObjectId(member['employee_id']))
+                 employee['project_role'] = member['role']
+                 pp['employees'].append(employee)             
+             return render_template("project_groups/edit.html", pp=pp)
+         else:
+             raise web.seeother('/project_groups')
+
+     #@require_manager
+     def POST(self, project_group_id):
+         print "POST EditProjectGroup"
+         form = web.input()
+         print form
+         pp = {}
+         pp['project_group'] = corpdb.project_groups.find_one(ObjectId(project_group_id))
+
+         #Name cannot be blank
+         if form['name'] and len(form['name']) > 0:
+             for attribute in form.keys():
+                 if attribute.split("_")[0] == "employee" and attribute.split("_")[1] == "role":
+                     selector = {"_id": ObjectId(project_group_id), "members.employee_id" : ObjectId(attribute.split("_")[2])}
+                     update = {"$set": {"members.$.role": form[attribute]}}
+                     corpdb.project_groups.update(selector, update, upsert=False, multi=True)
+             raise web.seeother('/project_groups/' + str(pp['project_group']['_id']))
+         raise web.seeother('/project_groups')
+
+class NewProjectGroupMember:
+    # TODO @require who?
+    def GET(self, project_group_id):
+        print "GET NewProjectGroupMember"
+        pp = {}
+        pp['project_group_id'] = project_group_id
+        pp['employees'] = corpdb.employees.find() # TODO, remove employees who are already members
+        pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER']
+        return render_template('project_groups/new_member.html', pp=pp)
+
+    # TODO @require who?
+    def POST(self, project_group_id):
+        print "POST NewProjectGroupMember"
+        form = web.input()
+        if len(form['member']) > 0 and len(form['role']) > 0:
+            project_group = corpdb.project_groups.find_one(ObjectId(project_group_id))
+            if project_group: # TODO: can't add a member who is already in the list
+                project_group['members'].append({'employee_id':ObjectId(form['member']), 'role': form['role']})
+                corpdb.project_groups.save(project_group)
+        raise web.seeother('/project_groups/' + project_group_id + '/edit')
+
+
+class DeleteProjectGroup:
+    # TODO @require who?
+    def POST(self, project_group_id):
+        print "POST DeleteProjectGroup"
+        corpdb.project_groups.remove(ObjectId(project_group_id))
+        raise web.seeother('/project_groups')
 
 # LOCAL
 if __name__ == "__main__":

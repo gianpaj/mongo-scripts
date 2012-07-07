@@ -1,0 +1,50 @@
+{% extends "layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/chosen.jquery.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+{% block styles %}
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/chosen.css" />
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+{% block content %}
+
+
+<form action="" method="post" class="form-horizontal" style="margin: 20px 10px 10px 10px;">
+	<fieldset>
+		<div class="control-group">
+			<div class="controls">
+				<select name="search" data-placeholder="Search by project group name..." class="chzn-select-deselect" id="search" style="width:80%;">
+					<option></option>
+					{% for project_group in pp['project_groups'] %}
+						<option value="{{ project_group['_id'] }}">{{ project_group['name'] }}</option>
+					{% endfor %}
+				</select><input type="submit" value="Go" class ="btn btn-primary" style="margin: 0 0 0 10px">			
+			</div><!-- controls -->
+		</div><!-- control-group -->
+	</fieldset>
+	
+</form>
+
+<!-- IF USER IS A MANAGER --> 
+<div style="float:right;">
+	{% if pp['current_user_role'] == "manager" %}
+	<a class="btn" href="/project_groups/new" id="new_project_group">+ new project group</a>
+	{% endif %}
+</div>
+
+
+<script type="text/javascript" charset="utf-8">
+	jQuery(function($){
+    	$('#search').chosen();
+		$("a#new_project_group").fancybox();
+  });
+</script>
+
+{% endblock %}

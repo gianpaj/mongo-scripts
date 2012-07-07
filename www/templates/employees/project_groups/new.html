@@ -1,0 +1,48 @@
+{% extends "layouts/popup.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/static/employees/css/chosen.css" />
+
+<style>
+form {margin:0 0 5px;}
+</style>
+
+<br/>
+
+
+<form action="/project_groups/new" method="post" class="form-horizontal">
+	<fieldset style="height:300px;">
+		
+		<div class="control-group">
+			<label class="control-label">Project Group name</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="name" id="name">
+				</div><!-- controls-->
+		</div><!-- control-group-->
+		
+		<div class="control-group">
+			<label class="control-label">Project Lead</label>
+				<div class="controls">
+					<select name="lead" data-placeholder="Project lead..." class="input-xlarge" id="lead">
+						<option></option>
+						{% for employee in pp['employees'] %}
+							<option value="{{employee['_id']}}">{{ employee['first_name'] }} {{employee['last_name']}}</option>
+						{% endfor %}
+					</select>
+				</div><!-- controls-->
+		</div><!-- control-group-->
+	
+	</fieldset>
+	<br/>
+	<input type="submit" class ="btn btn-primary" style="float:right;">
+</form>
+
+
+<script type="text/javascript" charset="utf-8">
+	jQuery(function($){
+    	$('#lead').chosen();
+	});
+</script>
+
+{% endblock %}
