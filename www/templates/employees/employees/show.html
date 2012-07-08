@@ -17,8 +17,8 @@
 	<div class="employee-image">
 		<img src="/profileimage/{{ pp['employee']['jira_uname'] }}" onerror="ImgError(this, '{{pp["gravatar_hash"]}}');">
 	</div><!-- /.employee-image -->	
-	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}/edit">(Edit)</a>
-		<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills">(Rate Skills)</a></div>
+	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}/edit" style="display:inline-block;">(Edit)</a>
+	<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills" style="display:inline-block;">(Rate Skills)</a></div>
 </header>
 
 	{% if pp['employee']['skills'].__len__() > 0 %}
@@ -32,7 +32,7 @@
 	{% endif %}
 	<dl class="dl-horizontal" style="border-top:none;">
 		
-		<dt>Manager</dt>
+		<dt>Team Manager</dt>
 		{% if pp['managers'].__len__() > 0 %}
 			<dd>{% for manager in pp['managers'] %}
 				<a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>{% if pp['managers'].index(manager) != pp['managers'].__len__() - 1 %}, {% endif %}
@@ -72,7 +72,7 @@
 		{% endfor %}
 		
 		
-		<dt>Manager hierarchy</dt>
+		<dt>Org structure</dt>
 		{% if pp['manager_hierarchy'].__len__() > 0 %}
 			<dd>{% for manager in pp['manager_hierarchy'] %}
 				<a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>{% if pp['manager_hierarchy'].index(manager) != pp['manager_hierarchy'].__len__() - 1 %} > {% endif %}

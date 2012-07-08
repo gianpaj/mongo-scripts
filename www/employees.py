@@ -84,6 +84,7 @@ urls = (
         '/employees/(.*)/rateskills', 'RateSkills',
         '/employees/(.*)/editemails', 'EditEmailAddress',
         '/employees/(.*)/editimage', 'EditEmployeeImage',
+        '/employees/(.*)/newfield', 'NewEmployeeField',
         '/employees/(.*)/deleteimage', 'DeleteEmployeeImage',
         '/employees/(.*)/setdefaultemail', 'SetDefaultEmployeeEmail',
         '/employees/new', 'NewEmployee',
@@ -109,6 +110,7 @@ urls = (
 		'/skillgroups', 'SkillGroups',
 		
         '/project_groups/new', 'NewProjectGroup',
+        '/project_groups/(.*)/remove_member/(.*)', 'RemoveProjectGroupMember',
         '/project_groups/(.*)/new_member', 'NewProjectGroupMember',
         '/project_groups/(.*)/edit', 'EditProjectGroup',
         '/project_groups/(.*)/delete', 'DeleteProjectGroup',
@@ -137,6 +139,26 @@ def require_manager(f):
 
         print role
         if role == "manager":
+            return f(self, *args, **kwargs)
+        raise web.seeother('/employees')
+
+    return wrapper
+
+def require_admin(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        try:
+             crowd_uname = web.cookies()['auth_user'].split("@")[0]
+             if crowd_uname:
+                 employee = corpdb.employees.find_one({"jira_uname" : crowd_uname })
+                 role = employee['role']
+             else:
+                 role = 'employee'
+        except:
+             role = 'employee'
+
+        print role
+        if role == "admin":
             return f(self, *args, **kwargs)
         raise web.seeother('/employees')
 
@@ -304,6 +326,11 @@ class EditEmployee:
             pp['team_members'] = corpdb.employees.find({"_id": {"$ne": pp['employee']['_id']}})
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
 
+            pp['extra_fields'] = []
+            for n in pp['employee'].keys():
+                if n not in employee_model.editable_keys() and n not in employee_model.no_show():
+                    pp['extra_fields'].append(n)
+            print "extra fields: ", pp['extra_fields']
 
             print pp['employee']['jira_uname'] 
             if pp['employee']['jira_uname'] == "emily.stolfo@10gen.com".split("@")[0]: #web.cookies()['auth_user'].split("@")[0]:
@@ -579,6 +606,30 @@ class EditEmailAddress:
                     corpdb.employees.save(employee)
             raise web.seeother('/employees/' + employee['jira_uname'] + "/edit")
         #employee not found
+        else:
+            raise web.seeother('/employees/')
+
+
+class NewEmployeeField:
+    #@require_current_user
+    def GET(self, jira_uname):
+        print "GET NewEmployeeField"
+        pp = {}
+        pp['employee'] = corpdb.employees.find_one({"jira_uname": jira_uname})
+        if pp['employee'] is not None:
+            return render_template('employees/new_field.html', pp=pp)
+        else:
+            raise web.seeother('/employees/')
+
+    #@require_current_user
+    def POST(self, jira_uname):
+        print "POST NewEmployeeField"
+        form = web.input()
+        employee = corpdb.employees.find_one({"jira_uname": jira_uname})
+        if employee:
+            employee[form['field_name'].capitalize()] = ""
+            corpdb.employees.save(employee)
+            raise web.seeother('/employees/' + employee['jira_uname'] + "/edit")
         else:
             raise web.seeother('/employees/')
 
@@ -1127,7 +1178,7 @@ class EditProjectGroup:
                      update = {"$set": {"members.$.role": form[attribute]}} 
                  else:
                     selector = {"_id": ObjectId(project_group_id)}
-                    update = {"$set": {"name": form[attribute]}}
+                    update = {"$set": {attribute: form[attribute]}}
                  corpdb.project_groups.update(selector, update, upsert=False, multi=True)
              raise web.seeother('/project_groups/' + str(pp['project_group']['_id']))
          raise web.seeother('/project_groups')
@@ -1156,6 +1207,14 @@ class NewProjectGroupMember:
                 project_group['members'].append({'employee_id':ObjectId(form['member']), 'role': form['role']})
                 corpdb.project_groups.save(project_group)
         raise web.seeother('/project_groups/' + project_group_id + '/edit')
+
+
+class RemoveProjectGroupMember:
+    # TODO @require who?
+    def POST(self, project_group_id):
+        print "POST RemoveProjectGroupMember"
+        corpdb.project_groups.remove(ObjectId(project_group_id))
+        raise web.seeother('/project_groups')
 
 
 class DeleteProjectGroup:

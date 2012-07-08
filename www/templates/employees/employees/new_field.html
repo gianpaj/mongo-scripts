@@ -1,0 +1,36 @@
+{% extends "layouts/popup.html" %}
+
+{% block content %}
+
+{% block js %}
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="/static/employees/js/chosen.jquery.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/chosen.css" />
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+{% endblock %}
+
+
+<br/>
+
+<form action="/employees/{{pp['employee']['jira_uname']}}/newfield" method="post" class="form-horizontal" style="height:120px;width:500px;">
+	<fieldset>
+
+		<div class="control-group">
+			<label class="control-label">Field name*</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="field_name" id="field_name">
+				</div><!-- controls-->
+		</div><!-- control-group-->
+
+	</fieldset>
+<br/>
+<br/>		
+	<input type="submit" class ="btn btn-primary" style="float:right;">
+</form>
+
+{% endblock %}

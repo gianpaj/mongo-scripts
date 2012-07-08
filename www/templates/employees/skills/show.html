@@ -2,13 +2,11 @@
 
 {% block content %}
 
-<header class="page-header">
+<header class="page-header" style="height:120px;">
 	<div class="team-header-info">
 		<h1>Skill: <span class="name">{{ pp['skill']['name'] }}</span></h1>
-		{% if pp['current_user_role'] == "manager" %}
-		<div class="team-edit"><a href="/skills/{{ pp['skill']['_id'] }}/edit">(Edit)</a><form enctype="multipart/form-data" action="/skills/{{ pp['skill']['_id'] }}/delete" method="post" class="form-horizontal"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form>
-		{% endif %}
-	</div>	
+		<div class="team-edit"><a href="/skills/{{ pp['skill']['_id'] }}/edit">(Edit)</a>&nbsp;<form enctype="multipart/form-data" action="/skills/{{ pp['skill']['_id'] }}/delete" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form></div>
+	</div>
 </header>
 
 	<dl class="dl-horizontal">

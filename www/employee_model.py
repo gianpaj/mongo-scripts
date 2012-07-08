@@ -34,7 +34,8 @@ def editable_keys():
 			'primary_chat',
 			'skills',
 			'skype_id',
-			'stackoverflow_id']
+			'stackoverflow_id',
+			'email_addresses']
 
 
 def display_keys():

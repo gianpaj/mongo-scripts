@@ -276,10 +276,19 @@
 				</div><!-- controls-->
 		</div><!-- controls-->
 		
+		{% for n in pp['extra_fields'] %}
 		<div class="control-group">
-			<label class="control-label">Onsip Conf Bridge</label>
+			<label class="control-label">{{n}}</label>
 				<div class="controls">
-					<input type="text" class="input-xlarge" name="onsip_conf_bridge" value="{{ pp['employee']['onsip_conf_bridge'] }}" id="onsip_conf_bridge">
+					<input type="text" class="input-xlarge" name="{{n}}" value="{{ pp['employee'][n] }}" id="{{n}}">
+				</div><!-- controls-->
+		</div><!-- controls-->
+		{% endfor %}
+		
+		<div class="control-group">
+			<label class="control-label"></label>
+				<div class="controls">
+					<a style="float:right;margin-right:20px;" href="/employees/{{ pp['employee']['jira_uname']}}/newfield" id="new_field" >+ new field</a>
 				</div><!-- controls-->
 		</div><!-- controls-->
 
@@ -308,6 +317,7 @@
 	$("#birthday").datepicker({dateFormat: 'dd-mm-yy' });
 	$("a#edit_email").fancybox();
 	$("a#edit_image").fancybox();
+	$("a#new_field").fancybox();
   });
 </script>
 

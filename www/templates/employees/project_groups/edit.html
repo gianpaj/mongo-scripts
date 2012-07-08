@@ -17,9 +17,9 @@
 {% block content %}
 
 	
-<header class="page-header">
+<header style="margin-left:40px;height:75px;">
 	<div class="team-header-info">
-		<h1>Project Group: <span class="name">{{ pp['project_group']['name'] }}</span></h1>
+		<h1>Project Group: <a href="/project_groups/{{ pp['project_group']['_id'] }}">{{ pp['project_group']['name']}}</a></h1>
 	</div>	
 </header>
 
@@ -27,7 +27,7 @@
 <input type="hidden" name="project_group_id" value="{{ pp['project_group']['_id'] }}" >
 <div class="row-fluid">
 	<div class="span4"></div>
-	<div class="span8">
+	<div class="span8" style="margin-left:200px">
 
 		<fieldset>
 
@@ -48,6 +48,7 @@
 										<option value="{{role}}" {% if employee['project_role'] == role %} SELECTED %} {% endif %}>{{ role }}</option>
 									{% endfor %}
 								</select>
+								&nbsp;<form enctype="multipart/form-data" action="/project_groups/{{ pp['project_group']['_id'] }}/remove_member/{{employee['_id']}}" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">Remove</a></form>
 							{% else %}
 								LEAD
 							{% endif %}
