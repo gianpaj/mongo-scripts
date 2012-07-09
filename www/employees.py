@@ -74,7 +74,7 @@ def render_template(template_name, **context):
 #web.config.env = env
 
 
-#LOCAL
+#LOCAL - this needs to be an authenticated db
 connection = pymongo.Connection("localhost", 27017)
 corpdb = connection.employee_info
 ########
@@ -128,7 +128,7 @@ def require_manager(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         try:
-             crowd_uname = web.cookies()['auth_user'].split("@")[0]
+             crowd_uname = web.cookies()['auth_user']
              if crowd_uname:
                  employee = corpdb.employees.find_one({"jira_uname" : crowd_uname })
                  role = employee['role']
@@ -148,7 +148,7 @@ def require_admin(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         try:
-             crowd_uname = web.cookies()['auth_user'].split("@")[0]
+             crowd_uname = web.cookies()['auth_user']
              if crowd_uname:
                  employee = corpdb.employees.find_one({"jira_uname" : crowd_uname })
                  role = employee['role']
@@ -170,12 +170,11 @@ def require_current_user(f):
         jira_uname = args[0]
         try:
              # Get employee crowd_uname from cookie
-             crowd_uname = "emily.stolfo@10gen.com".split("@")[0]#web.cookies()['auth_user'].split("@")[0]
+             crowd_uname = "emily.stolfo@10gen.com"#web.cookies()['auth_user']
              # Get employee from args to request
              employee = corpdb.employees.find_one({"jira_uname" : jira_uname})
         except:
              employee = False
-        print employee
         if employee:
              if employee['jira_uname'] == crowd_uname:
                  return f(self, *args, **kwargs)
@@ -187,7 +186,7 @@ def require_manager_or_self(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         try:
-             crowd_uname = "emily.stolfo@10gen.com".split("@")[0]#web.cookies()['auth_user'].split("@")[0]
+             crowd_uname = "emily.stolfo@10gen.com"#web.cookies()['auth_user']
              print "crowd_uname: ", crowd_uname
              current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
              requested_employee = corpdb.employees.find_one({"jira_uname": args[0] })
@@ -202,7 +201,7 @@ def require_manager_or_self(f):
              requested_employees_managers = employee_model.get_managers(requested_employee)
              print "requested_employees_managers: ", requested_employees_managers
              print current_user in requested_employees_managers
-             if current_user in requested_employees_managers or current_user["jira_uname"].split("@")[0] == requested_employee["jira_uname"]:
+             if current_user in requested_employees_managers or current_user["jira_uname"] == requested_employee["jira_uname"]:
                  return f(self, *args, **kwargs)
         raise web.seeother('/employees')
     return wrapper
@@ -333,7 +332,7 @@ class EditEmployee:
             print "extra fields: ", pp['extra_fields']
 
             print pp['employee']['jira_uname'] 
-            if pp['employee']['jira_uname'] == "emily.stolfo@10gen.com".split("@")[0]: #web.cookies()['auth_user'].split("@")[0]:
+            if pp['employee']['jira_uname'] == "emily.stolfo@10gen.com": #web.cookies()['auth_user']:
 
                 pp['is_current_user'] = True
             else:
@@ -446,7 +445,7 @@ class EditEmployee:
 
 
             print pp['employee']['jira_uname'] 
-            if pp['employee']['jira_uname'] == "emily.stolfo@10gen.com".split("@")[0]: #web.cookies()['auth_user'].split("@")[0]:
+            if pp['employee']['jira_uname'] == "emily.stolfo@10gen.com": #web.cookies()['auth_user']:
                pp['is_current_user'] = True
             else:
                 pp['is_current_user'] = False
@@ -542,7 +541,7 @@ class NewEmployee:
         form = web.input()
         print form
         if len(form['first_name']) > 0 and len(form['last_name']) > 0 and len(form['email_address']) > 0 and len(form['jira_uname']) and len(form['team_id']):
-            jira_uname = form['jira_uname'].split("@")[0].lower()
+            jira_uname = form['jira_uname'].lower()
             # make sure there are no other users with this email address
             employee = corpdb.employees.find_one({"jira_uname": jira_uname})
             print "employee found: ", employee
@@ -906,7 +905,7 @@ class Skills:
     def GET(self, skill_id=""):
         print "GET Skills"
         pp = {}
-        #current_user = corpdb.employees.find_one({"user_id" : web.cookies()['auth_user']})
+        #current_user = corpdb.employees.find_one({"jira_uname" : web.cookies()['auth_user']})
         pp['current_user_role'] = "manager"#current_user['role']
 
         if skill_id:

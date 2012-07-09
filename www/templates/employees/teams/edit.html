@@ -47,7 +47,7 @@
 			<div class="control-group">
 				<label class="control-label">Managing</label>
 					<div class="controls">
-						<select multiple="multiple" class="input-xlarge" data-placeholder="Select teams managed by this one..." name="managing_team_ids" id="managing_team_ids">
+						<select multiple="multiple" class="input-xlarge" data-placeholder="Select teams that {{pp['team']['name']}} is managing..." name="managing_team_ids" id="managing_team_ids">
 						{% for team in pp['teams'] %}
 							<option value="{{ team['_id'] }}" {% if team['_id'] in pp['team']['managing_team_ids'] %} SELECTED {% endif %} >
 								{{ team.name }}</option>

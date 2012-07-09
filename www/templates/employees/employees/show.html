@@ -32,10 +32,10 @@
 	{% endif %}
 	<dl class="dl-horizontal" style="border-top:none;">
 		
-		<dt>Team Manager</dt>
-		{% if pp['managers'].__len__() > 0 %}
-			<dd>{% for manager in pp['managers'] %}
-				<a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>{% if pp['managers'].index(manager) != pp['managers'].__len__() - 1 %}, {% endif %}
+		<dt>Org structure</dt>
+		{% if pp['manager_hierarchy'].__len__() > 0 %}
+			<dd>{% for manager in pp['manager_hierarchy'] %}
+				<a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>{% if pp['manager_hierarchy'].index(manager) != pp['manager_hierarchy'].__len__() - 1 %} > {% endif %}
 				{% endfor %}</dd>
 		{% else %}
 			<dd>&nbsp;</dd>
@@ -70,16 +70,6 @@
 				{% endif %}
 			{% endif %}
 		{% endfor %}
-		
-		
-		<dt>Org structure</dt>
-		{% if pp['manager_hierarchy'].__len__() > 0 %}
-			<dd>{% for manager in pp['manager_hierarchy'] %}
-				<a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>{% if pp['manager_hierarchy'].index(manager) != pp['manager_hierarchy'].__len__() - 1 %} > {% endif %}
-				{% endfor %}</dd>
-		{% else %}
-			<dd>&nbsp;</dd>
-		{% endif %}
 		
 	</div>	
 	
