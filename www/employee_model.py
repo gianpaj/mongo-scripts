@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 
 #LOCAL
 connection = pymongo.Connection("localhost", 27017)
-corpdb = connection.employee_info
+corpdb = connection.corp
 
 	
 def editable_keys():
@@ -84,7 +84,6 @@ def get_managers(employee):
 			for manager in corpdb.employees.find({"team_ids": managing_team_ids}):
 				if manager not in managers:
 					managers.append(manager)
-
 	return managers
 
 

@@ -1,4 +1,4 @@
-{% extends "layouts/application.html" %}
+{% extends "employees/layouts/application.html" %}
 
 {% block js %}
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
@@ -56,8 +56,17 @@
 					<div class="controls">
 						<input type="text" class="input-xlarge" name="title" value="{{ pp['employee']['title'] }}" id="title">
 					</div><!-- controls-->
-			</div><!-- control-group-->		
+			</div><!-- control-group-->	
 			
+			
+			<div class="control-group">
+				<label class="control-label" for="textarea">Bio</label>
+					<div class="controls">
+						<textarea class="input-xlarge" id="bio" name="bio" value="{{ pp['employee']['bio'] }}" rows="3"></textarea>
+					</div><!-- controls-->
+			</div><!-- control-group-->	
+			
+
 			<div class="control-group">
 				<label class="control-label">Primary Phone Number</label>
 					<div class="controls">

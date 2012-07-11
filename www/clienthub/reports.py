@@ -7,8 +7,10 @@ import traceback
 import pytz
 
 import pymongo
-from pymongo.objectid import ObjectId
-
+try:
+    from pymongo.objectid import ObjectId
+except:
+    from bson.objectid import ObjectId
 import web
 app = web.config.app
 env = web.config.env
