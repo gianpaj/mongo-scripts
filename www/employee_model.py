@@ -35,7 +35,8 @@ def editable_keys():
 			'skills',
 			'skype_id',
 			'stackoverflow_id',
-			'email_addresses']
+			'email_addresses',
+			'bio']
 
 
 def display_keys():

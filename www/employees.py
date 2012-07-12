@@ -6,38 +6,12 @@ import gridfs
 from bson.objectid import ObjectId
 import hashlib
 import hmac
-#LOCAL
-#from jinja2 import Environment, FileSystemLoader
 import jinja2
 import employee_model
 import random
 import md5
 from util import _url_split, url_cmp
-
 from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb, corpdb, ftsdb
-
-
-#LOCAL
-#def render_template(template_name, **context):
-#    extensions = context.pop('extensions', [])
-#    globals = context.pop('globals', {})
-#
-#    jinja_env = Environment(
-#            loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates/employees')),
-#            extensions=extensions,
-#            )
-#    jinja_env.globals.update(globals)
-#
-#    return jinja_env.get_template(template_name).render(context)
-#
-
-
-##LOCAL - this needs to be an authenticated db
-#connection = pymongo.Connection("localhost", 27017)
-#corpdb = connection.employee_info
-#########
-
-
 from functools import wraps
 
 ############### Roles and Control Wrappers #################
@@ -46,16 +20,14 @@ def require_manager(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         try:
-             crowd_uname = web.cookies()['auth_user']
-             if crowd_uname:
-                 employee = corpdb.employees.find_one({"jira_uname" : crowd_uname })
-                 role = employee['role']
-             else:
-                 role = 'employee'
+            crowd_uname = args[0]['user']
+            print "crowd_uname: ", crowd_uname
+            current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
+            role = current_user['role']
         except:
-             role = 'employee'
-
-        print role
+            current_user = None
+            role = ""
+        print "current user role: ", role
         if role == "manager":
             return f(self, *args, **kwargs)
         raise web.seeother('/employees')
@@ -66,17 +38,33 @@ def require_admin(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         try:
-             crowd_uname = web.cookies()['auth_user']
-             if crowd_uname:
-                 employee = corpdb.employees.find_one({"jira_uname" : crowd_uname })
-                 role = employee['role']
-             else:
-                 role = 'employee'
+            crowd_uname = args[0]['user']
+            print "crowd_uname: ", crowd_uname
+            current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
+            role = current_user['role']
         except:
-             role = 'employee'
-
-        print role
+            current_user = None
+            role = ""
+        print "current user role: ", role
         if role == "admin":
+            return f(self, *args, **kwargs)
+        raise web.seeother('/employees')
+
+    return wrapper
+
+def require_admin_or_manager(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        try:
+            crowd_uname = args[0]['user']
+            print "crowd_uname: ", crowd_uname
+            current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
+            role = current_user['role']
+        except:
+            current_user = None
+            role = ""
+        print "current user role: ", role
+        if role == "admin" or role == "manager":
             return f(self, *args, **kwargs)
         raise web.seeother('/employees')
 
@@ -85,26 +73,28 @@ def require_admin(f):
 def require_current_user(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        crowd_uname = args[0]['user']
-        try:
-             # Get employee crowd_uname from cookie
-             crowd_uname = web.cookies()['auth_user']
-             # Get employee from args to request
-             employee = corpdb.employees.find_one({"jira_uname" : jira_uname})
-        except:
-             employee = False
-        if employee:
-             if employee['jira_uname'] == crowd_uname:
-                 return f(self, *args, **kwargs)
-        raise web.seeother('/employees')
+       try:
+            crowd_uname = args[0]['user']
+            print "crowd_uname: ", crowd_uname
+            current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
+            requested_employee = corpdb.employees.find_one({"jira_uname": args[1] })
+            if not requested_employee:
+                 requested_employee = corpdb.employees.find_one({"_id": ObjectId(args[1]) })
+       except:
+            current_user = None
+            requested_employee = None
+       if requested_employee and current_user:
+           if requested_employee['jira_uname'] == crowd_uname:
+               return f(self, *args, **kwargs)
+       raise web.seeother('/employees')
 
     return wrapper
 
-def require_manager_or_self(f):
+def require_manager_admin_or_self(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
        try:
-            crowd_uname = "spf13"#args[0]['user']
+            crowd_uname = args[0]['user']
             print "crowd_uname: ", crowd_uname
             current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
             requested_employee = corpdb.employees.find_one({"jira_uname": args[1] })
@@ -118,7 +108,7 @@ def require_manager_or_self(f):
            print "requested employee: ", requested_employee['jira_uname']
            print "current_user: ", current_user
            requested_employees_managers = employee_model.get_managers(requested_employee)
-           if current_user in requested_employees_managers or current_user["jira_uname"] == requested_employee["jira_uname"]:
+           if current_user in requested_employees_managers or current_user["jira_uname"] == requested_employee["jira_uname"] or current_user['role'] == "admin":
                return f(self, *args, **kwargs)
        raise web.seeother('/employees')
     return wrapper
@@ -148,8 +138,6 @@ class EmployeesIndex(CorpBase):
     @authenticated
     def GET(self, pp):
         print "GET EmployeesIndex"
-        pp = {}
-
         # this isn't the most efficient way of getting a random document, but the collection is too small for it really to matter
         range_max = corpdb.employees.find().count()
         if range_max > 1:
@@ -190,12 +178,12 @@ class Employees(CorpBase):
     #MEMBER SHOW PAGE
     def GET(self, pp, *args):
         print "GET employees"
-        pp = {}
-        pp['employee'] = corpdb.employees.find_one({"jira_uname": args[0]})
+        try:
+            pp['employee'] = corpdb.employees.find_one({"jira_uname": args[0]})
+        except:
+            pp['employee'] = ""
 
-        if pp['employee'] is None:
-            raise web.seeother('/employees')
-        else:
+        if pp['employee']:
             pp['display_keys'] = employee_model.display_keys()
             pp['no_show'] = employee_model.no_show()
 
@@ -235,15 +223,17 @@ class Employees(CorpBase):
             pp['employee']['email_addresses'] = ", ".join(pp['employee']['email_addresses'] )
 
             return env.get_template('employees/employees/show.html').render(pp=pp)
+            
+        else:
+            raise web.seeother('/employees')
 
 
 class EditEmployee(CorpBase):
     #DISPLAY EDIT PAGE
     @authenticated
-    @require_manager_or_self
+    @require_manager_admin_or_self
     def GET(self, pp, *args):
         print "GET EditEmployee"
-        pp = {}
         jira_uname = args[0]
         pp['employee'] = corpdb.employees.find_one({"jira_uname": jira_uname})
         if pp['employee'] is None:
@@ -316,7 +306,7 @@ class EditEmployee(CorpBase):
 
     #EDIT FORM SUBMITS TO HERE
     @authenticated
-    #@require_manager_or_self
+    @require_manager_admin_or_self
     def POST(self, pp, *args): # maybe employee id?
         "POST EditEmployee"
         form = web.input(managing_ids=[], skills_TECH=[], skills_INDUSTRY=[], skills_GENERAL=[], team_ids=[])
@@ -371,7 +361,6 @@ class EditEmployee(CorpBase):
 
         # first name or last name (or both) is blank.  Render edit page with error message.
         else:
-            pp = {}
             pp['employee'] = employee
             pp['offices'] = corpdb.employees.distinct("office")
             pp['statuses'] = corpdb.employees.distinct("employee_status")
@@ -436,11 +425,10 @@ class EditEmployee(CorpBase):
 
 class RateSkills(CorpBase):
     @authenticated
-    #@require_manager_or_self
+    @require_manager_admin_or_self
     def GET(self, pp, *args):
         print "GET RateSkills"
         jira_uname = args[0]
-        pp = {}
         pp['employee'] = corpdb.employees.find_one({"jira_uname": jira_uname})
         if pp['employee'] is None or "skills" not in pp['employee'].keys():
             raise web.seeother('/employees')
@@ -454,7 +442,7 @@ class RateSkills(CorpBase):
             #return render_template('employees/rate_skills.html', pp=pp)
 
     @authenticated
-    #@require_manager_or_self
+    @require_manager_admin_or_self
     def POST(self, pp, *args):
         print "POST RateSkills"
         form = web.input()
@@ -473,16 +461,15 @@ class RateSkills(CorpBase):
 
 class NewEmployee(CorpBase):
     @authenticated
-    #@require_manager
-    def GET(self):
+    @require_admin
+    def GET(self, pp):
         print "GET NewEmployee"
-        pp = {}
         pp['teams'] = corpdb.teams.find()
         return env.get_template('employees/employees/new.html').render(pp=pp)
         #return render_template('employees/new.html', pp=pp)
 
     @authenticated
-    #@require_manager
+    @require_admin
     def POST(self, pp):
         print "POST NewEmployee"
         form = web.input()
@@ -519,11 +506,10 @@ class NewEmployee(CorpBase):
 
 class EditEmailAddress(CorpBase):
     @authenticated
-    #@require_manager_or_self
+    @require_current_user
     def GET(self, pp, *args):
         print "GET EditEmailAddress"
-        jira_uname = argos[0]
-        pp = {}
+        jira_uname = args[0]
         pp['employee'] = corpdb.employees.find_one({"jira_uname": jira_uname})
         if pp['employee'] is not None:
             return env.get_template('employees/employees/edit_email_addresses.html').render(pp=pp)
@@ -532,7 +518,7 @@ class EditEmailAddress(CorpBase):
             raise web.seeother('/employees/')
 
     @authenticated
-    #@require_manager_or_self
+    @require_current_user
     def POST(self, pp, *args):
         print "POST EditEmailAddress"
         form = web.input()
@@ -563,10 +549,10 @@ class EditEmailAddress(CorpBase):
 
 class NewEmployeeField(CorpBase):
     @authenticated
-    #@require_current_user
-    def GET(self, jira_uname):
+    @require_manager_admin_or_self
+    def GET(self, pp, *args):
         print "GET NewEmployeeField"
-        pp = {}
+        jira_uname = args[0]
         pp['employee'] = corpdb.employees.find_one({"jira_uname": jira_uname})
         if pp['employee'] is not None:
             return env.get_template('employees/employees/new_field.html').render(pp=pp)
@@ -575,7 +561,7 @@ class NewEmployeeField(CorpBase):
             raise web.seeother('/employees/')
 
     @authenticated
-    #@require_current_user
+    @require_manager_admin_or_self
     def POST(self, pp, *args):
         print "POST NewEmployeeField"
         form = web.input()
@@ -591,10 +577,9 @@ class NewEmployeeField(CorpBase):
 
 class EditEmployeeImage(CorpBase):
     @authenticated
-    #@require_current_user
+    @require_current_user
     def GET(self, pp, *args):
         print "GET EditEmployeeImage"
-        pp = {}
         jira_uname = args[0]
         pp['employee'] = corpdb.employees.find_one({"jira_uname": jira_uname})
         pp['employee_email_address'] = employee_model.primary_email(pp['employee'])
@@ -606,7 +591,7 @@ class EditEmployeeImage(CorpBase):
             raise web.seeother('/employees/')
 
     @authenticated
-    #@require_current_user
+    @require_current_user
     def POST(self, pp, *args):
         print "POST EditEmployeeImage"
         jira_uname = args[0]
@@ -624,12 +609,11 @@ class EditEmployeeImage(CorpBase):
 
 class DeleteEmployeeImage(CorpBase):
     @authenticated
-    #@require_current_user
+    @require_current_user
     def POST(self, pp, *args):
         print "POST DeleteEmployeeImage"
         form = web.input()
-        pp = {}
-        
+        jira_uname = args[0]        
         gfs = gridfs.GridFS(corpdb)
 
         while gfs.exists({"filename" : jira_uname }):
@@ -642,7 +626,7 @@ class DeleteEmployeeImage(CorpBase):
 
 class set_default_employee_email(CorpBase):
     @authenticated
-    #@require_current_user
+    @require_current_user
     def POST(self, pp, *args):
         print "POST set_default_employee_email"
         form = web.input()
@@ -662,7 +646,7 @@ class set_default_employee_email(CorpBase):
 
 class SetDefaultEmployeeEmail(CorpBase):
     @authenticated
-    #@require_current_user
+    @require_current_user
     def POST(self, pp, *args):
         print "POST SetDefaultEmployeeEmail"
         form = web.input()
@@ -685,9 +669,8 @@ class SetDefaultEmployeeEmail(CorpBase):
 ############################################################
 class OrgStructure(CorpBase):
     @authenticated
-    def GET(self):
+    def GET(self, pp):
         print "GET OrgStructure"
-        pp = {}
         pp['org_structure'] = employee_model.org_structure()
         pp['teams'] = {}
 
@@ -728,10 +711,12 @@ class ProfileImage(CorpBase):
 ############################################################
 class Teams(CorpBase):
     @authenticated
-    def GET(self, team_id=""):
+    def GET(self, pp, *args):
         print "GET Teams"
-        pp = {}
-        print team_id
+        try:
+            team_id = args[0]
+        except:
+            team_id = ""
         if team_id:
             pp['team'] = corpdb.teams.find_one(ObjectId(team_id))
 
@@ -770,23 +755,21 @@ class Teams(CorpBase):
 
 class EditTeam(CorpBase):
     @authenticated
-    #@require_manager
+    @require_admin
     def GET(self, pp, *args):
         print "GET EditTeam"
-        pp = {}
         team_id = args[0]
         pp['team'] = corpdb.teams.find_one(ObjectId(team_id))
 
         if pp['team'] is None:
-            print "team is none"
+            print "team not found"
             raise web.seeother('/teams')
         else:
             pp['teams'] = corpdb.teams.find({"_id": {"$ne": pp['team']['_id']}})
             return env.get_template('employees/teams/edit.html').render(pp=pp)
-            #return render_template('teams/edit.html', pp=pp)
 
     @authenticated
-    #@require_manager
+    @require_admin
     def POST(self, pp, *args):
         print "POST EditTeam"
         form = web.input(managing_team_ids=[])
@@ -797,7 +780,7 @@ class EditTeam(CorpBase):
         # Name cannot be blank
         if len(form['name']) > 0:
             #if corpdb.teams.find({"_id": ObjectId(team_id)})
-            team['name'] = form['name'].capitalize() 
+            team['name'] = form['name']
             team['managing_team_ids'] = map(lambda id: ObjectId(id), form['managing_team_ids'])
             corpdb.teams.save(team)
             raise web.seeother('/teams/' + str(team['_id']))
@@ -807,14 +790,13 @@ class EditTeam(CorpBase):
 
 class NewTeam(CorpBase):
     @authenticated
-    #@require_manager
-    def GET(self):
+    @require_admin
+    def GET(self, pp):
         print "GET NewTeam"
         return env.get_template('employees/teams/new.html').render(pp=pp)
-        #return render_template('teams/new.html')
 
     @authenticated
-    #@require_manager
+    @require_admin
     def POST(self, pp):
         print "POST NewTeam"
         form = web.input()
@@ -834,7 +816,7 @@ class NewTeam(CorpBase):
 
 class DeleteTeam(CorpBase):
     @authenticated
-    #@require_manager
+    @require_admin
     def POST(self, pp, *args):
         print "POST DeleteTeam"
         team_id = args[0]
@@ -847,65 +829,19 @@ class DeleteTeam(CorpBase):
 
 
 ############################################################
-# Skill Groups
-############################################################
-class SkillGroups(CorpBase):
-    @authenticated
-   # @require_manager
-    def GET(self, pp, *args):
-        print "GET SkillGroups"
-        pp = {}
-        skill_group_id = args[0]
-        if skill_group_id:
-            pp['skill_group'] = corpdb.skill_groups.find_one(ObjectId(skill_group_id))
-
-            if pp['skill_group']:
-	            pp['skills'] = []
-                # TODO: use $in instead
-	            for skill in corpdb.skills.find({"groups": pp['skill_group']['_id']}):
-	                pp['skills'].append(skill)
-	            return env.get_template('employees/skillgroups/show.html').render(pp=pp)
-	            #return render_template('skillgroups/show.html', pp=pp)
-
-            else:
-                print "skill not found"
-                raise web.seeother('/skillgroups')
-        else:
-            pp['skill_groups'] = corpdb.skill_groups.find()
-            return env.get_template('employees/skillgroups/index.html').render(pp=pp)
-            #return render_template('skillgroups/index.html', pp=pp)
-
-    @authenticated
-    #@require_manager
-    def POST(self, pp):
-        print "POST SkillGroups index (search)"
-        form = web.input()
-        print form
-        pp = {}
-        pp['skill_group'] = corpdb.skill_groups.find_one(ObjectId(form['search']))
-        print pp['skill_group']
-        if pp['skill_group'] is None:
-            raise web.seeother('/skillgroups')
-        else:
-            print "skillgroup found"
-            raise web.seeother('/skillgroups/' + form['search'])
-
-
-############################################################
 # Skills
 ############################################################
 class Skills(CorpBase):
     @authenticated
     def GET(self, pp, *args):
         print "GET Skills"
-        pp = {}
-        
+        print "pp: ", pp
         try:
             skill_id = args[0]
         except:
             skill_id = ""
-        #current_user = corpdb.employees.find_one({"jira_uname" : web.cookies()['auth_user']})
-        pp['current_user_role'] = "manager"#current_user['role']
+        current_user = corpdb.employees.find_one({"jira_uname" : pp['user']})
+        pp['current_user_role'] = current_user['role']
 
         if skill_id:
             pp['skill'] = corpdb.skills.find_one(ObjectId(skill_id))
@@ -931,11 +867,10 @@ class Skills(CorpBase):
             #return render_template('skills/index.html', pp=pp)
 
     @authenticated
-    def POST(self, pp):
+    def POST(self, pp, *args):
         print "POST Skills index (search)"
         form = web.input()
         print form
-        pp = {}
         pp['skill'] = corpdb.skills.find_one(ObjectId(form['search']))
         print pp['skill']
         if pp['skill'] is None:
@@ -946,10 +881,11 @@ class Skills(CorpBase):
 
 
 class EditSkill(CorpBase):
-     #@require_manager
-     def GET(self, skill_id):
+     @authenticated
+     @require_admin_or_manager
+     def GET(self, pp, *args):
          print "GET EditSkill"
-         pp = {}
+         skill_id = args[0]
          pp['skill'] = corpdb.skills.find_one(ObjectId(skill_id))
          if pp['skill']:
              pp['skill_groups'] = corpdb.skill_groups.find()
@@ -957,13 +893,13 @@ class EditSkill(CorpBase):
              #return render_template("skills/edit.html", pp=pp)
          else:
              raise web.seeother('/skills')
-
-     #@require_manager
-     def POST(self, skill_id):
+     @authenticated
+     @require_admin_or_manager
+     def POST(self, pp, *args):
          print "POST EditSkill"
          form = web.input(skill_groups=[])
          print form
-         pp = {}
+         skill_id = args[0]
          pp['skill'] = corpdb.skills.find_one(ObjectId(skill_id))
          #Name cannot be blank in order for this skill to be saved
          if len(form['name']) > 0:
@@ -978,13 +914,15 @@ class EditSkill(CorpBase):
 
 
 class NewSkill(CorpBase):
-    #@require_manager
-    def GET(self):
+    @authenticated
+    @require_admin
+    def GET(self, pp):
         print "GET NewSkill"
         return env.get_template('employees/skills/new.html').render(pp=pp)
         #return render_template('skills/new.html')
 
-    #@require_manager
+    @authenticated
+    @require_admin
     def POST(self, pp):
         print "POST NewSkill"
         form = web.input()
@@ -1006,9 +944,11 @@ class NewSkill(CorpBase):
         raise web.seeother('/skills')
 
 class DeleteSkill(CorpBase):
-    #@require_manager
-    def POST(self, skill_id):
+    @authenticated
+    @require_admin
+    def POST(self, pp, *args):
         print "POST DeleteSkill"
+        skill_id = args[0]
         corpdb.employees.update({"skills."+ skill_id: {"$exists":True} }, {"$unset": {"skills."+ skill_id: 1}}, upsert=False, multi=True)
         corpdb.skills.remove(ObjectId(skill_id))
         raise web.seeother('/skills')
@@ -1018,10 +958,13 @@ class DeleteSkill(CorpBase):
 # Skill Groups
 ############################################################
 class SkillGroups(CorpBase):
-   # @require_manager
-    def GET(self, skill_group_id=""):
+    @authenticated
+    def GET(self, pp, *args):
         print "GET SkillGroups"
-        pp = {}
+        try:
+            skill_group_id = args[0]
+        except:
+            skill_group_id = ""
         if skill_group_id:
             pp['skill_group'] = corpdb.skill_groups.find_one(ObjectId(skill_group_id))
 
@@ -1030,23 +973,20 @@ class SkillGroups(CorpBase):
                 # TODO: use $in instead
 	            for skill in corpdb.skills.find({"groups": pp['skill_group']['_id']}):
 	                pp['skills'].append(skill)
-	            return env.get_template('employees/skillgroups/show.html').render(pp=pp)
-	            #return render_template('skillgroups/show.html', pp=pp)
+	            return env.get_template('employees/skill_groups/show.html').render(pp=pp)
 
             else:
                 print "skill not found"
                 raise web.seeother('/skillgroups')
         else:
             pp['skill_groups'] = corpdb.skill_groups.find()
-            return env.get_template('employees/skillgroups/index.html').render(pp=pp)
-            #return render_template('skillgroups/index.html', pp=pp)
+            return env.get_template('employees/skill_groups/index.html').render(pp=pp)
 
-    #@require_manager
+    @authenticated
     def POST(self, pp):
         print "POST SkillGroups index (search)"
         form = web.input()
         print form
-        pp = {}
         pp['skill_group'] = corpdb.skill_groups.find_one(ObjectId(form['search']))
         print pp['skill_group']
         if pp['skill_group'] is None:
@@ -1057,23 +997,25 @@ class SkillGroups(CorpBase):
 
 
 class EditSkillGroup(CorpBase):
-     #@require_manager
-     def GET(self, skill_group_id):
+     @authenticated
+     @require_admin
+     def GET(self, pp, *args):
          print "GET EditSkillGroup"
-         pp = {}
+         skill_group_id = args[0]
          pp['skill_group'] = corpdb.skill_groups.find_one(ObjectId(skill_group_id))
          if pp['skill_group']:
-             return env.get_template('employees/skillgroups/edit.html').render(pp=pp)
+             return env.get_template('employees/skill_groups/edit.html').render(pp=pp)
              #return render_template("skillgroups/edit.html", pp=pp)
          else:
              raise web.seeother('/skillgroups')
 
-     #@require_manager
-     def POST(self, skill_group_id):
+     @authenticated
+     @require_admin
+     def POST(self, pp, *args):
          print "POST EditSkillGroup"
          form = web.input()
          print form
-         pp = {}
+         skill_group_id = args[0]
          pp['skill_group'] = corpdb.skill_groups.find_one(ObjectId(skill_group_id))
 
          #Name cannot be blank
@@ -1089,10 +1031,14 @@ class EditSkillGroup(CorpBase):
 # Project Groups
 ############################################################
 class ProjectGroups(CorpBase):
-   # TODO @require who?
-    def GET(self, project_group_id=""):
+    @authenticated
+   # TODO private and public project groups
+    def GET(self, pp, *args):
         print "GET ProjectGroups"
-        pp = {}
+        try:
+            project_group_id = args[0]
+        except:
+            project_group_id = ""
         if project_group_id:
             pp['project_group'] = corpdb.project_groups.find_one(ObjectId(project_group_id))
 
@@ -1107,37 +1053,37 @@ class ProjectGroups(CorpBase):
 
             else:
                 print "project group not found"
-                raise web.seeother('/project_groups')
+                raise web.seeother('/projectgroups')
         else:
             pp['project_groups'] = corpdb.project_groups.find()
             pp['current_user_role'] = "manager"
             return env.get_template('employees/project_groups/index.html').render(pp=pp)
             #return render_template('project_groups/index.html', pp=pp)
 
-    # TODO @require who?
+    @authenticated
+    # TODO private and public project groups
     def POST(self, pp):
         print "POST ProjectGroups index (search)"
         form = web.input()
         print form
-        pp = {}
         pp['project_group'] = corpdb.project_groups.find_one(ObjectId(form['search']))
         if pp['project_group'] is None:
-            raise web.seeother('/project_groups')
+            raise web.seeother('/projectgroups')
         else:
-            print "project_group found"
-            raise web.seeother('/project_groups/' + form['search'])
+            raise web.seeother('/projectgroups/' + form['search'])
 
 class NewProjectGroup(CorpBase):
-    # TODO @require who?
-    def GET(self):
+    @authenticated
+    # TODO private and public
+    def GET(self, pp):
         print "GET NewProjectGroup"
-        pp = {}
         pp['employees'] = corpdb.employees.find()
         return env.get_template('employees/project_groups/new.html').render(pp=pp)
         #return render_template('project_groups/new.html', pp=pp)
 
-    # TODO @require who?
-    def POST(self):
+    @authenticated
+    # TODO private and public
+    def POST(self, pp):
         print "POST NewProjectGroup"
         form = web.input()
         if len(form['name']) > 0 and len(form['lead']) > 0:
@@ -1147,19 +1093,20 @@ class NewProjectGroup(CorpBase):
             except:
                 print "project_group not inserted"
             if objectid:
-                raise web.seeother('/project_groups/' + str(objectid) + "/edit")
+                raise web.seeother('/projectgroups/' + str(objectid) + "/edit")
             else:
-                raise web.seeother('/project_groups')
-        raise web.seeother('/project_groups')
+                raise web.seeother('/projectgroups')
+        raise web.seeother('/projectgroups')
 
 
 class EditProjectGroup(CorpBase):
-     #@require_manager
-     def GET(self, project_group_id):
+     @authenticated
+     # TODO who can edit?  LEAD?
+     def GET(self, pp, *args):
          print "GET EditProjectGroup"
-         pp = {}
+         project_group_id = args[0]
          pp['project_group'] = corpdb.project_groups.find_one(ObjectId(project_group_id))
-         pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER']
+         pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER', 'MEMBER']
          if pp['project_group']:
              pp['employees'] = []
              for member in pp['project_group']['members']:
@@ -1169,14 +1116,15 @@ class EditProjectGroup(CorpBase):
              return env.get_template('employees/project_groups/edit.html').render(pp=pp)            
              #return render_template("project_groups/edit.html", pp=pp)
          else:
-             raise web.seeother('/project_groups')
+             raise web.seeother('/projectgroups')
 
-     #@require_manager
-     def POST(self, project_group_id):
+     @authenticated
+     # TODO who can edit? LEAD?
+     def POST(self, pp, *args):
          print "POST EditProjectGroup"
          form = web.input()
          print form
-         pp = {}
+         project_group_id = args[0]
          pp['project_group'] = corpdb.project_groups.find_one(ObjectId(project_group_id))
 
          #Name cannot be blank
@@ -1189,50 +1137,56 @@ class EditProjectGroup(CorpBase):
                     selector = {"_id": ObjectId(project_group_id)}
                     update = {"$set": {attribute: form[attribute]}}
                  corpdb.project_groups.update(selector, update, upsert=False, multi=True)
-             raise web.seeother('/project_groups/' + str(pp['project_group']['_id']))
-         raise web.seeother('/project_groups')
+             raise web.seeother('/projectgroups/' + str(pp['project_group']['_id']))
+         raise web.seeother('/projectgroups')
 
 class NewProjectGroupMember(CorpBase):
+    @authenticated
     # TODO @require who?
-    def GET(self, project_group_id):
+    def GET(self, pp, *args):
         print "GET NewProjectGroupMember"
-        pp = {}
-        pp['project_group_id'] = project_group_id
-        project_group = corpdb.project_groups.find_one(ObjectId(project_group_id))
+        pp['project_group_id'] = args[0]
+        project_group = corpdb.project_groups.find_one(ObjectId(pp['project_group_id'] ))
         # get ids of all members of the project group
         member_ids = map(lambda member: member['employee_id'], project_group['members'])
         # only get the employees who are not already in the project group for dropdown
         pp['employees'] = corpdb.employees.find({"_id": {"$nin": member_ids}})
-        pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER']
+        pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER', 'MEMBER']
         return env.get_template('employees/project_groups/new_member.html').render(pp=pp)
         #return render_template('project_groups/new_member.html', pp=pp)
 
+    @authenticated
     # TODO @require who?
-    def POST(self, project_group_id):
+    def POST(self, pp, *args):
         print "POST NewProjectGroupMember"
         form = web.input()
+        project_group_id = args[0]
         if len(form['member']) > 0 and len(form['role']) > 0:
             project_group = corpdb.project_groups.find_one(ObjectId(project_group_id))
             if project_group: # TODO: can't add a member who is already in the list
                 project_group['members'].append({'employee_id':ObjectId(form['member']), 'role': form['role']})
                 corpdb.project_groups.save(project_group)
-        raise web.seeother('/project_groups/' + project_group_id + '/edit')
+        raise web.seeother('/projectgroups/' + project_group_id + '/edit')
 
 
 class RemoveProjectGroupMember(CorpBase):
+    @authenticated
     # TODO @require who?
-    def POST(self, project_group_id):
+    def POST(self, pp, *args):
         print "POST RemoveProjectGroupMember"
+        project_group_id = args[0]
         corpdb.project_groups.remove(ObjectId(project_group_id))
-        raise web.seeother('/project_groups')
+        raise web.seeother('/projectgroups')
 
 
 class DeleteProjectGroup(CorpBase):
+    @authenticated
     # TODO @require who?
-    def POST(self, project_group_id):
+    def POST(self, pp, *args):
         print "POST DeleteProjectGroup"
+        project_group_id = args[0]
         corpdb.project_groups.remove(ObjectId(project_group_id))
-        raise web.seeother('/project_groups')
+        raise web.seeother('/projectgroups')
 
 
 urls = (
@@ -1265,13 +1219,13 @@ urls = (
 		'/skillgroups/(.*)', SkillGroups,
 		'/skillgroups', SkillGroups,
 
-        '/project_groups/new', NewProjectGroup,
-        '/project_groups/(.*)/remove_member/(.*)', RemoveProjectGroupMember,
-        '/project_groups/(.*)/new_member', NewProjectGroupMember,
-        '/project_groups/(.*)/edit', EditProjectGroup,
-        '/project_groups/(.*)/delete', DeleteProjectGroup,
-        '/project_groups/(.*)', ProjectGroups,
-        '/project_groups', ProjectGroups,
+        '/projectgroups/new', NewProjectGroup,
+        '/projectgroups/(.*)/remove_member/(.*)', RemoveProjectGroupMember,
+        '/projectgroups/(.*)/new_member', NewProjectGroupMember,
+        '/projectgroups/(.*)/edit', EditProjectGroup,
+        '/projectgroups/(.*)/delete', DeleteProjectGroup,
+        '/projectgroups/(.*)', ProjectGroups,
+        '/projectgroups', ProjectGroups,
 
         '/profileimage/(.*)', ProfileImage,
 )

@@ -34,7 +34,7 @@ import google_group_to_jira
 import jira
 from jirarep import JiraReport, JiraEngineerReport, JiraCustomerReport
 import jinja2
-
+import employees
 
 
 from util import _url_split, url_cmp
@@ -329,6 +329,7 @@ class CorpNormal(CorpBase):
         pp["canEdit"] = canEdit
 
 urls = (
+    "/phonebook", employees.Employees,
     "/codeReview/patternTest/(.+)/(.+)/(.+)", CodeReviewPatternTest,
     "/codeReview/rules/(.+)", CodeReviewAssignmentRule,
     "/codeReview/rules", CodeReviewAssignmentRules,
@@ -355,7 +356,7 @@ urls = (
     "/(.*)", CorpNormal,
 )
 
-
+urls = urls + employees.urls
 
 
 

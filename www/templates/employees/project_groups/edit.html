@@ -19,7 +19,7 @@
 	
 <header style="margin-left:40px;height:75px;">
 	<div class="team-header-info">
-		<h1>Project Group: <a href="/project_groups/{{ pp['project_group']['_id'] }}">{{ pp['project_group']['name']}}</a></h1>
+		<h1>Project Group: <a href="/projectgroups/{{ pp['project_group']['_id'] }}">{{ pp['project_group']['name']}}</a></h1>
 	</div>	
 </header>
 
@@ -48,7 +48,7 @@
 										<option value="{{role}}" {% if employee['project_role'] == role %} SELECTED %} {% endif %}>{{ role }}</option>
 									{% endfor %}
 								</select>
-								&nbsp;<form enctype="multipart/form-data" action="/project_groups/{{ pp['project_group']['_id'] }}/remove_member/{{employee['_id']}}" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">Remove</a></form>
+								&nbsp;<form enctype="multipart/form-data" action="/projectgroups/{{ pp['project_group']['_id'] }}/remove_member/{{employee['_id']}}" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">Remove</a></form>
 							{% else %}
 								LEAD
 							{% endif %}
@@ -57,7 +57,7 @@
 				{% endfor %}
 				
 				<div class="control-group">
-					<label class="control-label"><a href="/project_groups/{{pp['project_group']['_id']}}/new_member" id="new_group_member"><span>+ Group member</span></a></label>
+					<label class="control-label"><a href="/projectgroups/{{pp['project_group']['_id']}}/new_member" id="new_group_member"><span>+ Group member</span></a></label>
 				</div><!-- control-group-->
 				
 			</fieldset>
