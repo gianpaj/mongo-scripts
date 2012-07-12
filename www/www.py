@@ -353,11 +353,10 @@ urls = (
     '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', clienthub.views.ClientDocDelete,
     '/clienthub/edit/(.+)', clienthub.views.ClientEdit,
     '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)', clienthub.views.ClientUploadView,
-    "/(.*)", CorpNormal,
 )
 
 urls = urls + employees.urls
-
+urls = urls + ("/(.*)", CorpNormal)
 
 
 for url, cls in zip(urls[0::2], urls[1::2]):
