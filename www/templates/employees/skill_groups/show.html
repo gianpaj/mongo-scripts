@@ -7,8 +7,7 @@
 <header class="page-header" style="height:120px;">
 	<div class="team-header-info">
 		<h1>Skill Group: <span class="name">{{ pp['skill_group']['name'] }}</span></h1>
-		<div class="team-edit"><a href="/skillgroups/{{ pp['skill_group']['_id'] }}/edit">(Edit)</a>
-	</div>	
+		{% if pp['current_user_role'] == "admin" %}<div class="team-edit"><a href="/skillgroups/{{ pp['skill_group']['_id'] }}/edit">(Edit)</a></div>{% endif %}	
 </header>
 
 	<dl class="dl-horizontal">

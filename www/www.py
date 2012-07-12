@@ -329,7 +329,7 @@ class CorpNormal(CorpBase):
         pp["canEdit"] = canEdit
 
 urls = (
-    "/phonebook", employees.Employees,
+    #"/phonebook", employees.Employees,
     "/codeReview/patternTest/(.+)/(.+)/(.+)", CodeReviewPatternTest,
     "/codeReview/rules/(.+)", CodeReviewAssignmentRule,
     "/codeReview/rules", CodeReviewAssignmentRules,

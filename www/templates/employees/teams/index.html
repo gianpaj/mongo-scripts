@@ -32,11 +32,12 @@
 	
 </form>
 
-<!-- IF USER IS A MANAGER --> 
+{% if pp['current_user_role'] == "admin" %}
+<!-- IF USER IS ADMIN --> 
 <div style="float:right;">
 <a class="btn" href="/teams/new" id="new_team">+ new team</a>
 </div>
-
+{% endif %}
 
 <script type="text/javascript" charset="utf-8">
 	jQuery(function($){

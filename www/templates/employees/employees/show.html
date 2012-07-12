@@ -17,8 +17,10 @@
 	<div class="employee-image">
 		<img src="/profileimage/{{ pp['employee']['jira_uname'] }}" onerror="ImgError(this, '{{pp["gravatar_hash"]}}');">
 	</div><!-- /.employee-image -->	
+	{% if pp['can_edit'] %}
 	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}/edit" style="display:inline-block;">(Edit)</a>
 	<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills" style="display:inline-block;">(Rate Skills)</a></div>
+	{% endif %}
 </header>
 
 	{% if pp['employee']['skills'].__len__() > 0 %}

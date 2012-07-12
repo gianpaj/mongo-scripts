@@ -101,6 +101,9 @@ header.page-header .team-edit {
 header.page-header .employee-header-info {
 	margin: 0 0 0 168px;
 }
+header.page-header .employee-header-info h3 {
+	font-size: 150%;
+}
 header.page-header .team-header-info {
 	margin: 0 0 0 168px;
 }	
