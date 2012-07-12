@@ -10,7 +10,7 @@ jirareportsdb = pymongo.Connection( settings.jirareports_host ).jira
 wwwdb = pymongo.Connection(settings.wwwdb_host).www
 usagedb = pymongo.Connection( settings.usagedb_host ).mongousage
 mongowwwdb = pymongo.Connection(settings.mongowwwdb_host).mongodb_www
-corpdb = pymongo.Connection(settings.corpdb_host).corp
+corpdb = pymongo.Connection(settings.corpdb_host).local_corp_site
 pstatsdb = pymongo.Connection(settings.pstats_host).perf
 pstatsdb.authenticate(settings.pstats_username, settings.pstats_password)
 ftsdb =  pymongo.connection.Connection(settings.fts_host, slave_okay=True).www
@@ -40,7 +40,7 @@ class CorpBase:
 
         params = web.input()
         if "user" in params and "pwd" in params:
-            username = params["user"]
+            username = params["user"].lower()
             password = params["pwd"]
 
             if username is None or password is None:

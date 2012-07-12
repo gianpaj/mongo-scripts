@@ -120,7 +120,7 @@ def current_user_role(pp):
     try:
         role = current_user['role']
     except:
-        role = ""
+        role = "employee"
     return role
 
 ############################################################
