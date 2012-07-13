@@ -4,12 +4,12 @@ import pymongo
 import gridfs
 import md5
 from bson.objectid import ObjectId
+import settings
+import datetime
 
-#LOCAL
-connection = pymongo.Connection("localhost", 27017)
-corpdb = connection.corp
+corpdb = pymongo.Connection(settings.corpdb_host).local_corp_site
 
-	
+
 def editable_keys():
 	return ['intercall_code', 
 			'secondary_phone_provider', 
@@ -181,4 +181,39 @@ def email_hash(employee):
             return ""
     else:
         return "" 
+
+def to_vcard(employee):
+	#BEGIN:VCARD
+	#VERSION:4.0
+	#N:last_name;first_name;;;
+	#FN: first_name last_name
+	#ORG:10gen
+	#TITLE:title
+	#TEL;TYPE="work,voice";VALUE=uri:tel:phone_number
+	#EMAIL:email
+	#REV:DateTime.now
+	#END:VCARD
+	
+	if employee['last_name'] and employee['first_name'] and len(employee['email_addresses']) > 0:
+		vcard = "BEGIN:VCARD\n"
+		vcard += "VERSION:4.0\n"
+		vcard += "N:" + employee['last_name'] + ";" + employee['first_name'] + ";;;" + "\n"
+		vcard += "FN:" + employee['first_name'] + " " + employee['last_name'] + "\n"
+		vcard += "ORG:10gen\n"
+		vcard += "TITLE:" + employee['title'] + "\n"
+		vcard += "TEL;TYPE=\"work,voice\";VALUE=uri:tel:" + employee['primary_phone'] + "\n"
+		vcard += "EMAIL:" + employee['email_addresses'][0] + "\n"
+		vcard += "REV:" + datetime.datetime + "\n"
+		vcard += "END:VCARD"
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
