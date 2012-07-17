@@ -142,7 +142,7 @@ class StackOverflowImport(object):
                     res = jira.createIssue({
                         'project': 'FREE',
                         'type': '6', # question type
-                        'summary': question['title'],
+                        'summary': "SO:" + question['title'],
                         'description': '%s\nby: %s\n\n%s' % (question['url'],
                                                              question['owner']['display_name'],
                                                              clean_html(question['body'])),
@@ -203,4 +203,3 @@ class StackOverflowImport(object):
 
 if __name__ == '__main__':
     StackOverflowImport().run()
-
