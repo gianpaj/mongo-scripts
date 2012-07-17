@@ -37,7 +37,7 @@ class GoogleGroup:
         if x:
             return x["data"]
         
-        fullpath = "http://groups.google.com" + path 
+        fullpath = "http://groups.google.com" + path + '&noredirect=true'
 
         def do_fetch():
             request = urllib2.Request( fullpath )
