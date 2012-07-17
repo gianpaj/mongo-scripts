@@ -309,42 +309,41 @@ class ggs:
             prevSkipped = False
 
         return n.strip()
-        
 
     def sync_jira(self):
-        num = 0 
+        num = 0
+
         def debug(msg):
-            if True:
+            if self._debug:
                 print(msg)
 
         j = lib.jira.JiraConnection()
 
-        for x in self.topics.find( { "url" : { "$ne" : None } } ):
+        for x in self.topics.find({"url": {"$ne": None}}):
             if "skip" in x and x["skip"]:
                 continue
 
-            debug( x["subject"] )
+            debug(x["subject"])
 
             # find or create the JIRA for this topic
             key = None
             if "jira" in x:
                 key = x["jira"]
-                
+
             if key is None:
-                debug( "\t need to add to jira" )
+                debug("\t need to add to jira")
                 url = x["url"]
-                if url.find( "http://" ) != 0:
+                if url.find("http://") != 0:
                     url = "http://groups.google.com" + url
 
-                res = j.createIssue( { "project" : "FREE" , 
-                                       "type" : "6" , 
-                                       "summary" : x["subject"] ,
-                                       "description" : url } )
+                res = j.createIssue({"project": "FREE",
+                                     "type": "6",
+                                     "summary": "GG:" + x["subject"],
+                                     "description": url})
                 key = res["key"]
-                debug( "\t new key: %s" % key )
-                self.topics.update( { "_id" : x["_id"] } , { "$set" : { "jira" : key } } )
+                debug("\t new key: %s" % key)
+                self.topics.update({"_id": x["_id"]}, {"$set": {"jira": key}})
                 x["jira"] = key
-            
 
             needToSave = False
 
@@ -357,25 +356,24 @@ class ggs:
             for m in x["messages"]:
                 if "processed" in m and m["processed"]:
                     continue
-                
+
                 if issue is None:
-                    issue = j.getIssue( key )
+                    issue = j.getIssue(key)
                     assignee = issue["assignee"]
-                    debug( "\t https://jira.mongodb.org/browse/%s" % key )
-                    debug( "\t currently assigned to [%s]" % assignee )
+                    debug("\t https://jira.mongodb.org/browse/%s" % key)
+                    debug("\t currently assigned to [%s]" % assignee)
 
+                cmt = "%s\n%s\n" % (m["from"], m["date"])
 
-                cmt = "%s\n%s\n" % ( m["from"] , m["date"] )
-
-                email = self.gmail().fetch( m["uid"] )
+                email = self.gmail().fetch(m["uid"])
                 if email and "body" in email:
                     email = email["body"]
-                    cmt += self.cleanComment( email )
+                    cmt += self.cleanComment(email)
 
                 needToSave = True
                 m["processed"] = True
-                
-                user = self.getUsername( m["from"] )
+
+                user = self.getUsername(m["from"])
                 if assignee is None and user is not None and str(user).lower().find( "eliot" ) < 0:
                     debug( "\t going to assign to %s" % user )
                     j.updateIssue( key , [ { "id" : "assignee" , "values" : [ user ] } ] )
