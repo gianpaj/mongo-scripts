@@ -21,6 +21,7 @@
 	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}/edit" style="display:inline-block;">(Edit)</a>
 	<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills" style="display:inline-block;">(Rate Skills)</a></div>
 	{% endif %}
+	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}.vcf" style="display:inline-block;">get vcard</a></div>
 </header>
 
 	{% if pp['employee']['skills'].__len__() > 0 %}

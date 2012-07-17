@@ -10,9 +10,14 @@ import jinja2
 import employee_model
 import random
 import md5
+import csv
 from util import _url_split, url_cmp
 from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb, corpdb, ftsdb
 from functools import wraps
+try:
+    import cStringIO as StringIO
+except:
+    import StringIO
 
 ############### Roles and Control Wrappers #################
 ############################################################
@@ -130,6 +135,7 @@ class EmployeesIndex(CorpBase):
     @authenticated
     def GET(self, pp):
         print "GET EmployeesIndex"
+        
         # this isn't the most efficient way of getting a random document, but the collection is too small for it really to matter
         range_max = corpdb.employees.find().count()
         if range_max > 1:
@@ -159,6 +165,40 @@ class EmployeesIndex(CorpBase):
         else:
 
             raise web.seeother('/employees')
+
+class ExportEmployeesCSV(CorpBase):
+    @authenticated
+    def GET(self, pp):
+        print "GET ExportEmployeesCSV"
+
+        employees = corpdb.employees.find()
+
+        employees_csv = []
+        headers = ["last name","first name", "title", "jira username", "office", "phone", "primary email"]
+
+        for employee in employees:
+            row = []
+            row.append(employee['last_name'])
+            row.append(employee['first_name'])
+            row.append(employee['title'])
+            row.append(employee['jira_uname'])
+            row.append(employee['office'])
+            row.append(employee['primary_phone'])
+            row.append(employee_model.primary_email(employee))
+            employees_csv.append(row)
+
+        web.header('Content-type', 'text/csv')
+        web.header('Content-disposition', "attachment; filename=employees.csv")
+
+        csv_file = StringIO.StringIO()
+        writer = csv.writer(csv_file,quoting=csv.QUOTE_ALL)
+        writer.writerow(headers)
+        writer.writerows(employees_csv)
+
+        csv_file.write('\n')
+        csv_file.seek(0)
+
+        return csv_file
 
 
 class Employees(CorpBase):
@@ -224,6 +264,21 @@ class Employees(CorpBase):
         else:
             raise web.seeother('/employees')
 
+
+class ExportEmployeeVcard(CorpBase):
+    #export an exmployee's vcard
+    @authenticated
+    def GET(self, pp, *args):
+        print "GET ExportEmployeeVcard"
+        jira_uname = args[0]
+        employee = corpdb.employees.find_one({"jira_uname": jira_uname})
+        if employee is None:
+            raise web.seeother('/employees')
+        else:
+            vcard_str = employee_model.to_vcard(employee)
+            web.header('Content-type', 'text/x-vcard')
+            web.header('Content-disposition', "attachment; filename=contact.vcf")
+            return vcard_str
 
 class EditEmployee(CorpBase):
     #DISPLAY EDIT PAGE
@@ -1113,6 +1168,7 @@ class DeleteProjectGroup(CorpBase):
 
 
 urls = (
+        '/employees/(.*).vcf', ExportEmployeeVcard,
         '/employees/(.*)/edit', EditEmployee,
         '/employees/(.*)/rateskills', RateSkills,
         '/employees/(.*)/editemails', EditEmailAddress,
@@ -1121,6 +1177,7 @@ urls = (
         '/employees/(.*)/deleteimage', DeleteEmployeeImage,
         '/employees/new', NewEmployee,
         '/employees/(.*)', Employees,
+        '/employees.csv', ExportEmployeesCSV,
         '/employees', EmployeesIndex,
 
         '/orgchart', OrgStructure,
