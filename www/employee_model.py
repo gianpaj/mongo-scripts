@@ -67,7 +67,7 @@ def generate_date(date_string):
 		day = int(split_date[0])
 		month = int(split_date[1])
 		year = int(split_date[2])
-		date = datetime.datetime(year, month, day,0,0,0)
+		date = datetime(year, month, day,0,0,0)
 		return date
 
 # returns a list of managers(cursors), taking into account manager override
