@@ -174,7 +174,7 @@ class ExportEmployeesCSV(CorpBase):
         employees = corpdb.employees.find()
 
         employees_csv = []
-        headers = ["last name","first name", "title", "jira username", "office", "phone", "primary email"]
+        headers = ["last name","first name", "title", "jira username", "office", "phone", "primary email", "team(s)"]
 
         for employee in employees:
             row = []
@@ -185,6 +185,8 @@ class ExportEmployeesCSV(CorpBase):
             row.append(employee['office'])
             row.append(employee['primary_phone'])
             row.append(employee_model.primary_email(employee))
+            teams = map(lambda team: team["name"], employee_model.get_teams(employee).values())
+            row.append(", ".join(teams))
             employees_csv.append(row)
 
         web.header('Content-type', 'text/csv')
