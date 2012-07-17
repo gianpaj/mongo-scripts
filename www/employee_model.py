@@ -1,15 +1,14 @@
 import web
-import datetime
+from datetime import datetime
 import pymongo
 import gridfs
 import md5
 from bson.objectid import ObjectId
+import settings
 
-#LOCAL
-connection = pymongo.Connection("localhost", 27017)
-corpdb = connection.corp
+corpdb = pymongo.Connection(settings.corpdb_host).corp
 
-	
+
 def editable_keys():
 	return ['intercall_code', 
 			'secondary_phone_provider', 
@@ -68,7 +67,7 @@ def generate_date(date_string):
 		day = int(split_date[0])
 		month = int(split_date[1])
 		year = int(split_date[2])
-		date = datetime.datetime(year, month, day,0,0,0)
+		date = datetime(year, month, day,0,0,0)
 		return date
 
 # returns a list of managers(cursors), taking into account manager override
@@ -181,4 +180,31 @@ def email_hash(employee):
             return ""
     else:
         return "" 
+
+def to_vcard(employee):
+	vcard = ""
+	if employee['last_name'] and employee['first_name'] and len(employee['email_addresses']) > 0:
+		vcard = "BEGIN:VCARD\n"
+		vcard += "VERSION:4.0\n"
+		vcard += "N:" + employee['last_name'].strip() + ";" + employee['first_name'].strip() + ";;;" + "\n"
+		vcard += "FN:" + employee['first_name'].strip() + " " + employee['last_name'].strip() + "\n"
+		vcard += "ORG:10gen\n"
+		vcard += "TITLE:" + employee['title'].strip() + "\n"
+		vcard += "TEL;TYPE=\"work,voice\";VALUE=uri:tel:" + employee['primary_phone'].strip() + "\n"
+		vcard += "EMAIL:" + employee['email_addresses'][0].strip() + "\n"
+		vcard += "REV:" + datetime.now().strftime("%Y%m%d%H%M%S") + "\n"
+		vcard += "END:VCARD"
+		
+	return vcard
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
