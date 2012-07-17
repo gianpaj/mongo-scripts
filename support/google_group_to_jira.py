@@ -27,7 +27,8 @@ def send_error_email(msg):
 class ggs:
     def __init__(self,host="stats.10gen.cc",syncUsers=True):
         self._gmail = None
-        
+        self._debug = False
+
         # setup mongo
         self.db = pymongo.Connection(host).support_gg
         self.processed = self.db.processed
