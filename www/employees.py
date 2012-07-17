@@ -120,7 +120,7 @@ def current_user_role(pp):
     try:
         role = current_user['role']
     except:
-        role = ""
+        role = "employee"
     return role
 
 ############################################################
@@ -152,10 +152,10 @@ class EmployeesIndex(CorpBase):
     def POST(self, pp):
         print "POST index"
         form = web.input()
-        print form
-        employee = corpdb.employees.find_one({"jira_uname": form['search']})
-        if employee:
-            raise web.seeother('/employees/' + employee['jira_uname'])
+        if 'search' in form.keys():
+            employee = corpdb.employees.find_one({"jira_uname": form['search']})
+            if employee:
+                raise web.seeother('/employees/' + employee['jira_uname'])
         else:
 
             raise web.seeother('/employees')
@@ -680,7 +680,6 @@ class Teams(CorpBase):
     def POST(self, pp):
         print "POST Teams index (search)"
         form = web.input()
-        print form
         if 'search' in form.keys():
             team = corpdb.teams.find_one({"_id" : ObjectId(form['search'])})
             if team is None:
@@ -806,7 +805,6 @@ class Skills(CorpBase):
     def POST(self, pp, *args):
         print "POST Skills index (search)"
         form = web.input()
-        print form
         pp['skill'] = corpdb.skills.find_one(ObjectId(form['search']))
         print pp['skill']
         if pp['skill'] is None:
@@ -922,7 +920,6 @@ class SkillGroups(CorpBase):
     def POST(self, pp):
         print "POST SkillGroups index (search)"
         form = web.input()
-        print form
         pp['skill_group'] = corpdb.skill_groups.find_one(ObjectId(form['search']))
         if pp['skill_group'] is None:
             raise web.seeother('/skillgroups')
@@ -996,7 +993,6 @@ class ProjectGroups(CorpBase):
     def POST(self, pp):
         print "POST ProjectGroups index (search)"
         form = web.input()
-        print form
         pp['project_group'] = corpdb.project_groups.find_one(ObjectId(form['search']))
         if pp['project_group'] is None:
             raise web.seeother('/projectgroups')

@@ -40,7 +40,7 @@ class CorpBase:
 
         params = web.input()
         if "user" in params and "pwd" in params:
-            username = params["user"]
+            username = params["user"].lower()
             password = params["pwd"]
 
             if username is None or password is None:
