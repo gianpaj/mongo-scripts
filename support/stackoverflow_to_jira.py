@@ -136,13 +136,13 @@ class StackOverflowImport(object):
 
         jira = lib.jira.JiraConnection()
         for question in list(self.db.questions.find({'$or': [{'jira': None}, {"answers.in_jira": False}]})):
-            if question['jira'] is None :
+            if question['jira'] is None:
                 if question['created'] >= self.jira_cutoff:
                     print "make jira for", question['url'],
                     res = jira.createIssue({
                         'project': 'FREE',
                         'type': '6', # question type
-                        'summary': "SO:" + question['title'],
+                        'summary': "SO: " + question['title'],
                         'description': '%s\nby: %s\n\n%s' % (question['url'],
                                                              question['owner']['display_name'],
                                                              clean_html(question['body'])),

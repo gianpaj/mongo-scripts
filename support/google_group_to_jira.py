@@ -1,4 +1,3 @@
-
 import os
 import sys
 import pymongo
@@ -10,8 +9,8 @@ import datetime
 import traceback
 
 path = os.path.dirname(os.path.abspath(__file__))
-path = path.rpartition( "/" )[0] 
-sys.path.append( path )
+path = path.rpartition("/")[0]
+sys.path.append(path)
 
 import lib.gmail
 import lib.googlegroup
@@ -43,19 +42,19 @@ class ggs:
 
         self.users = self.db.users
         self.users.ensure_index( "mail" )
-        
+
         # setup some regex
         self.topic_cleaners = [ "re:" , "fwd:" , "\[mongodb-[a-z]+\]" ]
         self.topic_cleaners = [ re.compile( x , re.I ) for x in self.topic_cleaners ]
 
         # gg parser
         self.gg = lib.googlegroup.GoogleGroup( "mongodb-user" )
-        
+
         # crowd
         self.crowd = lib.crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )
         if syncUsers:
             self.sync_users()
-        
+
     def sync_users(self):
         for u in self.crowd.findGroupByName( "10gen" ):
             if self.getUser( u ):
@@ -64,7 +63,7 @@ class ggs:
             z["_id"] = z["username"]
             z["mail"] = [ z["mail"] ]
             del z["username"]
-            
+
             self.users.insert( z )
 
     def getUser(self,username):
@@ -81,21 +80,20 @@ class ggs:
         s = re.sub( "\s\s+" , " " , s )
         return s
 
-    def simple_topic(self,s):
+    def simple_topic(self, s):
         # makes subject comparable in the event
         # of whitespace and case changes
-        s = self.clean_topic( s )
-        s = re.sub( "\s*" , "" , s )
+        s = self.clean_topic(s)
+        s = re.sub("\s*", "", s)
         s = s.lower()
         return s
-
 
     def sync(self):
         # "main" method
 
         error = False
-        msg = { "_id" : str(datetime.datetime.utcnow()) }
-        start = time.time()        
+        msg = {"_id": str(datetime.datetime.utcnow())}
+        start = time.time()
         stats = {}
         try:
             stats["mail"] = self.sync_mail()
@@ -113,13 +111,13 @@ class ggs:
         msg["elapsedSeconds"] = end - start;
 
         self.db.log.insert( msg )
-        
+
         self.db.stats.update( { "_id" : str(datetime.datetime.utcnow())[0:13] } , { "$inc" : stats } , upsert=True )
 
         if error:
             send_error_email(msg["error"])
 
-        
+
     def gmail(self):
         if not self._gmail:
             self._gmail = lib.gmail.gmail( "info@10gen.com" , "eng718info" )
@@ -129,21 +127,21 @@ class ggs:
     def sync_mail(self):
         num = 0
         all = self.gmail().list()
-    
+
         for x in all:
             m = self.gmail().fetch ( x )
             headers = m["headers"]
             key = headers["message-id"]
-            
+
             if self.processed.find_one( { "_id" : key } ):
                 continue
-            
+
             num = num + 1
             # copy certain headers into the db document
             p = { "_id" : key , "uid" : x }
             for z in [ "from" , "subject" , "date" ]:
                 p[z] = headers[z]
-                
+
             ids = []
             for z in [ "in-reply-to" , "message-id" , "references" ]:
                 if z in headers:
@@ -153,7 +151,7 @@ class ggs:
                         ids.append( headers[z] )
 
             print( ids  )
-            
+
             # add new messages to the topic, and update
             # ids with any new message IDs that future
             # messages might be in-reply-to
@@ -212,7 +210,7 @@ class ggs:
     def pull_urls(self,pages_back=1):
         threads = self.gg.getThreads( pages_back )
         print( len(threads) )
-        
+
         others = set()
 
         for x in threads:
@@ -237,13 +235,13 @@ class ggs:
             ss = x["subject_simple"]
             if len(lst) == 0:
                 lst = list(self.gg_threads.find( { "subject_simple" : ss } ))
-            
+
             # strip off "[mongodb-user]" or similar;
             # TODO: use clean_topic?
             if len(lst) == 0 and ss.find( "]" ) >= 0 :
                 even_cleaner = x["subject_simple"].rpartition( "]" )[2]
                 lst = list(self.gg_threads.find( { "subject_simple" : even_cleaner } ))
-                
+
             if len(lst) == 0:
                 numMissing = numMissing + 1
                 print( "missing url for id: %s subject: %s" % ( x["_id"] , x["subject"] ) )
@@ -261,7 +259,7 @@ class ggs:
         if numMissing > 0 and iteration < 5:
             self.pull_urls( iteration + 1 )
             self.sync_urls( iteration + 1 )
-            
+
         return num
 
     def getUsername(self,email):
@@ -275,7 +273,7 @@ class ggs:
         u = self.getUserByMail( email )
         if u:
             return u["_id"]
-        
+
         return None
 
     def cleanComment(self,cmt):
@@ -339,7 +337,7 @@ class ggs:
 
                 res = j.createIssue({"project": "FREE",
                                      "type": "6",
-                                     "summary": "GG:" + x["subject"],
+                                     "summary": "GG: " + x["subject"],
                                      "description": url})
                 key = res["key"]
                 debug("\t new key: %s" % key)
