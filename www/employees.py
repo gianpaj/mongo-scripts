@@ -149,7 +149,7 @@ class EmployeesIndex(CorpBase):
                 pp['random_employee_hash'] = ""
 
         pp['current_user_role'] = current_user_role(pp)
-        pp['employees'] = corpdb.employees.find()
+        pp['employees'] = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
 
         return env.get_template('employees/employees/index.html').render(pp=pp)
 
@@ -171,7 +171,7 @@ class ExportEmployeesCSV(CorpBase):
     def GET(self, pp):
         print "GET ExportEmployeesCSV"
 
-        employees = corpdb.employees.find()
+        employees = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
 
         employees_csv = []
         headers = ["last name","first name", "title", "jira username", "office", "phone", "primary email", "team(s)"]
@@ -191,6 +191,50 @@ class ExportEmployeesCSV(CorpBase):
 
         web.header('Content-type', 'text/csv')
         web.header('Content-disposition', "attachment; filename=employees.csv")
+
+        csv_file = StringIO.StringIO()
+        writer = csv.writer(csv_file,quoting=csv.QUOTE_ALL)
+        writer.writerow(headers)
+        writer.writerows(employees_csv)
+
+        csv_file.write('\n')
+        csv_file.seek(0)
+
+        return csv_file
+
+
+class ExportEmployeesSkillsCSV(CorpBase):
+    @authenticated
+    @require_admin_or_manager
+    def GET(self, pp):
+        print "GET ExportEmployeesSkillsCSV"
+
+        employees = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
+
+        employees_csv = []
+        headers = ["last name","first name", "title", "email", "office"]
+
+        for skill_group in corpdb.skill_groups.find():
+            for skill in corpdb.skills.find({"groups":ObjectId(skill_group['_id'])}).sort("name", pymongo.ASCENDING):
+                headers.append(skill['name'])
+
+        for employee in employees:
+            row = []
+            row.append(employee['last_name'])
+            row.append(employee['first_name'])
+            row.append(employee['title'])
+            row.append(employee_model.primary_email(employee))
+            row.append(employee['office'])
+            employees_csv.append(row)
+            for skill_group in corpdb.skill_groups.find():
+                for skill in corpdb.skills.find({"groups":ObjectId(skill_group['_id'])}).sort("name", pymongo.ASCENDING):
+                    if str(skill['_id']) in employee['skills']:
+                        row.append(employee['skills'][str(skill['_id'])])
+                    else:
+                        row.append('')
+	
+        web.header('Content-type', 'text/csv')
+        web.header('Content-disposition', "attachment; filename=skillmatrix.csv")
 
         csv_file = StringIO.StringIO()
         writer = csv.writer(csv_file,quoting=csv.QUOTE_ALL)
@@ -335,23 +379,23 @@ class EditEmployee(CorpBase):
 
             if tech_skill_group:
                 pp['skill_groups']['TECH'] = []
-                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}):
+                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['TECH'].append(skill)
 
             if industry_skill_group:
                 pp['skill_groups']['INDUSTRY'] = []
-                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}):
+                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['INDUSTRY'].append(skill)
 
 		    if general_skill_group:
 		        pp['skill_groups']['GENERAL'] = []
-                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}):
+                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['GENERAL'].append(skill)
 
-            pp['teams'] = corpdb.teams.find()
+            pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
 
             return env.get_template('employees/employees/edit.html').render(pp=pp)
 
@@ -448,23 +492,23 @@ class EditEmployee(CorpBase):
            
             if tech_skill_group:
                 pp['skill_groups']['TECH'] = []
-                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}):
+                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['TECH'].append(skill)
            
             if industry_skill_group:
                 pp['skill_groups']['INDUSTRY'] = []
-                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}):
+                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['INDUSTRY'].append(skill)
 
             if general_skill_group:
                 pp['skill_groups']['GENERAL'] = []
-                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}):
+                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['GENERAL'].append(skill)
 
-            pp['teams'] = corpdb.teams.find()
+            pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
            
             pp['error_message'] = "You must have values for first and last name."
             return env.get_template('employees/employees/edit.html').render(pp=pp)
@@ -510,7 +554,7 @@ class NewEmployee(CorpBase):
     @require_admin
     def GET(self, pp):
         print "GET NewEmployee"
-        pp['teams'] = corpdb.teams.find()
+        pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
         return env.get_template('employees/employees/new.html').render(pp=pp)
 
     @authenticated
@@ -664,6 +708,23 @@ class DeleteEmployeeImage(CorpBase):
         raise web.seeother('/employees/' + str(pp['employee']['jira_uname']) + "/edit")
 
 
+class ExportAllEmployeesVcard(CorpBase):
+    @authenticated
+    def GET(self, pp):
+        print "GET ExportAllEmployeesVcard"
+        vcard_str = ""
+
+        for employee in corpdb.employees.find().sort("last_name", pymongo.ASCENDING):
+            try:
+                vcard = employee_model.to_vcard(employee)
+            except:
+                vcard = ""
+            if vcard:
+                vcard_str += vcard + "\n"
+        web.header('Content-type', 'text/x-vcard')
+        web.header('Content-disposition', "attachment; filename=contact.vcf")
+        return vcard_str
+
 ############################################################
 # Org Structure
 ############################################################
@@ -721,7 +782,7 @@ class Teams(CorpBase):
             pp['team'] = corpdb.teams.find_one(ObjectId(team_id))
 
             if pp['team']:
-	            pp['team_members'] = corpdb.employees.find({"team_ids": pp['team']['_id']})
+	            pp['team_members'] = corpdb.employees.find({"team_ids": pp['team']['_id']}).sort("name", pymongo.ASCENDING)
 	            pp['managed_teams'] = corpdb.teams.find({"managing_team_ids": pp['team']['_id']})
 	            if "managing_team_ids" in pp['team']:
 	                pp['managing_teams'] = corpdb.teams.find({"_id" : { "$in" : pp['team']['managing_team_ids']}})
@@ -730,7 +791,7 @@ class Teams(CorpBase):
 	            print "team not found"
 	            raise web.seeother('/teams')
         else:
-            pp['teams'] = corpdb.teams.find()
+            pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
             return env.get_template('employees/teams/index.html').render(pp=pp)
 
     @authenticated
@@ -760,7 +821,7 @@ class EditTeam(CorpBase):
             print "team not found"
             raise web.seeother('/teams')
         else:
-            pp['teams'] = corpdb.teams.find({"_id": {"$ne": pp['team']['_id']}})
+            pp['teams'] = corpdb.teams.find({"_id": {"$ne": pp['team']['_id']}}).sort("name", pymongo.ASCENDING)
             return env.get_template('employees/teams/edit.html').render(pp=pp)
 
     @authenticated
@@ -855,7 +916,7 @@ class Skills(CorpBase):
                 raise web.seeother('/skills')
         else:
             
-            pp['skills'] = corpdb.skills.find()
+            pp['skills'] = corpdb.skills.find().sort("name", pymongo.ASCENDING)
             return env.get_template('employees/skills/index.html').render(pp=pp)
 
     @authenticated
@@ -879,7 +940,7 @@ class EditSkill(CorpBase):
          skill_id = args[0]
          pp['skill'] = corpdb.skills.find_one(ObjectId(skill_id))
          if pp['skill']:
-             pp['skill_groups'] = corpdb.skill_groups.find()
+             pp['skill_groups'] = corpdb.skill_groups.find().sort("name", pymongo.ASCENDING)
              return env.get_template('employees/skills/edit.html').render(pp=pp)
          else:
              raise web.seeother('/skills')
@@ -962,7 +1023,7 @@ class SkillGroups(CorpBase):
             if pp['skill_group']:
 	            pp['skills'] = []
                 # TODO: use $in instead
-	            for skill in corpdb.skills.find({"groups": pp['skill_group']['_id']}):
+	            for skill in corpdb.skills.find({"groups": pp['skill_group']['_id']}).sort("name", pymongo.ASCENDING):
 	                pp['skills'].append(skill)
 	            return env.get_template('employees/skill_groups/show.html').render(pp=pp)
 
@@ -970,7 +1031,7 @@ class SkillGroups(CorpBase):
                 print "skill not found"
                 raise web.seeother('/skillgroups')
         else:
-            pp['skill_groups'] = corpdb.skill_groups.find()
+            pp['skill_groups'] = corpdb.skill_groups.find().sort("name", pymongo.ASCENDING)
             return env.get_template('employees/skill_groups/index.html').render(pp=pp)
 
     @authenticated
@@ -1041,7 +1102,7 @@ class ProjectGroups(CorpBase):
                 print "project group not found"
                 raise web.seeother('/projectgroups')
         else:
-            pp['project_groups'] = corpdb.project_groups.find()
+            pp['project_groups'] = corpdb.project_groups.find().sort("name", pymongo.ASCENDING)
             pp['current_user_role'] = "manager"
             return env.get_template('employees/project_groups/index.html').render(pp=pp)
 
@@ -1061,7 +1122,7 @@ class NewProjectGroup(CorpBase):
     # TODO private and public groups
     def GET(self, pp):
         print "GET NewProjectGroup"
-        pp['employees'] = corpdb.employees.find()
+        pp['employees'] = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
         return env.get_template('employees/project_groups/new.html').render(pp=pp)
 
     @authenticated
@@ -1131,7 +1192,7 @@ class NewProjectGroupMember(CorpBase):
         # get ids of all members of the project group
         member_ids = map(lambda member: member['employee_id'], project_group['members'])
         # only get the employees who are not already in the project group for dropdown
-        pp['employees'] = corpdb.employees.find({"_id": {"$nin": member_ids}})
+        pp['employees'] = corpdb.employees.find({"_id": {"$nin": member_ids}}).sort("last_name", pymongo.ASCENDING)
         pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER', 'MEMBER']
         return env.get_template('employees/project_groups/new_member.html').render(pp=pp)
 
@@ -1180,7 +1241,10 @@ urls = (
         '/employees/new', NewEmployee,
         '/employees/(.*)', Employees,
         '/employees.csv', ExportEmployeesCSV,
+        '/skillmatrix.csv', ExportEmployeesSkillsCSV,
         '/employees', EmployeesIndex,
+
+        '/contacts.vcf', ExportAllEmployeesVcard,
 
         '/orgchart', OrgStructure,
 

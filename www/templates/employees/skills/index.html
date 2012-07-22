@@ -34,10 +34,13 @@
 	
 </form>
 
-<!-- IF USER IS A MANAGER --> 
 <div style="float:right;">
 	{% if pp['current_user_role'] == "admin" %}
 	<a class="btn" href="/skills/new" id="new_skill">+ new skill</a>
+	{% endif %}
+	{% if pp['current_user_role'] == "admin" or pp['current_user_role'] == "manager" %}
+	<br/><br/>
+	<a class="btn" href="/skillmatrix.csv">skill matrix</a>
 	{% endif %}
 </div>
 
