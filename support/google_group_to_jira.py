@@ -373,11 +373,7 @@ class ggs:
                 m["processed"] = True
 
                 user = self.getUsername(m["from"])
-                if assignee is None and user is not None and str(user).lower().find( "eliot" ) < 0:
-                    debug( "\t going to assign to %s" % user )
-                    j.updateIssue( key , [ { "id" : "assignee" , "values" : [ user ] } ] )
-                    assignee = user
-                    
+
                 debug( "\t adding comment from %s" % m["from"] )
 
                 # don't show comments from 10gen people (per eliot)
