@@ -3,12 +3,12 @@
 {% block js %}
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
-<script type="text/javascript" src="/static/employees/js/chosen.jquery.js"></script>
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
 <script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
 {% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" type="text/css" href="/static/employees/css/chosen.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
 <link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
 <link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
 <link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
@@ -74,10 +74,10 @@
 		jQuery(function($){
 			$("a#new_group_member").fancybox();
 			var role_selects = $('select[name=role]');
-			//role_selects[1].chosen();
+			//role_selects[1].select2();
 			//for (i=0; i < role_selects.length; i++) {
 				//console.log(role_selects[i]);
-				//role_selects[i].chosen();
+				//role_selects[i].select2();
 			//}
 	  });
 	</script>
