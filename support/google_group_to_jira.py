@@ -96,7 +96,7 @@ class ggs:
         start = time.time()
         stats = {}
         try:
-            stats["mail"] = self.sync_mail()
+            #stats["mail"] = self.sync_mail()
             stats["topics"] = self.sync_subjects()
             stats["urls"] = self.sync_urls()
             stats["jira"] = self.sync_jira()
@@ -364,10 +364,10 @@ class ggs:
 
                 cmt = "%s\n%s\n" % (m["from"], m["date"])
 
-                email = self.gmail().fetch(m["uid"])
-                if email and "body" in email:
-                    email = email["body"]
-                    cmt += self.cleanComment(email)
+                # email = self.gmail().fetch(m["uid"])
+                # if email and "body" in email:
+                #     email = email["body"]
+                #     cmt += self.cleanComment(email)
 
                 needToSave = True
                 m["processed"] = True
