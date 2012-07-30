@@ -24,11 +24,10 @@ header.global-header h2 {
 	font-size:24px;
 }	
 header.global-header {
-	border-bottom: dotted 1px #999;
 	padding: 10px 0 0 0;
 	float: left;
 	clear: both;
-	margin: 0 0 20px 0;
+	margin: 0 0 0px 0;
 }
 header.global-header .menu {
 	float: left;
@@ -127,6 +126,9 @@ header.page-header .employee-image img {
 	max-width: 150px;
 	max-height: 150px;
 	border: solid 1px #ccc;
+}
+.tabbable-text {
+	display: none;
 }	
 section {
 	float: left;
@@ -175,6 +177,19 @@ dd {
 .edit {
 	font-size: 12px;
 }
+span.nav-user {
+	float: right;
+	clear: both;
+	padding: 10px 0 10px 0;
+	font-size: 12px;
+	font-weight: normal;
+}
+span.nav-user a {
+	color: #7CAE6C;
+}
+span.nav-user a:hover {
+	color: #cc0000;
+}
 footer.global-footer {
 	float: left;
 	clear: both;
@@ -191,5 +206,130 @@ footer.global-footer a {
 footer.global-footer a:hover {
 	color: #cc0000;
 }	
+
+
+
+.nav {
+  margin-bottom: 18px;
+  margin-left: 0;
+  list-style: none;
+}
+
+.nav > li > a {
+  display: block;
+}
+
+.nav > li > a:hover {
+  text-decoration: none;
+  background-color: #eeeeee;
+}
+
+.nav-tabs {
+  *zoom: 1;
+}
+
+.nav-tabs:before,
+.nav-tabs:after {
+  display: table;
+  content: "";
+}
+
+.nav-tabs:after {
+  clear: both;
+}
+
+.nav-tabs > li {
+  float: left;
+}
+
+.nav-tabs > li > a {
+  padding-right: 12px;
+  padding-left: 12px;
+  margin-right: 2px;
+  line-height: 14px;
+}
+
+.nav-tabs {
+  border-bottom: 1px solid #ddd;
+}
+
+.nav-tabs > li {
+  margin-bottom: -1px;
+}
+
+.nav-tabs > li > a {
+  font-size: 12px;
+  text-transform: lowercase;
+  line-height: 1.6em;
+  padding-top: 5px;
+  padding-bottom: 8px;
+  line-height:15px;
+  border: 1px solid transparent;
+}
+
+.nav-tabs > li > a:hover {
+  border-color: #eeeeee #eeeeee #dddddd;
+}
+
+.nav-tabs > .active > a,
+.nav-tabs > .active > a:hover {
+  color: #555555;
+  cursor: default;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-bottom-color: transparent;
+}
+
+.tabbable {
+  *zoom: 1;
+}
+
+
+.tabbable:before,
+.tabbable:after {
+  display: table;
+  content: "";
+}
+
+.tabbable:after {
+  clear: both;
+}
+
+.tab-content {
+  overflow: auto;
+}
+
+.tabs-below > .nav-tabs,
+.tabs-right > .nav-tabs,
+.tabs-left > .nav-tabs {
+  border-bottom: 0;
+}
+
+
+.tabs-below > .nav-tabs {
+  border-top: 1px solid #ddd;
+}
+
+.tabs-below > .nav-tabs > li {
+  margin-top: -1px;
+  margin-bottom: 0;
+  border: 0 0 4px 4px;
+}
+
+.tabs-below > .nav-tabs > li > a {
+  border: 0 0 4px 4px;
+}
+
+.tabs-below > .nav-tabs > li > a:hover {
+  border-top-color: black;
+  border-bottom-color: transparent;
+}
+
+.tabs-below > .nav-tabs > .active > a,
+.tabs-below > .nav-tabs > .active > a:hover {
+  border-color: transparent #ddd #ddd #ddd;
+}
+
+
 /* END */
 

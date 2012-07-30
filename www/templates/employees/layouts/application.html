@@ -5,11 +5,12 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	<title>10gen internal corp site</title>
 	
-	<link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
-	
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
 	{% block js %}{% endblock %}
 	{% block styles %}{% endblock %}
-
+	<link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
+	
 </head>
 
 <body>
@@ -20,7 +21,7 @@
 
 			<header class="global-header">
 
-			    <h2>10gen corp site</h2>
+			    <h2>10gen corp site<span class="nav-user">logged in as <b>{{ pp['user']}}</b> - <a href="/logout">logout</a></span></h2>
 
 				<ul class="menu">
 					<li><a href="/employees"><span>Employees</span></a></li>
@@ -38,6 +39,16 @@
 				</ul>
 
 			</header>
+			
+			<div class="tabbable tabs-below">
+			        <ul class="nav nav-tabs" id="tabs">
+			          <li class="" id="employees-link"><a href="/employees">Employees</a></li>
+			          <li id="skills-url"><a href="/skills">Skills</a></li>
+			          <li id="teams-url"><a href="/teams">Teams</a></li>
+					  <li id="projectgroups-url"><a href="/projectgroups">Project Groups</a></li>
+			        </ul>
+			      </div>
+			
 			<br/>
 
 			<section>
@@ -46,7 +57,6 @@
 			</section>
 
 			<footer class="global-footer">
-				10gen internal - logged in as <b>{{ pp['user']}}</b> - <a href="/logout">logout</a>
 			</footer>
 			
 			<script type="text/javascript" charset="utf-8">
@@ -59,6 +69,15 @@
 					}
 			    	return true;
 				}
+
+				$("#tabs li").each(function() {
+					if($(this).attr("id").split("-")[0] == window.location.pathname.split("/")[1]){
+						$(this).addClass("active");
+					}
+					else {
+						$(this).addClass("");
+					}
+				});
 			</script>
 	
 		</div><!-- #page-content -->
