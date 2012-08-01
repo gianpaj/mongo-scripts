@@ -9,7 +9,6 @@ import hmac
 import jinja2
 import employee_model
 import random
-import md5
 import csv
 from util import _url_split, url_cmp
 from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb, corpdb, ftsdb
@@ -103,7 +102,6 @@ def require_manager_admin_or_self(f):
 
        if requested_employee and current_user:
            print "requested employee: ", requested_employee['jira_uname']
-           print "current_user: ", current_user
            requested_employees_managers = employee_model.get_managers(requested_employee)
            if current_user in requested_employees_managers or current_user["jira_uname"] == requested_employee["jira_uname"] or current_user['role'] == "admin":
                return f(self, *args, **kwargs)

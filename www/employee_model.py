@@ -2,7 +2,7 @@ import web
 from datetime import datetime
 import pymongo
 import gridfs
-import md5
+import hashlib
 from bson.objectid import ObjectId
 import settings
 
@@ -171,7 +171,7 @@ def org_structure_list(team=None):
 def email_hash(employee):
     if len(employee['email_addresses']) > 0:
         primary_email = employee['email_addresses'][0]
-        m = md5.new()
+        m = hashlib.md5.new()
         m.update(primary_email.strip())
 
         try:
