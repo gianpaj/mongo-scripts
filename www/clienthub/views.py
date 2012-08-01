@@ -16,10 +16,7 @@ import formencode
 from formencode import validators
 from formencode import htmlfill
 import pymongo
-try:
-    from pymongo.objectid import ObjectId
-except:
-    from bson.objectid import ObjectId
+from bson.objectid import ObjectId
 from pymongo.errors import OperationFailure
 import gridfs
 

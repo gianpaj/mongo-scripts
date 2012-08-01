@@ -13,10 +13,7 @@ import datetime
 import urllib
 import web
 import pymongo
-try:
-    from pymongo.objectid import ObjectId
-except:
-    from bson.objectid import ObjectId
+from bson.objectid import ObjectId
 import re
 import time
 import itertools

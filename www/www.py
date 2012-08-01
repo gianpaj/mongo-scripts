@@ -12,7 +12,7 @@ except:
 import web
 import pymongo
 import gridfs
-import bson
+from bson.objectid import ObjectId
 
 web.config.debug = False
 
@@ -178,7 +178,7 @@ class CorpNormal(CorpBase):
 
         if p == "gridfsimg":
             gfs = gridfs.GridFS( corpdb )
-            f = gfs.get( bson.ObjectId( web.input()["id"] ) )
+            f = gfs.get( ObjectId( web.input()["id"] ) )
             if not f:
                 return
             web.header('Content-type','image/jpeg')
@@ -287,7 +287,7 @@ class CorpNormal(CorpBase):
 
         if "deletephoto" in inp:
             gfs = gridfs.GridFS( corpdb )
-            gfs.delete( bson.ObjectId( web.input()["deletephoto"] ) )
+            gfs.delete( ObjectId( web.input()["deletephoto"] ) )
 
         pp["images"] = corpdb.fs.files.find( { "user" : inp["id"] } )
 

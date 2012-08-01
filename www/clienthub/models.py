@@ -6,10 +6,7 @@ try:
     import json
 except:
     import simplejson as json
-try:
-    from pymongo.objectid import ObjectId
-except:
-    from bson.objectid import ObjectId
+from bson.objectid import ObjectId
 import web
 db = web.config.wwwdb
 app = web.config.app
