@@ -7,6 +7,7 @@
 	
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 	<script type="text/javascript" src="/static/employees/js/jquery-ui-1.8.21.custom.min.js"></script>
+	<script type="text/javascript" src="/static/employees/js/bootstrap.min.js"></script>
 	{% block js %}{% endblock %}
 	{% block styles %}{% endblock %}
 	<link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
@@ -24,32 +25,52 @@
 			    <h2>10gen corp site<span class="nav-user">logged in as <b>{{ pp['user']}}</b> - <a href="/logout">logout</a></span></h2>
 
 				<ul class="menu">
-					<li><a href="/employees"><span>Employees</span></a></li>
-					<li><a href="/newsletterSignups"><span>Newsletter Signups</span></a></li>
-					<li><a href="/dlEvents"><span>Download Events</span></a></li>
-					<li><a href="/dlDomains"><span>Downloads by Domain</span></a></li>
-					<li><a href="/csSignups"><span>Comm Supp Signups</span></a></li>
-					<li><a href="/contributors"><span>Contributors</span></a></li>
-					<li><a href="/orgchart"><span>Org Chart</span></a></li>
-					<li><a href="/codeReview"><span>Code Review</span></a></li>
-					<li><a href="/jirarep"><span>Jira Reports</span></a></li>
-					<li><a href="/pstats"><span>Performance Stats</span></a></li>
-					<li><a href="/clienthub"><span>Clienthub</span></a></li>
-					<li>&nbsp;</li>
+					<li class="dropdown" >
+						<a  data-toggle="dropdown">
+				      		<span>Employees<b class="caret"></b></span>
+				    	</a>
+				   	 	<ul class="dropdown-menu">
+						  <li class="sub-elements"><span><a href="/employees">Profiles</a></span></li>
+					      <li class="sub-elements"><span><a href="/skills">Skills</a></span></li>
+					      <li class="sub-elements"><span><a href="/teams">Teams</a></span></li>
+					      <li class="sub-elements"><span><a href="/projectgroups">Project Groups</a></span></li>
+					      <li class="sub-elements"><span><a href="/orgchart">Org Chart</a></span></li>
+					    </ul>
+				  	</li>
+					<li class="dropdown" >
+						<a  data-toggle="dropdown">
+				      		<span>Downloads<b class="caret"></b></span>
+				    	</a>
+				   	 	<ul class="dropdown-menu">
+						  <li class="sub-elements"><span><a href="/dlDomains">Downloads by Domain</a></span></li>
+					      <li class="sub-elements"><span><a href="/dlEvents">Download Events</a></span></li>
+					    </ul>
+				  	</li>
+					<li class="dropdown" >
+						<a  data-toggle="dropdown">
+				      		<span>Reports / Review<b class="caret"></b></span>
+				    	</a>
+				   	 	<ul class="dropdown-menu">
+						  <li class="sub-elements"><span><a href="/jirarep">Jira Reports</a></span></li>
+					      <li class="sub-elements"><span><a href="/pstats">Performance Stats</a></span></li>
+						  <li class="sub-elements"><span><a href="/codeReview">Code Review</a></span></li>
+					    </ul>
+				  	</li>
+					<li class="dropdown" >
+						<a  data-toggle="dropdown">
+				      		<span>Community / External<b class="caret"></b></span>
+				    	</a>
+				   	 	<ul class="dropdown-menu">
+						  <li><span><a href="/csSignups">Commercial Support Signups</a></span></li>
+					      <li><span><a href="/contributors">Contributors</a></span></li>
+					    </ul>
+				  	</li>
+					<li class="dropdown" ><a href="/newsletterSignups"><span>Newsletter Signups</span></a></li>
+					<li class="dropdown" ><a href="/clienthub"><span>Clienthub</span></a></li>
+
 				</ul>
 
 			</header>
-			
-			<div class="tabbable tabs-below">
-			        <ul class="nav nav-tabs" id="tabs">
-			          <li class="" id="employees-link"><a href="/employees">Employees</a></li>
-			          <li id="skills-url"><a href="/skills">Skills</a></li>
-			          <li id="teams-url"><a href="/teams">Teams</a></li>
-					  <li id="projectgroups-url"><a href="/projectgroups">Project Groups</a></li>
-			        </ul>
-			      </div>
-			
-			<br/>
 
 			<section>
 			    {% block content %}
@@ -78,6 +99,7 @@
 						$(this).addClass("");
 					}
 				});
+				$('.dropdown-toggle').dropdown()
 			</script>
 	
 		</div><!-- #page-content -->
