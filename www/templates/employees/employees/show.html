@@ -42,8 +42,10 @@
 		{% for n in pp['display_keys'] %}
 			{% if pp['employee'][n] %}
 				<dt>{{ ' '.join(n.split('_')).capitalize() }}</dt>
-				{% if (n == "start_date" or n == "birthday") and  pp['employee'][n] %}
-					<dd>{{ pp['employee'][n].strftime("%d-%m-%Y") }}</dd>
+				{% if (n == "birthday") and  pp['employee'][n] %}
+					<dd>{{ pp['employee'][n].strftime("%m/%d") }}</dd>
+				{% elif (n == "start_date") and  pp['employee'][n] %}
+					<dd>{{ pp['employee'][n].strftime("%m/%d/%Y") }}</dd>
 				{% elif pp['employee'][n] %}
 					<dd>{{ pp['employee'][n] }}</dd>
 				{% else %}
@@ -59,8 +61,10 @@
 		{% for n in pp['employee'].keys() %}
 			{% if n not in pp['display_keys'] and pp['employee'][n] and n not in pp['no_show'] %}
 				<dt>{{ ' '.join(n.split('_')).capitalize() }}</dt>
-				{% if (n == "start_date" or n == "birthday") and  pp['employee'][n] %}
-					<dd>{{ pp['employee'][n].strftime("%d-%m-%Y") }}</dd>
+				{% if (n == "birthday") and  pp['employee'][n] %}
+					<dd>{{ pp['employee'][n].strftime("%m/%d") }}</dd>
+				{% elif (n == "start_date") and  pp['employee'][n] %}
+					<dd>{{ pp['employee'][n].strftime("%m/%d/%Y") }}</dd>
 				{% elif pp['employee'][n] %}
 					<dd>{{ pp['employee'][n] }}</dd>
 				{% else %}
@@ -71,10 +75,19 @@
 		
 	</div>	
 	
+	
+
+	
+	
 </dl>
 
 <button class="btn" onclick="Expand();" style="float:right;margin: 7px 0px 0px 0px;">+</button>
 <button class="btn" onclick="Expand();" style="display:none;float:right;margin: 7px 0px 0px 0px;">-</button>
+
+<div style="clear: both;"</div>
+{% if pp['employee']['bio'] %}
+<dl style="margin-top:20px;border:none;text-align:justify;">{{ pp['employee']['bio'] }}</dl>
+{% endif %}
 
 <div id="dus"></div>
 

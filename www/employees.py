@@ -344,7 +344,7 @@ class EditEmployee(CorpBase):
             for n in pp['employee'].keys():
                 if n not in employee_model.editable_keys() and n not in employee_model.no_show():
                     pp['extra_fields'].append(n)
-            print "extra fields: ", pp['extra_fields']
+            #print "extra fields: ", pp['extra_fields']
  
             if pp['employee']['jira_uname'] == pp['user']:
                 pp['is_current_user'] = True
@@ -463,6 +463,12 @@ class EditEmployee(CorpBase):
                 pp['is_current_user'] = True
             else:
                 pp['is_current_user'] = False
+
+            pp['extra_fields'] = []
+            for n in pp['employee'].keys():
+                if n not in employee_model.editable_keys() and n not in employee_model.no_show():
+                    pp['extra_fields'].append(n)
+            #print "extra fields: ", pp['extra_fields']
 
             # set up hash to get gravatar
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
