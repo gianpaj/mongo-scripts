@@ -30,11 +30,16 @@
 	
 </form>
 
-
+<div style="float:right;">
+	{% if pp['current_user_role'] == "admin" %}
+	<a class="btn" href="/skillgroups/new" id="new_skill_group">+ new skill group</a>
+	{% endif %}
+</div>
 
 <script type="text/javascript" charset="utf-8">
 	jQuery(function($){
     	$('#search').select2();
+		$("a#new_skill_group").fancybox();
   });
 </script>
 

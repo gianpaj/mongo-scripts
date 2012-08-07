@@ -74,7 +74,12 @@
 			<div class="control-group">
 				<label class="control-label">Primary Phone Provider</label>
 					<div class="controls">
-						<input type="text" class="input-xlarge" name="primary_phone_provider" value="{{ pp['employee']['primary_phone_provider'] }}" id="primary_phone_provider">
+						<select name="primary_phone_provider" class="input-xlarge" value="{{ pp['employee']['primary_phone_provider'] }}" id="primary_phone_provider">
+							<option></option>
+							{% for provider in ["AT&T", "Verizon", "T-Mobile","Virgin Mobile", "Sprint", "Google Voice"] %}
+								<option {% if provider == pp['employee']['primary_phone_provider'] %} SELECTED {% endif %} >{{ provider }}</option>
+							{% endfor %}
+						</select>
 					</div><!-- controls-->
 			</div><!-- control-group-->
 			
@@ -117,11 +122,16 @@
 						<input type="text" class="input-xlarge" name="secondary_phone" value="{{ pp['employee']['secondary_phone'] }}" id="secondary_phone">
 					</div><!-- controls-->
 			</div><!-- control-group-->
-
+			
 			<div class="control-group">
 				<label class="control-label">Secondary Phone Provider</label>
 					<div class="controls">
-						<input type="text" class="input-xlarge" name="secondary_phone_provider" value="{{ pp['employee']['secondary_phone_provider'] }}" id="secondary_phone_provider">
+						<select name="secondary_phone_provider" class="input-xlarge" value="{{ pp['employee']['primary_phone_provider'] }}" id="secondary_phone_provider">
+							<option></option>
+							{% for provider in ["AT&T", "Verizon", "T-Mobile","Virgin Mobile", "Sprint", "Google Voice"] %}
+								<option {% if provider == pp['employee']['secondary_phone_provider'] %} SELECTED {% endif %} >{{ provider }}</option>
+							{% endfor %}
+						</select>
 					</div><!-- controls-->
 			</div><!-- control-group-->
 			
@@ -184,7 +194,7 @@
 			</div><!-- control-group-->
 
 			<div class="control-group">
-				<label class="control-label">TECH skills</label>
+				<label class="control-label"><b>Tech</b> skills</label>
 					<div class="controls">
 						<select multiple="multiple" name="skills_TECH" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_TECH">
 							{% for skill in pp['skill_groups']['TECH'] %}
@@ -195,7 +205,7 @@
 			</div><!-- control-group -->
 			
 			<div class="control-group">
-				<label class="control-label">INDUSTRY skills</label>
+				<label class="control-label"><b>Industry</b> skills</label>
 					<div class="controls">
 						<select multiple="multiple" name="skills_INDUSTRY" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_INDUSTRY">
 							{% for skill in pp['skill_groups']['INDUSTRY'] %}
@@ -206,15 +216,37 @@
 			</div><!-- control-group -->
 			
 			<div class="control-group">
-				<label class="control-label">GENERAL skills</label>
+				<label class="control-label"><b>Human language</b> skills</label>
 					<div class="controls">
-						<select multiple="multiple" name="skills_GENERAL" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_GENERAL">
-							{% for skill in pp['skill_groups']['GENERAL'] %}
+						<select multiple="multiple" name="skills_HUMAN" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_HUMAN">
+							{% for skill in pp['skill_groups']['HUMAN LANG'] %}
 								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
 							{% endfor %}
 						</select>
 					</div><!-- controls -->
-			</div><!-- control-group -->				
+					
+			</div><!-- control-group -->	
+			<div class="control-group">
+				<label class="control-label"><b>Mongodb</b> skills</label>
+					<div class="controls">
+						<select multiple="multiple" name="skills_MONGO" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_MONGO">
+							{% for skill in pp['skill_groups']['MONGO'] %}
+								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
+							{% endfor %}
+						</select>
+					</div><!-- controls -->
+					
+			</div><!-- control-group -->
+			<div class="control-group">
+				<label class="control-label"><b>Computer</b> language skills</label>
+					<div class="controls">
+						<select multiple="multiple" name="skills_COMP" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_COMP">
+							{% for skill in pp['skill_groups']['COMP LANG'] %}
+								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
+							{% endfor %}
+						</select>
+					</div><!-- controls -->
+			</div><!-- control-group -->			
 
 		{% if pp['employee']['role'] == "manager" %}
 			<div class="control-group">
@@ -313,7 +345,17 @@
 		$('#managing_ids').select2();
 		$('#skills_TECH').select2();
 		$('#skills_INDUSTRY').select2();
-		$('#skills_GENERAL').select2();
+		$('#skills_HUMAN').select2();
+		$('#skills_MONGO').select2();
+ 		$('#skills_COMP').select2();
+    	$('#primary_phone_provider').select2({
+			allowClear: true,
+			placeholder: "Select a provider..."
+			});
+		$('#secondary_phone_provider').select2({
+			allowClear: true,
+			placeholder: "Select a provider..."
+			});
 		$('#team_ids').select2({
 			placeholder: "Select a team..."
 		});

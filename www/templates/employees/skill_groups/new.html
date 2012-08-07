@@ -1,0 +1,27 @@
+{% extends "employees/layouts/popup.html" %}
+
+{% block content %}
+
+<style>
+form {margin:0 0 5px;}
+</style>
+
+<br/>
+<br/>
+
+<form action="/skillgroups/new" method="post" class="form-horizontal">
+	<fieldset>
+		
+		<div class="control-group">
+			<label class="control-label">Name</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="name" id="name">
+				</div><!-- controls-->
+		</div><!-- control-group-->
+	
+	</fieldset>
+		
+	<input type="submit" class ="btn btn-primary" style="float:right;">
+</form>
+
+{% endblock %}
