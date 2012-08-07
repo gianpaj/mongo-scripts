@@ -379,7 +379,7 @@ class ggs:
 
                 # don't show comments from 10gen people (per eliot)
                 if user is None:
-                    j.addComment(key, {"body": cmt.encode('unicode-escape')})
+                    j.addComment(key, {"body": cmt})
 
             def progress(to):
                 if issue["status"] == to:
