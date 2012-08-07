@@ -20,11 +20,13 @@ import lib.aws
 
 import settings
 
+
 def send_error_email(msg):
-    lib.aws.send_email( "noc-admin@10gen.com" , "Free Support Tool Error" , str(msg) , "noc-admin@10gen.com" )
+    lib.aws.send_email("noc-admin@10gen.com", "Free Support Tool Error", str(msg), "noc-admin@10gen.com")
+
 
 class ggs:
-    def __init__(self,host="stats.10gen.cc",syncUsers=True):
+    def __init__(self, host="stats.10gen.cc", syncUsers=True):
         self._gmail = None
         self._debug = False
 
@@ -33,51 +35,51 @@ class ggs:
         self.processed = self.db.processed
 
         self.topics = self.db.topics
-        self.topics.ensure_index( "subject" )
-        self.topics.ensure_index( "url" )
+        self.topics.ensure_index("subject")
+        self.topics.ensure_index("url")
 
         self.gg_threads = self.db.gg_threads
-        self.gg_threads.ensure_index( "subject" )
-        self.gg_threads.ensure_index( "subject_simple" )
+        self.gg_threads.ensure_index("subject")
+        self.gg_threads.ensure_index("subject_simple")
 
         self.users = self.db.users
-        self.users.ensure_index( "mail" )
+        self.users.ensure_index("mail")
 
         # setup some regex
-        self.topic_cleaners = [ "re:" , "fwd:" , "\[mongodb-[a-z]+\]" ]
-        self.topic_cleaners = [ re.compile( x , re.I ) for x in self.topic_cleaners ]
+        self.topic_cleaners = ["re:", "fwd:", "\[mongodb-[a-z]+\]"]
+        self.topic_cleaners = [re.compile(x, re.I) for x in self.topic_cleaners]
 
         # gg parser
-        self.gg = lib.googlegroup.GoogleGroup( "mongodb-user" )
+        self.gg = lib.googlegroup.GoogleGroup("mongodb-user")
 
         # crowd
-        self.crowd = lib.crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )
+        self.crowd = lib.crowd.Crowd(settings.crowdAppUser, settings.crowdAppPassword)
         if syncUsers:
             self.sync_users()
 
     def sync_users(self):
-        for u in self.crowd.findGroupByName( "10gen" ):
-            if self.getUser( u ):
+        for u in self.crowd.findGroupByName("10gen"):
+            if self.getUser(u):
                 continue
-            z = self.crowd.getUser( u )
+            z = self.crowd.getUser(u)
             z["_id"] = z["username"]
-            z["mail"] = [ z["mail"] ]
+            z["mail"] = [z["mail"]]
             del z["username"]
 
-            self.users.insert( z )
+            self.users.insert(z)
 
-    def getUser(self,username):
-        return self.users.find_one( { "_id" : username } )
+    def getUser(self, username):
+        return self.users.find_one({"_id": username})
 
 
-    def getUserByMail(self,mail):
-        return self.users.find_one( { "mail" : mail } )        
+    def getUserByMail(self, mail):
+        return self.users.find_one({"mail": mail})
 
-    def clean_topic(self,s):
+    def clean_topic(self, s):
         for x in self.topic_cleaners:
-            s = x.sub( "" , s )
+            s = x.sub("", s)
         s = s.strip()
-        s = re.sub( "\s\s+" , " " , s )
+        s = re.sub("\s\s+", " ", s)
         return s
 
     def simple_topic(self, s):
@@ -108,20 +110,19 @@ class ggs:
 
         msg["stats"] = stats
         end = time.time()
-        msg["elapsedSeconds"] = end - start;
+        msg["elapsedSeconds"] = end - start
 
-        self.db.log.insert( msg )
+        self.db.log.insert(msg)
 
-        self.db.stats.update( { "_id" : str(datetime.datetime.utcnow())[0:13] } , { "$inc" : stats } , upsert=True )
+        self.db.stats.update({"_id": str(datetime.datetime.utcnow())[0:13]}, {"$inc": stats}, upsert=True)
 
         if error:
             send_error_email(msg["error"])
 
-
     def gmail(self):
         if not self._gmail:
-            self._gmail = lib.gmail.gmail( "info@10gen.com" , "eng718info" )
-            self._gmail.select( "freesupport" )
+            self._gmail = lib.gmail.gmail("info@10gen.com", "eng718info")
+            self._gmail.select("freesupport")
         return self._gmail
 
     def sync_mail(self):
@@ -129,28 +130,28 @@ class ggs:
         all = self.gmail().list()
 
         for x in all:
-            m = self.gmail().fetch ( x )
+            m = self.gmail().fetch(x)
             headers = m["headers"]
             key = headers["message-id"]
 
-            if self.processed.find_one( { "_id" : key } ):
+            if self.processed.find_one({"_id": key}):
                 continue
 
             num = num + 1
             # copy certain headers into the db document
-            p = { "_id" : key , "uid" : x }
-            for z in [ "from" , "subject" , "date" ]:
+            p = {"_id": key, "uid": x}
+            for z in ["from", "subject", "date"]:
                 p[z] = headers[z]
 
             ids = []
-            for z in [ "in-reply-to" , "message-id" , "references" ]:
+            for z in ["in-reply-to", "message-id", "references"]:
                 if z in headers:
-                    if isinstance( headers[z], list):
+                    if isinstance(headers[z], list):
                         ids += headers[z]
                     else:
-                        ids.append( headers[z] )
+                        ids.append(headers[z])
 
-            print( ids  )
+            print(ids)
 
             # add new messages to the topic, and update
             # ids with any new message IDs that future
@@ -174,60 +175,60 @@ class ggs:
             sub = None
             for m in x["messages"]:
                 s = m["subject"]
-                s = self.clean_topic( s )
+                s = self.clean_topic(s)
 
                 if sub is None:
                     sub = s
                 elif sub != s:
-                    a = re.sub( "\s+" , "" , sub )
-                    b = re.sub( "\s+" , "" , s )
+                    a = re.sub("\s+", "", sub)
+                    b = re.sub("\s+", "", s)
                     if a != b:
-                        pprint.pprint( m )
-                        print( "warning: [%s] != [%s]" % ( sub , s ) )
+                        pprint.pprint(m)
+                        print("warning: [%s] != [%s]" % (sub, s))
 
-            print( sub )
-            self.topics.update( { "_id" : x["_id"] } , { "$set" : { "subject" : sub , "subject_simple" : self.simple_topic( sub ) } } )
+            print(sub)
+            self.topics.update({"_id": x["_id"]}, {"$set": {"subject": sub, "subject_simple": self.simple_topic(sub)}})
             num = num + 1
         return num
 
-    def _pull_url(self,url,others):
-        detail = self.gg_threads.find_one( { "_id" : url } )
+    def _pull_url(self, url, others):
+        detail = self.gg_threads.find_one({"_id": url})
         if detail:
             return False
 
         try:
-            detail = self.gg.getThreadDetail( url , others )
+            detail = self.gg.getThreadDetail(url, others)
             detail["_id"] = url
-            detail["subject"] = self.clean_topic( detail["subject"] )
-            detail["subject_simple"] = self.simple_topic( detail["subject"] )
-            self.gg_threads.insert( detail )
-            #print( "%s\n\t%s" % ( url , detail["subject"] ) )        
+            detail["subject"] = self.clean_topic(detail["subject"])
+            detail["subject_simple"] = self.simple_topic(detail["subject"])
+            self.gg_threads.insert(detail)
+            #print( "%s\n\t%s" % ( url , detail["subject"] ) )
             return True
-        except Exception,e:
+        except Exception, e:
             print(e)
             return False
 
-    def pull_urls(self,pages_back=1):
-        threads = self.gg.getThreads( pages_back )
-        print( len(threads) )
+    def pull_urls(self, pages_back=1):
+        threads = self.gg.getThreads(pages_back)
+        print(len(threads))
 
         others = set()
 
         for x in threads:
-            self._pull_url( x , others )
+            self._pull_url(x, others)
 
         for x in others:
-            if self._pull_url( x ,None ):
-                print( "found via ll: %s" % x )
+            if self._pull_url(x, None):
+                print("found via ll: %s" % x)
 
-    def sync_urls(self,iteration=0):
+    def sync_urls(self, iteration=0):
         # set the url field on topics if not already
         # set; finds the thread with the given topic,
         # and uses its canonical groups url. raises if
         # 0 or more than 1 thread with the topic is found
         num = 0
         numMissing = 0
-        for x in self.topics.find( { "url" : None } ):
+        for x in self.topics.find({"url": None}):
             if "skip" in x and x["skip"]:
                 continue
 
@@ -374,17 +375,17 @@ class ggs:
 
                 user = self.getUsername(m["from"])
 
-                debug( "\t adding comment from %s" % m["from"] )
+                debug("\t adding comment from %s" % m["from"])
 
                 # don't show comments from 10gen people (per eliot)
                 if user is None:
-                    j.addComment( key , { "body" : cmt } )
-                
-            def progress( to ):
+                    j.addComment(key, {"body": cmt.encode('unicode-escape')})
+
+            def progress(to):
                 if issue["status"] == to:
                     return None
-                debug( "\t progressing from %s to %s" % ( issue["status"] , to ) )
-                return j.progressWorkflowAction( key , to )
+                debug("\t progressing from %s to %s" % (issue["status"], to))
+                return j.progressWorkflowAction(key, to)
 
             # progress actions
             RESPONSE_SENT = '21'
@@ -398,21 +399,21 @@ class ggs:
             if user:
                 # this means the last comment was from a 10gen person
                 if issue["status"] == OPEN:
-                    progress( RESPONSE_SENT )
+                    progress(RESPONSE_SENT)
             elif needToSave:
                 # new comment from non-10gen person
                 if issue["status"] == OPEN:
                     # this is ok
                     pass
                 elif issue["status"] == WAITING_FOR_CUSTOMER:
-                    progress( GOT_MORE_INFO )
+                    progress(GOT_MORE_INFO)
                 else:
                     # issue is closed
-                    progress( NEW_POST_FROM_USER )
+                    progress(NEW_POST_FROM_USER)
 
             if needToSave:
-                debug( "\t need to save" )
-                self.topics.save( x )
+                debug("\t need to save")
+                self.topics.save(x)
                 num = num + 1
         return num
 

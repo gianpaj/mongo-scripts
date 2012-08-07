@@ -8,15 +8,15 @@ import urllib2
 import base64
 import json
 import os
-import types
 import sys
+
 
 class JiraConnection(object):
     """Just a wrapper around a suds client that passes through getattr.
 
     j = JiraConnection()
     j.getUser( "eliot" ) # can call soap methods directly
-    
+
     """
     def __init__(self):
         """On init make a connection to JIRA and login.
@@ -26,13 +26,12 @@ class JiraConnection(object):
             self.__client = suds.client.Client(settings.jira_soap_url)
             self.__auth = self.__client.service.login(settings.jira_username, settings.jira_password)
         except:
-            print( "failed to get u/p for jira" )
+            print("failed to get u/p for jira")
             self.__client = None
             self.__auth = None
 
     def __getattr__(self, method):
-        """Pass through __getattr__s to underlying client.
-        """
+        """Pass through __getattr__s to underlying client."""
         if self.__client is None:
             return None
 
@@ -41,11 +40,11 @@ class JiraConnection(object):
 
         if m is None:
             return m
-        
-        def foo(*args):
-            return m(a,*args)
-        
-        return foo
+
+        def partial(*args):
+            return m(a, *args)
+
+        return partial
 
     def __enter__(self):
         """Support for the context manager protocol.
@@ -116,7 +115,7 @@ if __name__ == "__main__":
     cmd = sys.argv[1]
 
     j = JiraConnection();
-    
+
     if "upload" == cmd:
         if len(sys.argv) != 4:
             print( "usage: upload <case> <filename>" )
@@ -135,5 +134,3 @@ if __name__ == "__main__":
 
     else:
         print( "unknown command: " + cmd )
-
-
