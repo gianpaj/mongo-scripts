@@ -35,15 +35,16 @@
 
 <h2>Meet your colleague:</h2>
 	<br/>
+	<a href="/employees/{{ pp['random_employee']['jira_uname'] }}">
 	<div class="employee-image">
 		<img src="/profileimage/{{ pp['random_employee']['jira_uname'] }}" onerror="ImgError(this, '{{pp["random_employee_hash"]}}');">
 	</div><!-- /.employee-image -->
 	
 	<br/>
 	<h3>
-		<span class="name"><a href="/employees/{{ pp['random_employee']['jira_uname'] }}">{{ pp['random_employee']['first_name']}} {{ pp['random_employee']['last_name']}}</a></span><span class="description">{% if pp['random_employee']['title'] %}{{ ", " + pp['random_employee']['title'] }}{% endif %}</span>
+		<span class="name">{{ pp['random_employee']['first_name']}} {{ pp['random_employee']['last_name']}}</span><span class="description">{% if pp['random_employee']['title'] %}{{ ", " + pp['random_employee']['title'] }}{% endif %}</span>
 	</h3>
-
+	</a>
 </div>
 
 <!-- IF USER IS A MANAGER --> 
