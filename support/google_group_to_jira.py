@@ -22,7 +22,7 @@ import settings
 
 
 def send_error_email(msg):
-    lib.aws.send_email("noc-admin@10gen.com", "Free Support Tool Error", str(msg), "noc-admin@10gen.com")
+    lib.aws.send_email("noc@10gen.com", "Free Support Tool Error", str(msg), "noc@10gen.com")
 
 
 class ggs:
