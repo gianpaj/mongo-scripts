@@ -171,7 +171,7 @@ def org_structure_list(team=None):
 def email_hash(employee):
     if len(employee['email_addresses']) > 0:
         primary_email = employee['email_addresses'][0]
-        m = hashlib.md5.new()
+        m = hashlib.md5()
         m.update(primary_email.strip())
 
         try:
