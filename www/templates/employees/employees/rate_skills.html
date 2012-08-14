@@ -24,16 +24,29 @@
 		<fieldset>
 			{% for skill_id in pp['employee']['skills'] %}
 			<div class="control-group">
-				<label class="control-label">{{ pp['skills'][skill_id] }}</label>
+				<label class="control-label">{{ pp['skills'][skill_id]['name'] }}</label>
+				{% if pp['skills'][skill_id]['locked'] %}
+					{% if pp['can_rate'] %}
+						<div class="controls">
+							<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
+								{% for i in [0,1,2,3,4,5] %}
+									<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=i>{{pp['levels'][i]}}</option>
+								{% endfor %}
+							</select>
+						</div><!-- controls-->
+					{% else %}
+						<div class="controls">{{ pp['levels'][pp['employee']['skills'][skill_id]] }}
+						</div><!-- controls-->
+					{% endif %}
+				{% else %}
 					<div class="controls">
 						<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
-								<option {% if 1 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=1>Learning</option>
-								<option {% if 2 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=2>Fair</option>
-								<option {% if 3 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=3>Average</option>
-								<option {% if 4 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=4>Excellent</option>
-								<option {% if 5 == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=5>Guru</option>
+							{% for i in [0,1,2,3,4,5] %}
+								<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=i>{{pp['levels'][i]}}</option>
+							{% endfor %}
 						</select>
 					</div><!-- controls-->
+				{% endif %}
 			</div><!-- control-group-->
 			{% endfor %}
 		</fieldset>

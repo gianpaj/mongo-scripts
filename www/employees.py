@@ -302,7 +302,7 @@ class Employees(CorpBase):
                 pp['can_edit'] = True
             else:
                 pp['can_edit'] = False
-
+            
             return env.get_template('employees/employees/show.html').render(pp=pp)
             
         else:
@@ -407,20 +407,7 @@ class EditEmployee(CorpBase):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['MONGO'].append(skill)
            
-            pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
-
-            pp['current_user_role'] = current_user_role(pp)
-            requested_employees_managers = map(lambda manager: manager['jira_uname'], employee_model.get_managers(pp['employee']))
-            if pp['user'] in requested_employees_managers or pp['current_user_role'] == "admin":
-                pp['can_edit_tech_skills'] = True
-            else:
-                pp['can_edit_tech_skills'] = False
-                pp['employee']['tech_skills'] = []
-                for skill in pp['employee']['skills']:
-                     skill_dict = corpdb.skills.find_one({"_id": ObjectId(skill) })
-                     if tech_skill_group["_id"] in skill_dict['groups']:
-                         pp['employee']['tech_skills'].append(skill_dict['name'])
-                
+            pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)                
            
             return env.get_template('employees/employees/edit.html').render(pp=pp)
 
@@ -443,7 +430,7 @@ class EditEmployee(CorpBase):
                         if 'skills' not in employee:
                             employee['skills'] = {}
                         if skill not in employee['skills']:
-                            employee["skills"][skill] = 1
+                            employee["skills"][skill] = 0
 
                 elif n == "managing_ids":
                     for employee_id in form["managing_ids"]:
@@ -554,18 +541,6 @@ class EditEmployee(CorpBase):
                     pp['skill_groups']['MONGO'].append(skill)
             
             pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
-
-            pp['current_user_role'] = current_user_role(pp)
-            requested_employees_managers = map(lambda manager: manager['jira_uname'], employee_model.get_managers(pp['employee']))
-            if pp['user'] in requested_employees_managers or pp['current_user_role'] == "admin":
-                pp['can_edit_tech_skills'] = True
-            else:
-                pp['can_edit_tech_skills'] = False
-                pp['employee']['tech_skills'] = []
-                for skill in pp['employee']['skills']:
-                     skill_dict = corpdb.skills.find_one({"_id": ObjectId(skill) })
-                     if tech_skill_group["_id"] in skill_dict['groups']:
-                         pp['employee']['tech_skills'].append(skill_dict['name'])
             
             pp['error_message'] = "You must have values for first and last name."
             return env.get_template('employees/employees/edit.html').render(pp=pp)
@@ -583,9 +558,27 @@ class RateSkills(CorpBase):
         else:
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
             pp['skills'] = {}
+            pp['levels'] = ['', 'Learning', 'Fair', 'Average', 'Excellent', 'Guru']
+            
+            # Current user is requested user's manager, current user is admin
+            pp['current_user_role'] = current_user_role(pp)
+            requested_employees_managers = map(lambda manager: manager['jira_uname'], employee_model.get_managers(pp['employee']))
+            if pp['user'] in requested_employees_managers or pp['current_user_role'] == "admin":
+                pp['can_rate'] = True
+            else:
+                pp['can_rate'] = False
+
+            programming_skill_group = corpdb.skill_groups.find_one({"name": 'PROGRAMMING'})
+            mongodb_skill_group = corpdb.skill_groups.find_one({"name": 'MONGODB'})
+            specialty_skill_group = corpdb.skill_groups.find_one({"name": 'SPECIALTY'})
+            general_skill_group = corpdb.skill_groups.find_one({"name": 'GENERAL'})
+            pp['locked_skills'] = [programming_skill_group['_id'], mongodb_skill_group['_id'], specialty_skill_group['_id'], general_skill_group['_id']]
+
             # TODO: use $in - LEAVE as is because of objectid/string issues
             for skill_id in pp['employee']['skills']:
-                pp['skills'][skill_id] = corpdb.skills.find_one(ObjectId(skill_id))['name']
+                pp['skills'][skill_id] = corpdb.skills.find_one(ObjectId(skill_id))
+                pp['skills'][skill_id]['locked'] = set(pp['locked_skills']) & set(pp['skills'][skill_id]['groups'])
+
             return env.get_template('employees/employees/rate_skills.html').render(pp=pp)
 
     @authenticated
