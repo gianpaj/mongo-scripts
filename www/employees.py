@@ -772,8 +772,7 @@ class OrgStructure(CorpBase):
             pp['teams'][team['name']] = {}
             for employee in corpdb.employees.find({"team_ids": ObjectId(team['_id'])}):
                 if employee['first_name'] and employee['last_name']:
-                    print employee['first_name']
-                    print employee['last_name']
+                    print employee['_id']
                     pp['teams'][team['name']][str(employee['jira_uname'])] = str(employee['first_name'] + " " + employee['last_name'])
 
         pp['org_chart'] = employee_model.org_structure_list()
