@@ -409,6 +409,19 @@ class EditEmployee(CorpBase):
            
             pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
 
+            pp['current_user_role'] = current_user_role(pp)
+            requested_employees_managers = map(lambda manager: manager['jira_uname'], employee_model.get_managers(pp['employee']))
+            if pp['user'] in requested_employees_managers or pp['current_user_role'] == "admin":
+                pp['can_edit_tech_skills'] = True
+            else:
+                pp['can_edit_tech_skills'] = False
+                pp['employee']['tech_skills'] = []
+                for skill in pp['employee']['skills']:
+                     skill_dict = corpdb.skills.find_one({"_id": ObjectId(skill) })
+                     if tech_skill_group["_id"] in skill_dict['groups']:
+                         pp['employee']['tech_skills'].append(skill_dict['name'])
+                
+           
             return env.get_template('employees/employees/edit.html').render(pp=pp)
 
     #EDIT FORM SUBMITS TO HERE
@@ -541,7 +554,19 @@ class EditEmployee(CorpBase):
                     pp['skill_groups']['MONGO'].append(skill)
             
             pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
-           
+
+            pp['current_user_role'] = current_user_role(pp)
+            requested_employees_managers = map(lambda manager: manager['jira_uname'], employee_model.get_managers(pp['employee']))
+            if pp['user'] in requested_employees_managers or pp['current_user_role'] == "admin":
+                pp['can_edit_tech_skills'] = True
+            else:
+                pp['can_edit_tech_skills'] = False
+                pp['employee']['tech_skills'] = []
+                for skill in pp['employee']['skills']:
+                     skill_dict = corpdb.skills.find_one({"_id": ObjectId(skill) })
+                     if tech_skill_group["_id"] in skill_dict['groups']:
+                         pp['employee']['tech_skills'].append(skill_dict['name'])
+            
             pp['error_message'] = "You must have values for first and last name."
             return env.get_template('employees/employees/edit.html').render(pp=pp)
 

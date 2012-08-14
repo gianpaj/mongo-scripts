@@ -41,7 +41,7 @@
 
 		{% for n in pp['display_keys'] %}
 			{% if pp['employee'][n] %}
-				<dt>{{ ' '.join(n.split('_')).capitalize() }}</dt>
+				<dt>{{ ' '.join(n.replace("jira_uname", "jira_username").split('_')).capitalize() }}</dt>
 				{% if (n == "birthday") and  pp['employee'][n] %}
 					<dd>{{ pp['employee'][n].strftime("%m/%d") }}</dd>
 				{% elif (n == "start_date") and  pp['employee'][n] %}

@@ -193,16 +193,25 @@
 					</div><!-- controls-->
 			</div><!-- control-group-->
 
+			{% if pp['can_edit_tech_skills'] %}
+				<div class="control-group">
+					<label class="control-label"><b>Tech</b> skills</label>
+						<div class="controls">
+							<select multiple="multiple" name="skills_TECH" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_TECH">
+								{% for skill in pp['skill_groups']['TECH'] %}
+									<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
+								{% endfor %}
+							</select>
+						</div><!-- controls -->
+				</div><!-- control-group -->
+			{% else %}
 			<div class="control-group">
 				<label class="control-label"><b>Tech</b> skills</label>
-					<div class="controls">
-						<select multiple="multiple" name="skills_TECH" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_TECH">
-							{% for skill in pp['skill_groups']['TECH'] %}
-								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
-							{% endfor %}
-						</select>
+					<div class="controls">		
+						{{ ', '.join(pp['employee']['tech_skills']) }}
 					</div><!-- controls -->
 			</div><!-- control-group -->
+			{% endif %}
 			
 			<div class="control-group">
 				<label class="control-label"><b>Industry</b> skills</label>
