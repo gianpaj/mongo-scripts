@@ -30,7 +30,7 @@
 						<div class="controls">
 							<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
 								{% for i in [0,1,2,3,4,5] %}
-									<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=i>{{pp['levels'][i]}}</option>
+									<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value={{i}}>{{pp['levels'][i]}}</option>
 								{% endfor %}
 							</select>
 						</div><!-- controls-->
@@ -42,7 +42,7 @@
 					<div class="controls">
 						<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
 							{% for i in [0,1,2,3,4,5] %}
-								<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value=i>{{pp['levels'][i]}}</option>
+								<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value={{i}}>{{pp['levels'][i]}}</option>
 							{% endfor %}
 						</select>
 					</div><!-- controls-->

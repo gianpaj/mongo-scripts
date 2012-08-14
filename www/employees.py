@@ -371,42 +371,42 @@ class EditEmployee(CorpBase):
 
             #set up dict for skills and their groups
             pp['skill_groups'] = {}
-            tech_skill_group = corpdb.skill_groups.find_one({"name":"TECH"})
-            industry_skill_group = corpdb.skill_groups.find_one({"name":"INDUSTRY"})
+            mongodb_skill_group = corpdb.skill_groups.find_one({"name":"MONGODB"})
+            prog_skill_group = corpdb.skill_groups.find_one({"name":"PROGRAMMING"})
             human_lang_skill_group = corpdb.skill_groups.find_one({"name":"HUMAN LANGUAGE"})
-            comp_lang_skill_group = corpdb.skill_groups.find_one({"name":"COMPUTER LANGUAGE"})
-            mongo_skill_group = corpdb.skill_groups.find_one({"name":"MONGODB"})
-
-            if tech_skill_group:
-                pp['skill_groups']['TECH'] = []
-                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+            specialty_skill_group = corpdb.skill_groups.find_one({"name":"SPECIALTY"})
+            general_skill_group = corpdb.skill_groups.find_one({"name":"GENERAL"})
+            
+            if mongodb_skill_group:
+                pp['skill_groups']['MONGODB'] = []
+                for skill in corpdb.skills.find({"groups": mongodb_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['TECH'].append(skill)
-
-            if industry_skill_group:
-                pp['skill_groups']['INDUSTRY'] = []
-                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+                    pp['skill_groups']['MONGODB'].append(skill)
+            
+            if prog_skill_group:
+                pp['skill_groups']['PROGRAMMING'] = []
+                for skill in corpdb.skills.find({"groups": prog_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['INDUSTRY'].append(skill)
-
-		    if human_lang_skill_group:
-		        pp['skill_groups']['HUMAN LANG'] = []
+                    pp['skill_groups']['PROGRAMMING'].append(skill)
+            
+            if human_lang_skill_group:
+                pp['skill_groups']['HUMAN LANG'] = []
                 for skill in corpdb.skills.find({"groups": human_lang_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['HUMAN LANG'].append(skill)
-
-            if comp_lang_skill_group:
-                pp['skill_groups']['COMP LANG'] = []
-                for skill in corpdb.skills.find({"groups": comp_lang_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+            
+            if specialty_skill_group:
+                pp['skill_groups']['SPECIALTY'] = []
+                for skill in corpdb.skills.find({"groups": specialty_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['COMP LANG'].append(skill)
-
-            if mongo_skill_group:
-                pp['skill_groups']['MONGO'] = []
-                for skill in corpdb.skills.find({"groups": mongo_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+                    pp['skill_groups']['SPECIALTY'].append(skill)
+            
+            if general_skill_group:
+                pp['skill_groups']['GENERAL'] = []
+                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['MONGO'].append(skill)
-           
+                    pp['skill_groups']['GENERAL'].append(skill)
+            
             pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)                
            
             return env.get_template('employees/employees/edit.html').render(pp=pp)
@@ -416,7 +416,7 @@ class EditEmployee(CorpBase):
     @require_manager_admin_or_self
     def POST(self, pp, *args): # maybe employee id?
         "POST EditEmployee"
-        form = web.input(managing_ids=[], skills_TECH=[], skills_INDUSTRY=[], skills_HUMAN=[], skills_MONGO=[], skills_COMP=[], team_ids=[])
+        form = web.input(managing_ids=[], skills_MONGODB=[], skills_PROG=[], skills_HUMAN=[], skills_SPECIALTY=[], skills_GENERAL=[], team_ids=[])
         print form
         jira_uname = args[0]
         employee = corpdb.employees.find_one({"jira_uname": jira_uname})
@@ -449,7 +449,7 @@ class EditEmployee(CorpBase):
             #remove skills
             if employee['skills']:
                 for skill in employee['skills'].keys():
-                    if skill not in form['skills_TECH'] and skill not in form['skills_INDUSTRY'] and skill not in form['skills_HUMAN'] and skill not in form['skills_MONGO'] and skill not in form['skills_COMP']:
+                    if skill not in form['skills_MONGODB'] and skill not in form['skills_PROG'] and skill not in form['skills_HUMAN'] and skill not in form['skills_SPECIALTY'] and skill not in form['skills_GENERAL']:
                         del employee['skills'][skill]
 
             #remove managed_employees
@@ -504,23 +504,23 @@ class EditEmployee(CorpBase):
 
             #set up dict for skills and their groups
             pp['skill_groups'] = {}
-            tech_skill_group = corpdb.skill_groups.find_one({"name":"TECH"})
-            industry_skill_group = corpdb.skill_groups.find_one({"name":"INDUSTRY"})
+            mongodb_skill_group = corpdb.skill_groups.find_one({"name":"MONGODB"})
+            prog_skill_group = corpdb.skill_groups.find_one({"name":"PROGRAMMING"})
             human_lang_skill_group = corpdb.skill_groups.find_one({"name":"HUMAN LANGUAGE"})
-            comp_lang_skill_group = corpdb.skill_groups.find_one({"name":"COMPUTER LANGUAGE"})
-            mongo_skill_group = corpdb.skill_groups.find_one({"name":"MONGODB"})
+            specialty_skill_group = corpdb.skill_groups.find_one({"name":"SPECIALTY"})
+            general_skill_group = corpdb.skill_groups.find_one({"name":"GENERAL"})
             
-            if tech_skill_group:
-                pp['skill_groups']['TECH'] = []
-                for skill in corpdb.skills.find({"groups": tech_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+            if mongodb_skill_group:
+                pp['skill_groups']['MONGODB'] = []
+                for skill in corpdb.skills.find({"groups": mongodb_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['TECH'].append(skill)
+                    pp['skill_groups']['MONGODB'].append(skill)
             
-            if industry_skill_group:
-                pp['skill_groups']['INDUSTRY'] = []
-                for skill in corpdb.skills.find({"groups": industry_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+            if prog_skill_group:
+                pp['skill_groups']['PROGRAMMING'] = []
+                for skill in corpdb.skills.find({"groups": prog_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['INDUSTRY'].append(skill)
+                    pp['skill_groups']['PROGRAMMING'].append(skill)
             
             if human_lang_skill_group:
                 pp['skill_groups']['HUMAN LANG'] = []
@@ -528,17 +528,17 @@ class EditEmployee(CorpBase):
                     skill['id'] = str(skill['_id'])
                     pp['skill_groups']['HUMAN LANG'].append(skill)
             
-            if comp_lang_skill_group:
-                pp['skill_groups']['COMP LANG'] = []
-                for skill in corpdb.skills.find({"groups": comp_lang_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+            if specialty_skill_group:
+                pp['skill_groups']['SPECIALTY'] = []
+                for skill in corpdb.skills.find({"groups": specialty_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['COMP LANG'].append(skill)
+                    pp['skill_groups']['SPECIALTY'].append(skill)
             
-            if mongo_skill_group:
-                pp['skill_groups']['MONGO'] = []
-                for skill in corpdb.skills.find({"groups": mongo_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
+            if general_skill_group:
+                pp['skill_groups']['GENERAL'] = []
+                for skill in corpdb.skills.find({"groups": general_skill_group["_id"]}).sort("name", pymongo.ASCENDING):
                     skill['id'] = str(skill['_id'])
-                    pp['skill_groups']['MONGO'].append(skill)
+                    pp['skill_groups']['GENERAL'].append(skill)
             
             pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
             

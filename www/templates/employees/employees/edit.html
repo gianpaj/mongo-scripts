@@ -194,10 +194,10 @@
 			</div><!-- control-group-->
 
 		   <div class="control-group">
-		   	<label class="control-label"><b>Tech</b> skills</label>
+		   	<label class="control-label"><b>MongoDB</b> skills</label>
 		   		<div class="controls">
-		   			<select multiple="multiple" name="skills_TECH" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_TECH">
-		   				{% for skill in pp['skill_groups']['TECH'] %}
+		   			<select multiple="multiple" name="skills_MONGODB" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_MONGODB">
+		   				{% for skill in pp['skill_groups']['MONGODB'] %}
 		   					<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
 		   				{% endfor %}
 		   			</select>
@@ -205,10 +205,10 @@
 		   </div><!-- control-group -->
 		   
 			<div class="control-group">
-				<label class="control-label"><b>Industry</b> skills</label>
+				<label class="control-label"><b>Programming</b> skills</label>
 					<div class="controls">
-						<select multiple="multiple" name="skills_INDUSTRY" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_INDUSTRY">
-							{% for skill in pp['skill_groups']['INDUSTRY'] %}
+						<select multiple="multiple" name="skills_PROG" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_PROG">
+							{% for skill in pp['skill_groups']['PROGRAMMING'] %}
 								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
 							{% endfor %}
 						</select>
@@ -227,10 +227,10 @@
 					
 			</div><!-- control-group -->	
 			<div class="control-group">
-				<label class="control-label"><b>Mongodb</b> skills</label>
+				<label class="control-label"><b>Specialty</b> skills</label>
 					<div class="controls">
-						<select multiple="multiple" name="skills_MONGO" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_MONGO">
-							{% for skill in pp['skill_groups']['MONGO'] %}
+						<select multiple="multiple" name="skills_SPECIALTY" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_SPECIALTY">
+							{% for skill in pp['skill_groups']['SPECIALTY'] %}
 								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
 							{% endfor %}
 						</select>
@@ -238,10 +238,10 @@
 					
 			</div><!-- control-group -->
 			<div class="control-group">
-				<label class="control-label"><b>Computer</b> language skills</label>
+				<label class="control-label"><b>General</b> skills</label>
 					<div class="controls">
-						<select multiple="multiple" name="skills_COMP" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_COMP">
-							{% for skill in pp['skill_groups']['COMP LANG'] %}
+						<select multiple="multiple" name="skills_GENERAL" class="input-xlarge" value="{{ pp['employee']['skills'] }}" id="skills_GENERAL">
+							{% for skill in pp['skill_groups']['GENERAL'] %}
 								<option {% if skill['id'] in pp['employee']['skills'] %} SELECTED {% endif %} value="{{ skill['id'] }}">{{ skill['name'] }}</option>
 							{% endfor %}
 						</select>
@@ -343,11 +343,11 @@
 			placeholder: "Select an office..."
 		});
 		$('#managing_ids').select2();
-		$('#skills_TECH').select2();
-		$('#skills_INDUSTRY').select2();
+		$('#skills_MONGODB').select2();
+		$('#skills_PROG').select2();
 		$('#skills_HUMAN').select2();
-		$('#skills_MONGO').select2();
- 		$('#skills_COMP').select2();
+		$('#skills_SPECIALTY').select2();
+ 		$('#skills_GENERAL').select2();
     	$('#primary_phone_provider').select2({
 			allowClear: true,
 			placeholder: "Select a provider..."
