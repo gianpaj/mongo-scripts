@@ -121,6 +121,15 @@ def main():
             openkeys_2wago = set([x['_id'] for x in wn.issues_opened(days_offset=14)])
             closedkeys_2wago = set([x['_id'] for x in wn.issues_closed(days_offset=14)])
             issues_by_customer = wn.issues_by_customer()
+            reportdoc = {"_id":project + "-" + str(weekago_noon_utc) + "," + str(today_noon_utc)}
+            reportdoc['project'] = project 
+            reportdoc['openkeys'] = list(openkeys) 
+            reportdoc['closedkeys'] = list(closedkeys) 
+            reportdoc['openkeys_1wago'] = list(openkeys_1wago) 
+            reportdoc['closedkeys_1wago'] = list(closedkeys_1wago) 
+            reportdoc['openkeys_2wago'] = list(openkeys_2wago) 
+            reportdoc['closedkeys_2wago'] = list(closedkeys_2wago) 
+            db.reports.save(reportdoc)
 
             print "Project: ", project
             print report_template.render({
