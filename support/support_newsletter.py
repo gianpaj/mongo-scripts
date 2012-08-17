@@ -112,36 +112,27 @@ def main():
         today_noon_utc = today_noon.astimezone(pytz.utc)
         weekago_noon_utc = today_noon_utc - datetime.timedelta(days=7);
 
-        wn = WeeklyNewsletter(project=results.project, week_start=weekago_noon_utc, week_finish=today_noon_utc)
-        print wn.week_start, wn.week_finish
-        openkeys = set([x['_id'] for x in wn.issues_opened()])
-        closedkeys = set([x['_id'] for x in wn.issues_closed()])
-        openkeys_1wago = set([x['_id'] for x in wn.issues_opened(days_offset=7)])
-        closedkeys_1wago = set([x['_id'] for x in wn.issues_closed(days_offset=7)])
-        openkeys_2wago = set([x['_id'] for x in wn.issues_opened(days_offset=14)])
-        closedkeys_2wago = set([x['_id'] for x in wn.issues_closed(days_offset=14)])
-        results = {"opened":list(openkeys),
-                   "closed":list(closedkeys),
-                   "openkeys_1wago":list(openkeys_1wago),
-                    "closedkeys_1wago" : list(closedkeys_1wago),
-                    "openkeys_2wago" : list(openkeys_2wago),
-                    "closedkeys_2wago" : list(closedkeys_2wago),
-                    "issues_by_customer" : wn.issues_by_customer()}
+        for project in ('CS', 'FREE'):
+            wn = WeeklyNewsletter(project=project, week_start=weekago_noon_utc, week_finish=today_noon_utc)
+            openkeys = set([x['_id'] for x in wn.issues_opened()])
+            closedkeys = set([x['_id'] for x in wn.issues_closed()])
+            openkeys_1wago = set([x['_id'] for x in wn.issues_opened(days_offset=7)])
+            closedkeys_1wago = set([x['_id'] for x in wn.issues_closed(days_offset=7)])
+            openkeys_2wago = set([x['_id'] for x in wn.issues_opened(days_offset=14)])
+            closedkeys_2wago = set([x['_id'] for x in wn.issues_closed(days_offset=14)])
+            issues_by_customer = wn.issues_by_customer()
 
-        print report_template.render({
-                                "week_start" : wn.week_start, 
-                                "week_finish" : wn.week_finish,
-                                "opened_issues": openkeys,
-                                "closed_issues": closedkeys,
-                                "opened_1wago" : openkeys_1wago,
-                                "closed_1wago" : closedkeys_1wago,
-                                "opened_2wago" : openkeys_2wago,
-                                "closed_2wago" : closedkeys_2wago,
-                                "issues_by_customer" : wn.issues_by_customer()})
-
-        for k in ["opened","closed","openkeys_1wago","closedkeys_1wago",
-                  "openkeys_2wago","closedkeys_2wago"]:
-            print k, len(results[k])
+            print "Project: ", project
+            print report_template.render({
+                                    "week_start" : wn.week_start, 
+                                    "week_finish" : wn.week_finish,
+                                    "opened_issues": openkeys,
+                                    "closed_issues": closedkeys,
+                                    "opened_1wago" : openkeys_1wago,
+                                    "closed_1wago" : closedkeys_1wago,
+                                    "opened_2wago" : openkeys_2wago,
+                                    "closed_2wago" : closedkeys_2wago,
+                                    "issues_by_customer" : issues_by_customer})
 
 class Report(object):
     pass
