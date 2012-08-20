@@ -351,6 +351,8 @@ class EditEmployee(CorpBase):
             else:
                 pp['is_current_user'] = False
 
+            pp['current_user_role'] = current_user_role(pp)
+
             # set up hash to get gravatar
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
             if pp['primary_email']:
@@ -478,6 +480,8 @@ class EditEmployee(CorpBase):
             else:
                 pp['is_current_user'] = False
 
+            pp['current_user_role'] = current_user_role(pp)
+
             pp['extra_fields'] = []
             for n in pp['employee'].keys():
                 if n not in employee_model.editable_keys() and n not in employee_model.no_show():
@@ -544,6 +548,19 @@ class EditEmployee(CorpBase):
             
             pp['error_message'] = "You must have values for first and last name."
             return env.get_template('employees/employees/edit.html').render(pp=pp)
+
+
+class DeleteEmployee(CorpBase):
+    @authenticated
+    @require_admin
+    def POST(self, pp, *args):
+        print "POST DeleteEmployee"
+        jira_username = args[0]
+        employee = corpdb.employees.find_one({"jira_uname": jira_username})
+        if employee:
+            corpdb.employees.update({"manager_ids": ObjectId(employee["_id"])}, {"$pull" : {"manager_ids" : ObjectId(employee["_id"])} }, upsert=False, multi=True )
+            corpdb.employees.remove(employee['_id'])
+        raise web.seeother('/employees')
 
 
 class RateSkills(CorpBase):
@@ -1326,6 +1343,7 @@ urls = (
         '/employees/(.*)/editemails', EditEmailAddress,
         '/employees/(.*)/editimage', EditEmployeeImage,
         '/employees/(.*)/newfield', NewEmployeeField,
+        '/employees/(.*)/delete', DeleteEmployee,
         '/employees/(.*)/deleteimage', DeleteEmployeeImage,
         '/employees/new', NewEmployee,
         '/employees/(.*)', Employees,

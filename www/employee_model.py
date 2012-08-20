@@ -34,7 +34,8 @@ def editable_keys():
 			'skills',
 			'skype_id',
 			'stackoverflow_id',
-			'email_addresses']
+			'email_addresses', 
+			'manager_ids']
 
 
 def display_keys():
@@ -57,7 +58,8 @@ def no_show():
 			'title',
 			'role',
 			'jira_uname',
-			'bio']
+			'bio',
+			'manager_ids']
 			
 def generate_date(date_string):
 	if len(date_string) != 0:

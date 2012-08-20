@@ -248,18 +248,19 @@
 					</div><!-- controls -->
 			</div><!-- control-group -->			
 
-		{% if pp['employee']['role'] == "manager" %}
-			<div class="control-group">
+		{% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}
+		<!-- 	<div class="control-group">
 				<label class="control-label">Managing</label>
 					<div class="controls">
 						<select multiple="multiple" class="input-xlarge" name="managing_ids" id="managing_ids">
 						{% for member in pp['team_members'] %}
-							<option value="{{ member._id }}" {% if member._id.__str__() in pp['employee']['managing_ids'] %} SELECTED {% endif %} >
+							<option value="{{ member['_id'] }}" {% if member['_id'] in pp['employee']['managing_ids'] %} SELECTED {% endif %} >
 								{{ member.first_name }} {{ member.last_name }}</option>
 						{% endfor %}
 						</select>
-					</div><!-- controls -->
-			</div><!-- control-group -->
+					</div>
+			</div>-->
+		
 		{% endif %}
 
 		<div class="control-group">
