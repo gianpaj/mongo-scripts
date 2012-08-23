@@ -1,3 +1,6 @@
+import site
+site.addsitedir("/data/sites/corp_prod/lib/python2.6/site-packages")
+
 import logging
 import os
 import sys
