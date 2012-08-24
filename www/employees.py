@@ -423,6 +423,8 @@ class EditEmployee(CorpBase):
         jira_uname = args[0]
         employee = corpdb.employees.find_one({"jira_uname": jira_uname})
 
+        pp['current_user_role'] = current_user_role(pp)
+
         #a first name and last name must be entered
         if len(form['first_name']) > 0 and len(form['last_name']) > 0:
 
@@ -444,7 +446,8 @@ class EditEmployee(CorpBase):
                                 managed_employee["manager_ids"].append(employee['_id'])
                                 corpdb.employees.save(managed_employee)
                 elif n == "team_ids":
-                    employee['team_ids'] = map(lambda team_id: ObjectId(team_id), form['team_ids'])
+                    if pp['current_user_role'] == "admin" or pp['current_user_role'] == "manager":
+                        employee['team_ids'] = map(lambda team_id: ObjectId(team_id), form['team_ids'])
                 else:
                     employee[n] = form[n]
 
@@ -480,7 +483,6 @@ class EditEmployee(CorpBase):
             else:
                 pp['is_current_user'] = False
 
-            pp['current_user_role'] = current_user_role(pp)
 
             pp['extra_fields'] = []
             for n in pp['employee'].keys():
