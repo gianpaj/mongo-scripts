@@ -26,17 +26,27 @@
 	
 </header>
 
-	{% if pp['employee']['skills'].__len__() > 0 %}
-	<dl class="dl-horizontal">
-		<dt>Skills</dt><dd>
-	 		{% for skill in pp['employee']['skills'] %}
-				<p><a href="/skills/{{pp['skills'][skill]['_id'] }}">{{ pp['skills'][skill]['name'] }}</a> {% for i in range(pp['employee']['skills'][skill]) %} {{ "*"}} {% endfor %}</p>
-			{% endfor %}
-			</dd>
-	</dl>
-	{% endif %}
+
+    {% if pp['employee']['employee_status'] == "Former" %}
+    <dl class="dl-horizontal">
+        <dt>Employee Status</dt><dd>
+            {{ pp['employee']['employee_status']}}
+        </dd>
+    </dl>
+    {% endif %}
+
+    {% if pp['employee']['skills'].__len__() > 0 %}
+        {% for skillgroup in pp['skills'] %}
+            <dl class="dl-horizontal">
+                <dt>{{skillgroup.title()}} Skills</dt>
+                    <dd>{% for skillid in pp['skills'][skillgroup] %}
+                        <p><a href="/skills/{{pp['skills'][skillgroup][skillid][0]['_id']}}">{{pp['skills'][skillgroup][skillid][0]['name']}}</a>{% for i in range(pp['skills'][skillgroup][skillid][1]) %} {{ "*"}} {% endfor %}</p>
+                        {% endfor %}</dd>
+            </dl>
+        {% endfor %}
+    {% endif %}
 	<dl class="dl-horizontal" style="border-top:none;">
-		
+        
 		<dt>Org structure</dt>
 		{% if pp['manager_hierarchy'].__len__() > 0 %}
 			<dd>{% for manager in pp['manager_hierarchy'] %}

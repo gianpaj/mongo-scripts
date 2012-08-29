@@ -135,10 +135,10 @@ class EmployeesIndex(CorpBase):
         print "GET EmployeesIndex"
         
         # this isn't the most efficient way of getting a random document, but the collection is too small for it really to matter
-        range_max = corpdb.employees.find().count()
+        range_max = corpdb.employees.find({"employee_status" : {"$ne": "Former"}}).count()
         if range_max > 1:
             random_int = random.randint(1, range_max)
-            pp['random_employee'] = corpdb.employees.find().skip(random_int-1).next()
+            pp['random_employee'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).skip(random_int-1).next()
             pp['random_employee_primary_email'] = employee_model.primary_email(pp['random_employee'])
             # Set up hash for getting gravatar
             if pp['random_employee_primary_email']:
@@ -147,7 +147,7 @@ class EmployeesIndex(CorpBase):
                 pp['random_employee_hash'] = ""
 
         pp['current_user_role'] = current_user_role(pp)
-        pp['employees'] = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
+        pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne": "Former"}}).sort("last_name", pymongo.ASCENDING)
 
         return env.get_template('employees/employees/index.html').render(pp=pp)
 
@@ -169,7 +169,7 @@ class ExportEmployeesCSV(CorpBase):
     def GET(self, pp):
         print "GET ExportEmployeesCSV"
 
-        employees = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
+        employees = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("last_name", pymongo.ASCENDING)
 
         employees_csv = []
         headers = ["last name","first name", "title", "jira username", "office", "phone", "primary email", "team(s)"]
@@ -207,7 +207,7 @@ class ExportEmployeesSkillsCSV(CorpBase):
     def GET(self, pp):
         print "GET ExportEmployeesSkillsCSV"
 
-        employees = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
+        employees = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("last_name", pymongo.ASCENDING)
 
         employees_csv = []
         headers = ["last name","first name", "title", "email", "office"]
@@ -282,7 +282,13 @@ class Employees(CorpBase):
             if 'skills' in pp['employee']:
                 # TODO: use $in
                 for skill_id in pp['employee']['skills']:
-                     pp['skills'][str(skill_id)] = corpdb.skills.find_one(ObjectId(skill_id))
+                    skill_groups = corpdb.skills.find_one(ObjectId(skill_id))['groups']
+                    # adds the skill to group buckets
+                    for group_id in skill_groups:
+                        group_name = corpdb.skill_groups.find_one(group_id)['name']
+                        if group_name not in pp['skills']:
+                            pp['skills'][group_name] = {}
+                        pp['skills'][group_name][str(skill_id)] = [corpdb.skills.find_one(ObjectId(skill_id)), pp['employee']['skills'][skill_id]]
 
             # set up hash to get gravatar
             pp['employee']['email'] = employee_model.primary_email(pp['employee'])
@@ -336,7 +342,7 @@ class EditEmployee(CorpBase):
             raise web.seeother('/employees')
         else:
             pp['offices'] = corpdb.employees.distinct("office")
-            pp['statuses'] = corpdb.employees.distinct("employee_status")
+            pp['statuses'] = corpdb.employees.distinct("employee_status").append("Former")
             pp['team_members'] = corpdb.employees.find({"_id": {"$ne": pp['employee']['_id']}})
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
 
@@ -783,7 +789,7 @@ class ExportAllEmployeesVcard(CorpBase):
         print "GET ExportAllEmployeesVcard"
         vcard_str = ""
 
-        for employee in corpdb.employees.find().sort("last_name", pymongo.ASCENDING):
+        for employee in corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("last_name", pymongo.ASCENDING):
             try:
                 vcard = employee_model.to_vcard(employee)
             except:
@@ -851,7 +857,7 @@ class Teams(CorpBase):
             pp['team'] = corpdb.teams.find_one(ObjectId(team_id))
 
             if pp['team']:
-	            pp['team_members'] = corpdb.employees.find({"team_ids": pp['team']['_id']}).sort("name", pymongo.ASCENDING)
+	            pp['team_members'] = corpdb.employees.find({"team_ids": pp['team']['_id'], "employee_status" : {"$ne" : "Former"}}).sort("name", pymongo.ASCENDING)
 	            pp['managed_teams'] = corpdb.teams.find({"managing_team_ids": pp['team']['_id']})
 	            if "managing_team_ids" in pp['team']:
 	                pp['managing_teams'] = corpdb.teams.find({"_id" : { "$in" : pp['team']['managing_team_ids']}})
@@ -975,7 +981,7 @@ class Skills(CorpBase):
                 pp['skill_groups'] = []
                 pp['employees'] = []
                 pp['skill_groups'] = corpdb.skill_groups.find({"_id" : { "$in" : pp['skill']['groups']}})
-                pp['employees'] = corpdb.employees.find({"skills."+ str(pp['skill']['_id']): {"$exists":True} })
+                pp['employees'] = corpdb.employees.find({"skills."+ str(pp['skill']['_id']): {"$exists":True}, "employee_status": {"$ne": "Former"} })
                 # Sort employees by their skill level
                 pp['employees'] = sorted(pp['employees'], key=lambda employee: -employee['skills'][str(pp['skill']['_id'])])
                 return env.get_template('employees/skills/show.html').render(pp=pp)
@@ -1202,8 +1208,9 @@ class ProjectGroups(CorpBase):
                 pp['employees'] = []
                 for member in pp['project_group']['members']:
                     employee = corpdb.employees.find_one(ObjectId(member['employee_id']))
-                    employee['project_role'] = member['role']
-                    pp['employees'].append(employee)
+                    if employee['employee_status'] != "Former":
+                        employee['project_role'] = member['role']
+                        pp['employees'].append(employee)
                 return env.get_template('employees/project_groups/show.html').render(pp=pp)
 
             else:
@@ -1230,7 +1237,7 @@ class NewProjectGroup(CorpBase):
     # TODO private and public groups
     def GET(self, pp):
         print "GET NewProjectGroup"
-        pp['employees'] = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
+        pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("last_name", pymongo.ASCENDING)
         return env.get_template('employees/project_groups/new.html').render(pp=pp)
 
     @authenticated
@@ -1263,8 +1270,9 @@ class EditProjectGroup(CorpBase):
              pp['employees'] = []
              for member in pp['project_group']['members']:
                  employee = corpdb.employees.find_one(ObjectId(member['employee_id']))
-                 employee['project_role'] = member['role']
-                 pp['employees'].append(employee) 
+                 if employee['employee_status'] != "Former":
+                    employee['project_role'] = member['role']
+                    pp['employees'].append(employee) 
              return env.get_template('employees/project_groups/edit.html').render(pp=pp)            
          else:
              raise web.seeother('/projectgroups')
@@ -1300,7 +1308,7 @@ class NewProjectGroupMember(CorpBase):
         # get ids of all members of the project group
         member_ids = map(lambda member: member['employee_id'], project_group['members'])
         # only get the employees who are not already in the project group for dropdown
-        pp['employees'] = corpdb.employees.find({"_id": {"$nin": member_ids}}).sort("last_name", pymongo.ASCENDING)
+        pp['employees'] = corpdb.employees.find({"_id": {"$nin": member_ids}, "employee_status" : { "$ne" : "Former"}}).sort("last_name", pymongo.ASCENDING)
         pp['roles'] = ['PRODUCT MANAGER','PROJECT MANAGER', 'DOCUMENTER','DEVELOPER','STAKEHOLDER', 'MEMBER']
         return env.get_template('employees/project_groups/new_member.html').render(pp=pp)
 
