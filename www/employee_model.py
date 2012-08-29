@@ -15,7 +15,7 @@ def editable_keys():
 			'employee_status', 
 			'last_name', 
 			'office', 
-			'onsip_conf_bridge', 
+			'onsip_conf_bridge',
 			'twitter',  
 			'seat', 
 			'intercall_pin', 
@@ -76,14 +76,14 @@ def generate_date(date_string):
 def get_managers(employee):
 	managers = []
 	if "manager_ids" in employee.keys():
-		for manager in corpdb.employees.find({"_id" : { "$in" : employee['manager_ids']}}):
+		for manager in corpdb.employees.find({"_id" : { "$in" : employee['manager_ids']}, "employee_status" : {"$ne" : "Former"}}):
 			print "manager ids found"
 			managers.append(manager)
 	
 	if "team_ids" in employee.keys() and employee['team_ids']:
 		managing_team_ids = map(lambda team: team["_id"], corpdb.teams.find({"managing_team_ids": { "$in" : employee['team_ids']}})) # ids of teams managing teams employee belongs to
 		if managing_team_ids:
-			for manager in corpdb.employees.find({"team_ids": managing_team_ids}):
+			for manager in corpdb.employees.find({"team_ids": managing_team_ids, "employee_status" : {"$ne" : "Former"} }):
 				if manager not in managers:
 					managers.append(manager)
 	return managers
@@ -152,7 +152,7 @@ def org_structure_list(team=None):
 	org_list = ""
 	if 'managing_team_ids' in team.keys():
 		org_list = "<li>" + team['name'] + "<br/>"
-		for employee in corpdb.employees.find({"team_ids" : team['_id']}):
+		for employee in corpdb.employees.find({"team_ids" : team['_id'], "employee_status" : {"$ne": "Former"}}):
 			org_list = org_list + "<p><a href='employees/" + employee['jira_uname'] + "'>" + employee['first_name'] + " " + employee['last_name'] + "</a></p>" 
 		org_list = org_list + "<ul>"
 		managing_list = ""
@@ -163,7 +163,7 @@ def org_structure_list(team=None):
 		
 	else:
 		org_list = "<li>"+team['name'] + "<br/>"
-		for employee in corpdb.employees.find({"team_ids" : team['_id']}):
+		for employee in corpdb.employees.find({"team_ids" : team['_id'], "employee_status" : {"$ne": "Former"}}):
 			org_list = org_list + "<p><a href='employees/" + employee['jira_uname'] + "'>" + employee['first_name'] + " " + employee['last_name'] + "</a></p>"
 		org_list = org_list + "</li>"
 

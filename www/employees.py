@@ -147,7 +147,10 @@ class EmployeesIndex(CorpBase):
                 pp['random_employee_hash'] = ""
 
         pp['current_user_role'] = current_user_role(pp)
-        pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne": "Former"}}).sort("last_name", pymongo.ASCENDING)
+        if pp['current_user_role'] == "admin":
+            pp['employees'] = corpdb.employees.find().sort("last_name", pymongo.ASCENDING)
+        else:
+            pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne": "Former"}}).sort("last_name", pymongo.ASCENDING)
 
         return env.get_template('employees/employees/index.html').render(pp=pp)
 
@@ -342,7 +345,7 @@ class EditEmployee(CorpBase):
             raise web.seeother('/employees')
         else:
             pp['offices'] = corpdb.employees.distinct("office")
-            pp['statuses'] = corpdb.employees.distinct("employee_status").append("Former")
+            pp['statuses'] = list(set(corpdb.employees.distinct("employee_status")+["Former"]))
             pp['team_members'] = corpdb.employees.find({"_id": {"$ne": pp['employee']['_id']}})
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
 
@@ -813,8 +816,8 @@ class OrgStructure(CorpBase):
         # Populate a dict of members for each team
         for team in corpdb.teams.find():
             pp['teams'][team['name']] = {}
-            for employee in corpdb.employees.find({"team_ids": ObjectId(team['_id'])}):
-                if employee['first_name'] and employee['last_name']:
+            for employee in corpdb.employees.find({"team_ids": ObjectId(team['_id']), "employee_status" : {"$ne" : "Former"}}):
+                if employee['first_name'] and employee['last_name'] :
                     pp['teams'][team['name']][str(employee['jira_uname'])] = str(employee['first_name'] + " " + employee['last_name'])
 
         pp['org_chart'] = employee_model.org_structure_list()
