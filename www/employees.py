@@ -1042,6 +1042,12 @@ class EditSkill(CorpBase):
              # Only save the name if it's unique TODO: use unique index on name and try/except instead
              if corpdb.skills.find({"name": form['name'].upper() }).count() == 0:
                  pp['skill']['name'] = form['name'].upper()
+             # Group name is blank. Render edit page with error message.
+             if len(form['skill_groups']) == 0:
+                pp['name'] = form['name']
+                pp['skill_groups'] = corpdb.skill_groups.find().sort("name", pymongo.ASCENDING)
+                pp['error_message'] = "You must have a group for the skill."
+                return env.get_template('employees/skills/edit.html').render(pp=pp)
              # Save the skill group ids
              pp['skill']['groups'] = map(lambda skill_group_id: ObjectId(skill_group_id), form['skill_groups'])
              corpdb.skills.save(pp['skill'])
