@@ -76,7 +76,7 @@
 					<div class="controls">
 						<select name="primary_phone_provider" class="input-xlarge" value="{{ pp['employee']['primary_phone_provider'] }}" id="primary_phone_provider">
 							<option></option>
-							{% for provider in ["ATT", "Verizon", "T-Mobile","Virgin Mobile", "Sprint", "Google Voice"] %}
+							{% for provider in ["AT&T", "Verizon", "T-Mobile","Virgin Mobile", "Sprint", "Google Voice"] %}
 								<option {% if provider == pp['employee']['primary_phone_provider'] %} SELECTED {% endif %} >{{ provider }}</option>
 							{% endfor %}
 						</select>
@@ -115,13 +115,6 @@
 						<input type="text" class="input-xlarge" name="twitter" value="{{ pp['employee']['twitter'] }}" id="twitter">
 					</div><!-- controls-->
 			</div><!-- control-group-->
-            
-            <div class="control-group">
-				<label class="control-label">Github</label>
-                <div class="controls">
-                    <input type="text" class="input-xlarge" name="github" value="{{ pp['employee']['github'] }}" id="github">
-                        </div><!-- controls-->
-			</div><!-- control-group-->
 
 			<div class="control-group">
 				<label class="control-label">Secondary Phone</label>
@@ -135,7 +128,7 @@
 					<div class="controls">
 						<select name="secondary_phone_provider" class="input-xlarge" value="{{ pp['employee']['primary_phone_provider'] }}" id="secondary_phone_provider">
 							<option></option>
-							{% for provider in ["ATT", "Verizon", "T-Mobile","Virgin Mobile", "Sprint", "Google Voice"] %}
+							{% for provider in ["AT&T", "Verizon", "T-Mobile","Virgin Mobile", "Sprint", "Google Voice"] %}
 								<option {% if provider == pp['employee']['secondary_phone_provider'] %} SELECTED {% endif %} >{{ provider }}</option>
 							{% endfor %}
 						</select>
