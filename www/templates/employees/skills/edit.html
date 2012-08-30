@@ -62,7 +62,10 @@
 
 <script type="text/javascript" charset="utf-8">
 	jQuery(function($){
-    	$('#skill_groups').select2();
+           $('#skill_groups').select2({
+                                      allowClear: false,
+                                      placeholder: "Must Select a Group Here"
+           });
 	});
 </script>
 

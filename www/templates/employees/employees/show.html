@@ -39,8 +39,8 @@
         {% for skillgroup in pp['skills'] %}
             <dl class="dl-horizontal">
                 <dt>{{skillgroup.title()}} Skills</dt>
-                    <dd>{% for skillid in pp['skills'][skillgroup] %}
-                        <p><a href="/skills/{{pp['skills'][skillgroup][skillid][0]['_id']}}">{{pp['skills'][skillgroup][skillid][0]['name']}}</a>{% for i in range(pp['skills'][skillgroup][skillid][1]) %} {{ "*"}} {% endfor %}</p>
+                <dd>{% for skill in pp['skills'][skillgroup] %}
+                        <p><a href="/skills/{{skill[0]._id}}">{{skill[0].name}}</a>{% for i in range(skill[1]) %} {{ "*"}} {% endfor %}</p>
                         {% endfor %}</dd>
             </dl>
         {% endfor %}

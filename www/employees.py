@@ -290,8 +290,13 @@ class Employees(CorpBase):
                     for group_id in skill_groups:
                         group_name = corpdb.skill_groups.find_one(group_id)['name']
                         if group_name not in pp['skills']:
-                            pp['skills'][group_name] = {}
-                        pp['skills'][group_name][str(skill_id)] = [corpdb.skills.find_one(ObjectId(skill_id)), pp['employee']['skills'][skill_id]]
+                            pp['skills'][group_name] = []
+                        pp['skills'][group_name].append( ( corpdb.skills.find_one(ObjectId(skill_id)), pp['employee']['skills'][skill_id]) )
+                #sort each skill group's skills by number of stars.
+                for skill_group in pp['skills']:
+                    pp['skills'][skill_group] = sorted(pp['skills'][skill_group], key=lambda skill: -skill[1])
+
+                            
 
             # set up hash to get gravatar
             pp['employee']['email'] = employee_model.primary_email(pp['employee'])
@@ -984,9 +989,10 @@ class Skills(CorpBase):
                 pp['skill_groups'] = []
                 pp['employees'] = []
                 pp['skill_groups'] = corpdb.skill_groups.find({"_id" : { "$in" : pp['skill']['groups']}})
-                pp['employees'] = corpdb.employees.find({"skills."+ str(pp['skill']['_id']): {"$exists":True}, "employee_status": {"$ne": "Former"} })
+                for x in range(1, 6):  
+                    pp['employees'].insert(x-1, corpdb.employees.find({"skills."+ str(pp['skill']['_id']): x, "employee_status" : {"$ne": "Former"}}))
                 # Sort employees by their skill level
-                pp['employees'] = sorted(pp['employees'], key=lambda employee: -employee['skills'][str(pp['skill']['_id'])])
+#pp['employees'] = sorted(pp['employees'], key=lambda employee: -employee['skills'][str(pp['skill']['_id'])])
                 return env.get_template('employees/skills/show.html').render(pp=pp)
 
             else:
