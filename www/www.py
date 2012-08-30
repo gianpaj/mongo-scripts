@@ -1,5 +1,10 @@
-import logging
 import os
+here = os.path.abspath(os.path.dirname(__file__))
+sitepkgs = os.path.normpath(os.path.join(here, '../lib/python2.6/site-packages/'))
+import site
+site.addsitedir(sitepkgs)
+
+import logging
 import sys
 import pprint
 

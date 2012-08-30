@@ -14,9 +14,16 @@
 	</div><!-- /.employee-image -->	
 	{% if pp['can_edit'] %}
 	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}/edit" style="display:inline-block;">(Edit)</a>
-	<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills" style="display:inline-block;">(Rate Skills)</a></div>
+	<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills" style="display:inline-block;">(Rate Skills)</a>
+	{% if pp['current_user_role'] == "admin" %}
+		<form enctype="multipart/form-data" action="/employees/{{ pp['employee']['jira_uname'] }}/delete" method="post" style="display:inline-block;" id="delete_employee"><a id="delete" href="#" onclick="javascript:confirmDelete()">(Delete)</a></form>
 	{% endif %}
-	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}.vcf" style="display:inline-block;">get vcard</a></div>
+	</div>
+	{% endif %}
+	
+	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}.vcf" style="display:inline-block;">get vcard</a>
+	</div>
+	
 </header>
 
 	{% if pp['employee']['skills'].__len__() > 0 %}
@@ -106,6 +113,12 @@
 			);
 			
 		});
+		function confirmDelete() {
+			console.log($("#delete_employee"));
+		  if (confirm("Are you sure you want to delete this employee?")) {
+		    $("#delete_employee").submit();
+		  }
+		}
 	</script>
 
 {% endblock %}

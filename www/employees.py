@@ -351,6 +351,8 @@ class EditEmployee(CorpBase):
             else:
                 pp['is_current_user'] = False
 
+            pp['current_user_role'] = current_user_role(pp)
+
             # set up hash to get gravatar
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
             if pp['primary_email']:
@@ -421,6 +423,8 @@ class EditEmployee(CorpBase):
         jira_uname = args[0]
         employee = corpdb.employees.find_one({"jira_uname": jira_uname})
 
+        pp['current_user_role'] = current_user_role(pp)
+
         #a first name and last name must be entered
         if len(form['first_name']) > 0 and len(form['last_name']) > 0:
 
@@ -442,7 +446,8 @@ class EditEmployee(CorpBase):
                                 managed_employee["manager_ids"].append(employee['_id'])
                                 corpdb.employees.save(managed_employee)
                 elif n == "team_ids":
-                    employee['team_ids'] = map(lambda team_id: ObjectId(team_id), form['team_ids'])
+                    if pp['current_user_role'] == "admin" or pp['current_user_role'] == "manager":
+                        employee['team_ids'] = map(lambda team_id: ObjectId(team_id), form['team_ids'])
                 else:
                     employee[n] = form[n]
 
@@ -477,6 +482,7 @@ class EditEmployee(CorpBase):
                 pp['is_current_user'] = True
             else:
                 pp['is_current_user'] = False
+
 
             pp['extra_fields'] = []
             for n in pp['employee'].keys():
@@ -544,6 +550,19 @@ class EditEmployee(CorpBase):
             
             pp['error_message'] = "You must have values for first and last name."
             return env.get_template('employees/employees/edit.html').render(pp=pp)
+
+
+class DeleteEmployee(CorpBase):
+    @authenticated
+    @require_admin
+    def POST(self, pp, *args):
+        print "POST DeleteEmployee"
+        jira_username = args[0]
+        employee = corpdb.employees.find_one({"jira_uname": jira_username})
+        if employee:
+            corpdb.employees.update({"manager_ids": ObjectId(employee["_id"])}, {"$pull" : {"manager_ids" : ObjectId(employee["_id"])} }, upsert=False, multi=True )
+            corpdb.employees.remove(employee['_id'])
+        raise web.seeother('/employees')
 
 
 class RateSkills(CorpBase):
@@ -1326,6 +1345,7 @@ urls = (
         '/employees/(.*)/editemails', EditEmailAddress,
         '/employees/(.*)/editimage', EditEmployeeImage,
         '/employees/(.*)/newfield', NewEmployeeField,
+        '/employees/(.*)/delete', DeleteEmployee,
         '/employees/(.*)/deleteimage', DeleteEmployeeImage,
         '/employees/new', NewEmployee,
         '/employees/(.*)', Employees,
