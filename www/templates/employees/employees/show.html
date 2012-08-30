@@ -63,6 +63,22 @@
 					<dd>{{ pp['employee'][n].strftime("%m/%d") }}</dd>
 				{% elif (n == "start_date") and  pp['employee'][n] %}
 					<dd>{{ pp['employee'][n].strftime("%m/%d/%Y") }}</dd>
+                {% elif n == "github" %}
+                    {% if pp['employee'][n][0:4] == "http" %}
+                        <dd><a href='{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
+                    {% else %}
+                        <dd><a href='//github.com/{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
+                    {% endif %}
+                {% elif n == "twitter" %}
+                    {% if (pp['employee'][n][0:4] == "http") or (pp['employee'][n][0:7] == "twitter") %}
+                        <dd><a href='{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
+                    {% else %}
+                        <dd><a href='//twitter.com/{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
+                    {% endif %}
+                {% elif n == "jira_uname" %}
+                    <dd><a href='//jira.mongodb.org/secure/ViewProfile.jspa?name={{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
+                {% elif n == "email" %}
+                    <dd><a href='mailto:{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
 				{% elif pp['employee'][n] %}
 					<dd>{{ pp['employee'][n] }}</dd>
 				{% else %}
@@ -82,6 +98,14 @@
 					<dd>{{ pp['employee'][n].strftime("%m/%d") }}</dd>
 				{% elif (n == "start_date") and  pp['employee'][n] %}
 					<dd>{{ pp['employee'][n].strftime("%m/%d/%Y") }}</dd>
+                {% elif n == "stackoverflow_id" %}
+                    {% if pp['employee'][n][0:4] == "http" %}
+                        <dd><a href='{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
+                    {% else %}
+                        <dd><a href='stackoverflow.com/users/{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
+                    {% endif %}
+                {% elif n == "skype_id" %}
+                    <dd><a href='skype:{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
 				{% elif pp['employee'][n] %}
 					<dd>{{ pp['employee'][n] }}</dd>
 				{% else %}

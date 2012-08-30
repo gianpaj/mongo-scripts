@@ -115,6 +115,13 @@
 						<input type="text" class="input-xlarge" name="twitter" value="{{ pp['employee']['twitter'] }}" id="twitter">
 					</div><!-- controls-->
 			</div><!-- control-group-->
+            
+            <div class="control-group">
+				<label class="control-label">Github</label>
+                <div class="controls">
+                    <input type="text" class="input-xlarge" name="github" value="{{ pp['employee']['github'] }}" id="github">
+                        </div><!-- controls-->
+			</div><!-- control-group-->
 
 			<div class="control-group">
 				<label class="control-label">Secondary Phone</label>
@@ -145,7 +152,7 @@
 			<div class="control-group">
 				<label class="control-label">Stackoverflow ID</label>
 					<div class="controls">
-						<input type="text" class="input-xlarge" name="stackoverflow_id" value="{{ pp['employee']['stackoverflow_id'] }}" id="stackoverflow_id">
+						<input type="text" class="input-xlarge" name="stackoverflow_id" value="{{ pp['employee']['stackoverflow_id'] }}" id="stackoverflow_id" placeholder="i.e. 1159635/louisa">
 					</div><!-- controls-->
 			</div><!-- controls-->
 			
@@ -361,7 +368,7 @@
 			});
 		$('#team_ids').select2({
 			placeholder: "Select a team..."
-		});
+            });
 	});
 	
 	$(document).ready(function() {

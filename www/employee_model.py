@@ -16,7 +16,8 @@ def editable_keys():
 			'last_name', 
 			'office', 
 			'onsip_conf_bridge',
-			'twitter',  
+			'twitter',
+            'github',
 			'seat', 
 			'intercall_pin', 
 			#'jira_uname', 
@@ -44,6 +45,7 @@ def display_keys():
 			'primary_chat',
 			'extension',
 			'twitter',
+            'github',
 			'seat',
 			'jira_uname']
 			
