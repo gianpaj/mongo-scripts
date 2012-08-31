@@ -67,12 +67,14 @@ def generate_date(date_string):
 	if len(date_string) != 0:
 		split_date = date_string.split(" ")[0]
 		split_date = split_date.split("-")
-		
 		day = int(split_date[0])
 		month = int(split_date[1])
-		year = int(split_date[2])
-		date = datetime(year, month, day,0,0,0)
-		return date
+        if (split_date.__len__() > 2):
+            year = int(split_date[2])
+        else:
+            year = 2012
+        date = datetime(year, month, day,0,0,0)
+        return date
 
 # returns a list of managers(cursors), taking into account manager override
 def get_managers(employee):

@@ -10,7 +10,7 @@
 </header>
 
 	<dl class="dl-horizontal" style="border-top:none;">
-		<dt>Belongs to Skill Groups</dt>
+		<dt>Skill Groups</dt>
 		{% for skill_group in pp['skill_groups'] %}
 			<dd><a href="/skillgroups/{{ skill_group['_id']}}">{{ skill_group['name']}}</a></dd>
 		{% endfor %}
@@ -20,11 +20,11 @@
 		{% for x in range(4, -1, -1) %}
             {% if pp['employees'][x][0]%}
             	<dl class="dl-horizontal">
-                {% if x == 4 %} <dt>Guru</dt>
-                {% elif x == 3 %} <dt>Excellent</dt>
-                {% elif x == 2 %} <dt>Average</dt>
-                {% elif x == 1 %} <dt>Fair</dt>
-                {% elif x == 0 %} <dt>Learning</dt>
+                    {% if x == 4 %} <dt>Guru * * * * * </dt>
+                {% elif x == 3 %} <dt>Excellent * * * * </dt>
+                {% elif x == 2 %} <dt>Average * * * </dt>
+                {% elif x == 1 %} <dt>Fair * * </dt>
+                {% elif x == 0 %} <dt>Learning * </dt>
                 {% endif %}
                 <dd>{% for employee in pp['employees'][x] %}
                     <p><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee['last_name']}}</a></p>

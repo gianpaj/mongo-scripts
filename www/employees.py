@@ -282,6 +282,7 @@ class Employees(CorpBase):
 
             # Construct a list of skill names
             pp['skills'] = {}
+            pp['top_tech_skills'] = []
             if 'skills' in pp['employee']:
                 # TODO: use $in
                 for skill_id in pp['employee']['skills']:
@@ -289,14 +290,15 @@ class Employees(CorpBase):
                     # adds the skill to group buckets
                     for group_id in skill_groups:
                         group_name = corpdb.skill_groups.find_one(group_id)['name']
+                        # sets up the top_tech_skills field
+                        if (pp['employee']['skills'][skill_id] == 5) and (group_name != "HUMAN LANGUAGE") and (pp['top_tech_skills'].__len__() < 4) :
+                            pp['top_tech_skills'].append(corpdb.skills.find_one(ObjectId(skill_id)))
                         if group_name not in pp['skills']:
                             pp['skills'][group_name] = []
                         pp['skills'][group_name].append( ( corpdb.skills.find_one(ObjectId(skill_id)), pp['employee']['skills'][skill_id]) )
                 #sort each skill group's skills by number of stars.
                 for skill_group in pp['skills']:
                     pp['skills'][skill_group] = sorted(pp['skills'][skill_group], key=lambda skill: -skill[1])
-
-                            
 
             # set up hash to get gravatar
             pp['employee']['email'] = employee_model.primary_email(pp['employee'])
@@ -488,7 +490,7 @@ class EditEmployee(CorpBase):
         else:
             pp['employee'] = employee
             pp['offices'] = corpdb.employees.distinct("office")
-            pp['statuses'] = corpdb.employees.distinct("employee_status")
+            pp['statuses'] = list(set(corpdb.employees.distinct("employee_status")+["Former"]))
             pp['team_members'] = corpdb.employees.find({"_id": {"$ne": pp['employee']['_id']}})
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
 

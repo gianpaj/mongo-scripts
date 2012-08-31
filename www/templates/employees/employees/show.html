@@ -35,17 +35,16 @@
     </dl>
     {% endif %}
 
-    {% if pp['employee']['skills'].__len__() > 0 %}
-        {% for skillgroup in pp['skills'] %}
-            <dl class="dl-horizontal">
-                <dt>{{skillgroup.title()}} Skills</dt>
-                <dd>{% for skill in pp['skills'][skillgroup] %}
-                        <p><a href="/skills/{{skill[0]._id}}">{{skill[0].name}}</a>{% for i in range(skill[1]) %} {{ "*"}} {% endfor %}</p>
-                        {% endfor %}</dd>
-            </dl>
-        {% endfor %}
+    {% if pp['top_tech_skills'].__len__() > 0 %}
+    <dl class="dl-horizontal">
+        <dt>Top Tech Skills</dt>
+        <dd>{% for skill in pp['top_tech_skills'] %}
+            <a href="/skills/{{skill._id}}">{{skill.name}}&nbsp;|&nbsp;</a>
+        {% endfor %}</dd>
+    </dl>
     {% endif %}
-	<dl class="dl-horizontal" style="border-top:none;">
+
+	<dl class="dl-horizontal">
         
 		<dt>Org structure</dt>
 		{% if pp['manager_hierarchy'].__len__() > 0 %}
@@ -106,21 +105,36 @@
                     {% endif %}
                 {% elif n == "skype_id" %}
                     <dd><a href='skype:{{pp['employee'][n]}}'>{{pp['employee'][n]}}</a></dd>
-				{% elif pp['employee'][n] %}
+                {% elif pp['employee'][n] %}
 					<dd>{{ pp['employee'][n] }}</dd>
 				{% else %}
 					<dd>&nbsp;</dd>
 				{% endif %}
 			{% endif %}
 		{% endfor %}
-		
-	</div>	
-	
-	
+        
+	</div>
+        
+</dl>
+
+    <div id="skills" style="display:none;">
+        {% if pp['employee']['skills'].__len__() > 0 %}
+            {% for skillgroup in pp['skills'] %}
+                <dl class="dl-horizontal">
+                    <dt class>{{skillgroup.title()}} Skills</dt>
+                    <dd>{% for skill in pp['skills'][skillgroup] %}
+                        <p><a href="/skills/{{skill[0]._id}}">{{skill[0].name}}</a>{% for i in range(skill[1]) %} {{ "*"}} {% endfor %}</p>
+                        {% endfor %}</dd>
+                </dl>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+
+
 
 	
-	
-</dl>
+
 
 <button class="btn" onclick="Expand();" style="float:right;margin: 7px 0px 0px 0px;">+</button>
 <button class="btn" onclick="Expand();" style="display:none;float:right;margin: 7px 0px 0px 0px;">-</button>
@@ -135,6 +149,7 @@
 	<script type="text/javascript" charset="utf-8">
 		function Expand(){
 			$("#more_info").slideToggle();
+            $("#skills").slideToggle();
 			$(".btn").toggle();
 	    	return true;
 		}
