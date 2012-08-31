@@ -3,6 +3,7 @@ import sys
 import settings
 import suds.sudsobject
 import datetime
+from dateutil.relativedelta import *
 from pymongo import Connection
 from pymongo.errors import DuplicateKeyError
 import types
@@ -67,7 +68,7 @@ def update_custom_fields():#{{{
         db.customfields.save(pythonify_suds_obj(field))
 #}}}
 
-def populate_project(project='CS', extra_filter=None):
+def populate_project(project='CS', extra_filter=None):#{{{
     update_custom_fields()
     for issue in get_all_issues(project, extra_filter):
         fix_custom_fields(issue)
@@ -80,9 +81,10 @@ def populate_project(project='CS', extra_filter=None):
         issue["resolutiondate"] = jira.getResolutionDateByKey(issue["key"])
         issue = pythonify_suds_obj(issue)
         db.issues.save(issue, safe=True)
-        print "stored issue", issue['key']
+        print "stored issue", issue['key']#}}}
 
 def main():
+    print jira.getResolutionDateByKey("CS-2133")
     parser = argparse.ArgumentParser(description="Script for populating mongodb mirror of JIRA and generating reports")
     parser.add_argument("--project", dest="project", default=None, help="Project name (CS, FREE, etc)")
     parser.add_argument("--report", action="store_true", dest="report", help="Generate a report")
@@ -111,6 +113,13 @@ def main():
         today_noon = eastern.localize(datetime.datetime.today().replace(hour=12, minute=0, second=0, microsecond=0))
         today_noon_utc = today_noon.astimezone(pytz.utc)
         weekago_noon_utc = today_noon_utc - datetime.timedelta(days=7);
+        for month in xrange(1,9):
+            mr = MonthlyReport(project='CS', year=2012, month=month)
+            print "2012-%s"  % month
+            print "\t", mr.tickets_per_month()['result'][0]['total'], "tickets opened."
+            print "\t", mr.tickets_closed_per_month()['result'][0]['total'], "tickets closed."
+            print "\t", mr.numcomments_per_ticket_opened()['result'][0]['average_comments'], "avg # comments on tickets opened"
+            print "\t", mr.numcomments_per_ticket_closed()['result'][0]['average_comments'], "avg # comments on tickets closed" 
 
         for project in ('CS', 'FREE'):
             wn = WeeklyNewsletter(project=project, week_start=weekago_noon_utc, week_finish=today_noon_utc)
@@ -144,7 +153,74 @@ def main():
                                     "issues_by_customer" : issues_by_customer})
 
 class Report(object):
-    pass
+
+    def run_aggr(self, pipeline):
+        cmd = {"aggregate":"issues", "pipeline":[]}
+        filters = {"$match":{"project":self.project}}
+        cmd['pipeline'].append(filters)
+        if self.recent:
+            month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+            cmd['pipeline'].append( {"$match":{"$or":[{"created":{"$gte":month_ago}}, 
+                                                      {"updated":{"$gte":month_ago}}]}})
+
+        cmd['pipeline'] += pipeline
+        if VERBOSE:
+            print pipeline
+        return db.command(cmd)
+
+class MonthlyReport(Report):
+        # num free tickets by month
+        # num CS tickets by month
+        # num of comments / ticket for teach
+        # num days to close for tickets opened in a month
+        # num days to close for tickets closed in a month
+
+    def __init__(self, project='CS', year=None, month=None, recent=False): 
+        self.project = project
+        self.recent=recent
+        if year is  None or month is None:
+            year, month = datetime.datetime.utcnow().year, datetime.datetime.utcnow().month
+        self.year = year
+        self.month = month
+        self.monthstart = datetime.datetime(self.year, self.month, 1)
+        self.monthend = self.monthstart + relativedelta(day=31)
+
+    def tickets_per_month(self):
+        #TODO this could just be a regular .count()
+        pipeline = []
+        pipeline.append({"$match":{"$and":[{"created":{"$gte":self.monthstart}}, {"created":{"$lte":self.monthend}}]}})
+        pipeline.append( {"$group": {"_id":None, "total": {"$sum":1}}} )
+        cmdresult = self.run_aggr(pipeline)
+        return cmdresult
+
+    def tickets_closed_per_month(self):
+        #TODO this could just be a regular .count()
+        pipeline = []
+        pipeline.append({"$match":{"$and":[{"resolutiondate":{"$gte":self.monthstart}}, {"resolutiondate":{"$lte":self.monthend}}]}})
+        pipeline.append( {"$group": {"_id":None, "total": {"$sum":1}}} )
+        cmdresult = self.run_aggr(pipeline)
+        return cmdresult
+
+    def numcomments_per_ticket_opened(self):
+        pipeline = []
+        pipeline.append({"$match":{"$and":[{"created":{"$gte":self.monthstart}}, {"created":{"$lte":self.monthend}}]}})
+        pipeline.append({"$match":{"resolution":{"$ne":None}}})
+        pipeline.append( {"$unwind": "$comments"} )
+        pipeline.append( {"$group": {"_id":"$_id", "num_comments":{"$sum":1}}} )
+        pipeline.append( {"$group": {"_id":None, "average_comments":{"$avg":"$num_comments"}}} )
+        cmdresult = self.run_aggr(pipeline)
+        return cmdresult
+
+    def numcomments_per_ticket_closed(self):
+        pipeline = []
+        #print self.monthstart, self.monthend
+        pipeline.append({"$match":{"$and":[{"resolutiondate":{"$gte":self.monthstart}}, {"resolutiondate":{"$lte":self.monthend}}]}})
+        pipeline.append({"$match":{"resolution":{"$ne":None}}})
+        pipeline.append( {"$unwind": "$comments"} )
+        pipeline.append( {"$group": {"_id":"$_id", "num_comments":{"$sum":1}}} )
+        pipeline.append( {"$group": {"_id":None, "average_comments":{"$avg":"$num_comments"}}} )
+        cmdresult = self.run_aggr(pipeline)
+        return cmdresult
 
 class WeeklyNewsletter(Report):
 
