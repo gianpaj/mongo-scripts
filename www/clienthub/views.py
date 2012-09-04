@@ -446,6 +446,7 @@ class ClientDocView(app.page, CorpBase):
                 'sabina',
                 'alvin',
                 'spf13',
+                'richard@10gen.com',
             ])
 
             # unless they created the doc
