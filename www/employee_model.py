@@ -1,13 +1,9 @@
-import web
 from datetime import datetime
 import pymongo
-import gridfs
 import hashlib
 from bson.objectid import ObjectId
-import settings
 
-corpdb = pymongo.Connection(settings.corpdb_host).corp
-
+from corpbase import corpdb
 
 def editable_keys():
 	return ['intercall_code', 
