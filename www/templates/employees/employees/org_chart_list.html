@@ -1,0 +1,26 @@
+<!doctype html>
+
+<head>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<title>10gen internal corp site</title>
+
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/employees/js/jquery.jOrgChart.js"></script>
+
+	<link rel="stylesheet" href="/static/employees/css/jquery.jOrgChart.css"/>
+	<link rel="stylesheet" href="/static/employees/css/org_chart_custom.css"/>
+
+    <script>
+    jQuery(document).ready(function() {
+	    $("#org").jOrgChart();
+	});
+    </script>
+</head>
+
+<body>
+
+{{pp['org_chart']}}
+
+</body>
+</html>

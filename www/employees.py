@@ -831,6 +831,27 @@ class OrgStructure(CorpBase):
 
         return env.get_template('employees/employees/org_chart_jquery.html').render(pp=pp)
 
+############################################################
+# Org Structure List
+############################################################
+class OrgStructureList(CorpBase):
+    @authenticated
+    def GET(self, pp):
+        print "GET OrgStructure"
+        pp['org_structure'] = employee_model.org_structure()
+        pp['teams'] = {}
+
+        # Populate a dict of members for each team
+        for team in corpdb.teams.find():
+            pp['teams'][team['name']] = {}
+            for employee in corpdb.employees.find({"team_ids": ObjectId(team['_id']), "employee_status" : {"$ne" : "Former"}}):
+                if employee['first_name'] and employee['last_name'] :
+                    pp['teams'][team['name']][str(employee['jira_uname'])] = str(employee['first_name'] + " " + employee['last_name'])
+
+        pp['org_chart'] = employee_model.org_structure_list()
+
+        return env.get_template('employees/employees/org_chart_list.html').render(pp=pp)
+
 
 ############################################################
 # Profile Images
@@ -1381,6 +1402,7 @@ urls = (
         '/contacts.vcf', ExportAllEmployeesVcard,
 
         '/orgchart', OrgStructure,
+        '/orgchart_list', OrgStructureList,
 
         '/teams/new', NewTeam,
         '/teams/(.*)/delete', DeleteTeam,
