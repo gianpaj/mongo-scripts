@@ -64,7 +64,9 @@ def no_show():
 			'manager_ids']
 			
 def generate_date(date_string):
+            
 	if len(date_string) != 0:
+        split_date = ""
 		split_date = date_string.split(" ")[0]
 		split_date = split_date.split("-")
 		day = int(split_date[0])
