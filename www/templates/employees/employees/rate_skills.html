@@ -22,10 +22,12 @@
 <div class="row show-grid">
 	<div class="span6">
 		<fieldset>
-			{% for skill_id in pp['employee']['skills'] %}
+        {% for skill_group in pp['skills'] %}
+            <div><b>{{skill_group}}</b></div>&nbsp;&nbsp;
+			{% for skill_id in pp['skills'][skill_group] %}
 			<div class="control-group">
-				<label class="control-label">{{ pp['skills'][skill_id]['name'] }}</label>
-				{% if pp['skills'][skill_id]['locked'] %}
+				<label class="control-label">{{ pp['skills'][skill_group][skill_id]['name'] }}</label>
+				{% if skill_group in pp['locked_skillgroup_names'] %}
 					{% if pp['can_rate'] %}
 						<div class="controls">
 							<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
@@ -35,20 +37,29 @@
 							</select>
 						</div><!-- controls-->
 					{% else %}
-						<div class="controls">{{ pp['levels'][pp['employee']['skills'][skill_id]] }}
+                <div class="controls">{{ pp['levels'][pp['skills'][skill_group][skill_id]] }}
 						</div><!-- controls-->
 					{% endif %}
+                {% elif skill_group == "HUMAN LANGUAGE" %}
+                    <div class="controls">
+                        <select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
+                            {% for i in [0,1,2,3] %}
+                            <option {% if i == pp['skills'][skill_group][skill_id] %} SELECTED {% endif %}   value={{i}}>{{pp['human_lang_levels'][i]}}</option>
+                            {% endfor %}
+                        </select>
+                    </div><!-- controls-->
 				{% else %}
 					<div class="controls">
 						<select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
 							{% for i in [0,1,2,3,4,5] %}
-								<option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %} value={{i}}>{{pp['levels'][i]}}</option>
+								<option {% if i == pp['skills'][skill_group][skill_id] %} SELECTED {% endif %} value={{i}}>{{pp['levels'][i]}}</option>
 							{% endfor %}
 						</select>
 					</div><!-- controls-->
 				{% endif %}
 			</div><!-- control-group-->
 			{% endfor %}
+        {% endfor %}
 		</fieldset>
 	</div><!-- span6 -->
 

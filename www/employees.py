@@ -593,7 +593,8 @@ class RateSkills(CorpBase):
         else:
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
             pp['skills'] = {}
-            pp['levels'] = ['', 'Learning', 'Fair', 'Average', 'Excellent', 'Guru']
+            pp['levels'] = ['', 'Describe to Fellow Engineer', 'Discuss with Customer', 'Fix Bugs in Code', 'Add Improvements', 'Architect Features']
+            pp['human_lang_levels'] = ['', 'Interpret Written and/or Orally', 'Conversational', 'Presentational']
             
             # Current user is requested user's manager, current user is admin
             pp['current_user_role'] = current_user_role(pp)
@@ -603,16 +604,17 @@ class RateSkills(CorpBase):
             else:
                 pp['can_rate'] = False
 
-            programming_skill_group = corpdb.skill_groups.find_one({"name": 'PROGRAMMING'})
-            mongodb_skill_group = corpdb.skill_groups.find_one({"name": 'MONGODB'})
-            specialty_skill_group = corpdb.skill_groups.find_one({"name": 'SPECIALTY'})
-            general_skill_group = corpdb.skill_groups.find_one({"name": 'GENERAL'})
-            pp['locked_skills'] = [programming_skill_group['_id'], mongodb_skill_group['_id'], specialty_skill_group['_id'], general_skill_group['_id']]
-
-            # TODO: use $in - LEAVE as is because of objectid/string issues
+            pp['locked_skillgroup_names'] = [ "PROGRAMMING", "MONGODB", "SPECIALTY", "GENERAL" ]
+                
+            # separate skills in skill_groups
             for skill_id in pp['employee']['skills']:
-                pp['skills'][skill_id] = corpdb.skills.find_one(ObjectId(skill_id))
-                pp['skills'][skill_id]['locked'] = set(pp['locked_skills']) & set(pp['skills'][skill_id]['groups'])
+                skill_groups = corpdb.skills.find_one(ObjectId(skill_id))['groups']
+                # only want a skill to show up in one group bucket
+                group_id = skill_groups[0]
+                group_name = corpdb.skill_groups.find_one(group_id)['name']
+                if group_name not in pp['skills']:
+                    pp['skills'][group_name] = {}
+                pp['skills'][group_name][skill_id] = corpdb.skills.find_one(ObjectId(skill_id))
 
             return env.get_template('employees/employees/rate_skills.html').render(pp=pp)
 
