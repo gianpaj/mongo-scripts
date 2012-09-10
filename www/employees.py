@@ -988,6 +988,7 @@ class Skills(CorpBase):
             if pp['skill']:
                 # Change the ObjectId to a string to be used in the employee skills embedded doc
                 pp['skill']['_id'] = str(pp['skill']['_id'])
+                pp['skill']['group_names'] = map(lambda skill_group: skill_group["name"], corpdb.skill_groups.find({"_id": { "$in" : pp['skill']['groups']}}))
                 pp['skill_groups'] = []
                 pp['employees'] = []
                 pp['skill_groups'] = corpdb.skill_groups.find({"_id" : { "$in" : pp['skill']['groups']}})
