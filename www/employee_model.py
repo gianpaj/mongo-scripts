@@ -65,12 +65,12 @@ def no_show():
 			
 def generate_date(date_string):
             
-	if len(date_string) != 0:
+    if len(date_string) != 0:
         split_date = ""
-		split_date = date_string.split(" ")[0]
-		split_date = split_date.split("-")
-		day = int(split_date[0])
-		month = int(split_date[1])
+        split_date = date_string.split(" ")[0]
+        split_date = split_date.split("-")
+        day = int(split_date[0])
+        month = int(split_date[1])
         if (split_date.__len__() > 2):
             year = int(split_date[2])
         else:
@@ -81,34 +81,66 @@ def generate_date(date_string):
 # returns a list of managers(cursors), taking into account manager override
 def get_managers(employee):
 	managers = []
+    # "ad-hoc" managers
 	if "manager_ids" in employee.keys():
 		for manager in corpdb.employees.find({"_id" : { "$in" : employee['manager_ids']}, "employee_status" : {"$ne" : "Former"}}):
-			print "manager ids found"
 			managers.append(manager)
 	
+    # team managers
 	if "team_ids" in employee.keys() and employee['team_ids']:
 		managing_team_ids = map(lambda team: team["_id"], corpdb.teams.find({"managing_team_ids": { "$in" : employee['team_ids']}})) # ids of teams managing teams employee belongs to
 		if managing_team_ids:
-			for manager in corpdb.employees.find({"team_ids": managing_team_ids, "employee_status" : {"$ne" : "Former"} }):
+			for manager in corpdb.employees.find({"team_ids": {"$in" : managing_team_ids}, "employee_status" : {"$ne" : "Former"} }):
 				if manager not in managers:
 					managers.append(manager)
 	return managers
 
+def get_team_managers(employee):
+        managers = []
+    # team managers
+	if "team_ids" in employee.keys() and employee['team_ids']:
+		managing_team_ids = map(lambda team: team["_id"], corpdb.teams.find({"managing_team_ids": { "$in" : employee['team_ids']}})) # ids of teams managing teams employee belongs to
+		if managing_team_ids:
+			for manager in corpdb.employees.find({"team_ids": {"$in" : managing_team_ids}, "employee_status" : {"$ne" : "Former"} }):
+				if manager not in managers:
+					managers.append(manager)
+	return managers
 
-def get_manager_hierarchy(employee):
-	manager_hierarchy = []
-	manager_list = []
-	managers = get_managers(employee)
-	if managers:
-		while employee['last_name'] != "Merriman":
-			manager_list.append(managers[0]['_id'])
-			employee = managers[0]
-			managers = get_managers(employee)
+def get_ad_hoc_managers(employee):
+    managers = []
+    if "manager_ids" in employee.keys():
+		for manager in corpdb.employees.find({"_id" : { "$in" : employee['manager_ids']}, "employee_status" : {"$ne" : "Former"}}):
+			managers.append(manager)
+    return managers
+
+
+def get_manager_hierarchies(employee):
+    manager_hierarchies = []
+    managers = get_team_managers(employee)
+    
+    if managers:
+        for manager in managers :
+            manager_hierarchy = []
+            manager_list = []
+            team_managers = []
+            curr_employee = employee
+            
+            while employee['last_name'] != "Merriman":
+                manager_list.append(manager['_id'])
+                curr_employee = manager
+                team_managers = get_team_managers(curr_employee)
+                if (team_managers.__len__() > 0):
+                    manager = team_managers[0]
+                else:
+                    break
 	
-	for manager_id in reversed(manager_list):
-		manager = corpdb.employees.find_one(manager_id)
-		manager_hierarchy.append(manager)
-	return manager_hierarchy
+            for manager_id in reversed(manager_list):
+                manager = corpdb.employees.find_one(manager_id)
+                manager_hierarchy.append(manager)
+
+            manager_hierarchies.append(manager_hierarchy)
+            
+    return manager_hierarchies
 
 # returns a list of teams(cursors)
 def get_teams(employee):

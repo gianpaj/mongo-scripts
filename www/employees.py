@@ -278,7 +278,7 @@ class Employees(CorpBase):
 	                pp['teams'].append(link)
 
             pp['managers'] = employee_model.get_managers(pp['employee'])
-            pp['manager_hierarchy'] = employee_model.get_manager_hierarchy(pp['employee'])
+            pp['manager_hierarchies'] = employee_model.get_manager_hierarchies(pp['employee'])
 
             # Construct a list of skill names
             pp['skills'] = {}
