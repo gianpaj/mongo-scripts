@@ -199,7 +199,7 @@
 						{% endif %}
 					</div><!-- controls-->
 			</div><!-- control-group-->
-
+    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}
 		   <div class="control-group">
 		   	<label class="control-label"><b>MongoDB</b> skills</label>
 		   		<div class="controls">
@@ -210,7 +210,9 @@
 		   			</select>
 		   		</div><!-- controls -->
 		   </div><!-- control-group -->
-		   
+    {% endif %}
+    
+    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}	   
 			<div class="control-group">
 				<label class="control-label"><b>Programming</b> skills</label>
 					<div class="controls">
@@ -221,6 +223,7 @@
 						</select>
 					</div><!-- controls -->
 			</div><!-- control-group -->
+    {% endif %}
 			
 			<div class="control-group">
 				<label class="control-label"><b>Human language</b> skills</label>
@@ -231,7 +234,8 @@
 							{% endfor %}
 						</select>
 					</div><!-- controls -->
-					
+                
+    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}				
 			</div><!-- control-group -->	
 			<div class="control-group">
 				<label class="control-label"><b>Specialty</b> skills</label>
@@ -242,7 +246,9 @@
 							{% endfor %}
 						</select>
 					</div><!-- controls -->
-					
+    {% endif %}
+			
+    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}     
 			</div><!-- control-group -->
 			<div class="control-group">
 				<label class="control-label"><b>General</b> skills</label>
@@ -253,7 +259,8 @@
 							{% endfor %}
 						</select>
 					</div><!-- controls -->
-			</div><!-- control-group -->			
+			</div><!-- control-group -->
+    {% endif %}
 
 		{% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}
 		<!-- 	<div class="control-group">
