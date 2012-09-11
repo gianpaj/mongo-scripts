@@ -39,15 +39,15 @@
     <dl class="dl-horizontal">
         <dt>Top Tech Skills</dt>
         <dd>{% for skill in pp['top_tech_skills'] %}
-            <a href="/skills/{{skill._id}}">{{skill.name}}&nbsp;|&nbsp;</a>
+            <a href="/skills/{{skill._id}}">{{skill.name}}</a>{% if pp['top_tech_skills'].index(skill) != pp['top_tech_skills'].__len__() - 1 %}, {% endif %}
         {% endfor %}</dd>
     </dl>
     {% endif %}
-
+    
 	<dl class="dl-horizontal">
         <dt>Managers</dt>
         <dd>{% for manager in pp['managers'] %}
-            <a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>
+            <a href='/employees/{{manager.jira_uname}}'>{{ manager.first_name }} {{ manager.last_name }}</a>{% if pp['managers'].index(manager) != pp['managers'].__len__() - 1 %}, {% endif %}
             {% endfor %}</dd>
         </dl>
         

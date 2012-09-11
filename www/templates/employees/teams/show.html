@@ -9,7 +9,25 @@
 	</div>	
 </header>
 
-	<dl class="dl-horizontal">
+<dl class="dl-horizontal">
+    <dt>Team Leads</dt>
+    {% for lead in pp['team_leads'] %}
+    <dd><a href="/employees/{{ lead['jira_uname']}}">{{ lead['first_name']}} {{ lead['last_name']}}</a></dd>
+    {% endfor %}
+	
+</dl>
+<br/>
+
+<dl class="dl-horizontal">
+    <dt>Project Managers</dt>
+    {% for manager in pp['project_managers'] %}
+    <dd><a href="/employees/{{ manager['jira_uname']}}">{{ manager['first_name']}} {{ manager['last_name']}}</a></dd>
+    {% endfor %}
+	
+</dl>
+<br/>
+
+    <dl class="dl-horizontal">
 		<dt>Members</dt>
 		{% for member in pp['team_members'] %}
 			<dd><a href="/employees/{{ member['jira_uname']}}">{{ member['first_name']}} {{ member['last_name']}}</a></dd>

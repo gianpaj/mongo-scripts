@@ -40,6 +40,30 @@
 						<input type="text" class="input-xlarge" name="name" value="{{ pp['team']['name'] }}" id="name">
 					</div><!-- controls-->
 			</div><!-- control-group-->
+            
+			<div class="control-group">
+				<label class="control-label">Team Leads</label>
+                <div class="controls">
+                    <select multiple="multiple" class="input-xlarge" data-placeholder="Select team leads..." name="team_lead_ids" id="team_lead_ids">
+						{% for employee in pp['employees'] %}
+                        <option value="{{ employee['_id'] }}" {% if employee['_id'] in pp['team']['team_lead_ids'] %} SELECTED {% endif %} >
+                            {{ employee.first_name }} {{ employee.last_name }}</option>
+						{% endfor %}
+                    </select>
+                </div><!-- controls -->
+			</div><!-- control-group -->
+            
+            <div class="control-group">
+				<label class="control-label">Project Managers</label>
+                <div class="controls">
+                    <select multiple="multiple" class="input-xlarge" data-placeholder="Select project managers..." name="project_manager_ids" id="project_manager_ids">
+						{% for employee2 in pp['employees2'] %}
+                        <option value="{{ employee2['_id'] }}" {% if employee2['_id'] in pp['team']['project_manager_ids'] %} SELECTED {% endif %} >
+                            {{ employee2.first_name }} {{ employee2.last_name }}</option>
+						{% endfor %}
+                    </select>
+                </div><!-- controls -->
+			</div><!-- control-group -->
 			
 			<div class="control-group">
 				<label class="control-label">Managing</label>
@@ -65,7 +89,10 @@
 <script type="text/javascript" charset="utf-8">
 	jQuery(function($){
 		$('#managing_team_ids').select2();
-	});
+        $('#team_lead_ids').select2();
+        $('#project_manager_ids').select2();
+    });
+
 
 </script>
 

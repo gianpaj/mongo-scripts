@@ -869,14 +869,18 @@ class Teams(CorpBase):
             pp['team'] = corpdb.teams.find_one(ObjectId(team_id))
 
             if pp['team']:
-	            pp['team_members'] = corpdb.employees.find({"team_ids": pp['team']['_id'], "employee_status" : {"$ne" : "Former"}}).sort("name", pymongo.ASCENDING)
-	            pp['managed_teams'] = corpdb.teams.find({"managing_team_ids": pp['team']['_id']})
-	            if "managing_team_ids" in pp['team']:
-	                pp['managing_teams'] = corpdb.teams.find({"_id" : { "$in" : pp['team']['managing_team_ids']}})
-	            return env.get_template('employees/teams/show.html').render(pp=pp)
+                pp['team_members'] = corpdb.employees.find({"team_ids": pp['team']['_id'], "employee_status" : {"$ne" : "Former"}}).sort("name", pymongo.ASCENDING)
+                if "team_lead_ids" in pp['team']:
+                    pp['team_leads'] = corpdb.employees.find({ "_id" : { "$in" : pp['team']['team_lead_ids']}})
+                if "project_manager_ids" in pp['team']:
+                    pp['project_managers'] = corpdb.employees.find({ "_id" : { "$in" : pp['team']['project_manager_ids']}})
+                pp['managed_teams'] = corpdb.teams.find({"managing_team_ids": pp['team']['_id']})
+                if "managing_team_ids" in pp['team']:
+                    pp['managing_teams'] = corpdb.teams.find({"_id" : { "$in" : pp['team']['managing_team_ids']}})
+                return env.get_template('employees/teams/show.html').render(pp=pp)
             else:
-	            print "team not found"
-	            raise web.seeother('/teams')
+                print "team not found"
+                raise web.seeother('/teams')
         else:
             pp['teams'] = corpdb.teams.find().sort("name", pymongo.ASCENDING)
             return env.get_template('employees/teams/index.html').render(pp=pp)
@@ -909,23 +913,35 @@ class EditTeam(CorpBase):
             raise web.seeother('/teams')
         else:
             pp['teams'] = corpdb.teams.find({"_id": {"$ne": pp['team']['_id']}}).sort("name", pymongo.ASCENDING)
+            pp['employees'] = corpdb.employees.find({"employee_status": {"$ne": "Former"}}).sort("name", pymongo.ASCENDING)
+            pp['employees2'] = corpdb.employees.find({"employee_status": {"$ne": "Former"}}).sort("name", pymongo.ASCENDING)
             return env.get_template('employees/teams/edit.html').render(pp=pp)
 
     @authenticated
     @require_admin
     def POST(self, pp, *args):
         print "POST EditTeam"
-        form = web.input(managing_team_ids=[])
+        form = web.input(managing_team_ids=[], team_lead_ids=[], project_manager_ids=[])
         print form
         team_id = args[0]
-        team = corpdb.teams.find_one(ObjectId(team_id))
+        pp['team'] = corpdb.teams.find_one(ObjectId(team_id))
 
-        # Name cannot be blank
+        # Name cannot be blank.
         if len(form['name']) > 0:
-            team['name'] = form['name']
-            team['managing_team_ids'] = map(lambda id: ObjectId(id), form['managing_team_ids'])
-            corpdb.teams.save(team)
-            raise web.seeother('/teams/' + str(team['_id']))
+            pp['team']['name'] = form['name'].capitalize()
+            pp['team']['managing_team_ids'] = map(lambda id: ObjectId(id), form['managing_team_ids'])
+            pp['team']['project_manager_ids'] = map(lambda id: ObjectId(id), form['project_manager_ids'])
+            # Must have a team lead.
+            if len(form['team_lead_ids']) > 0:
+                pp['team']['team_lead_ids'] = map(lambda id: ObjectId(id), form['team_lead_ids'])
+                corpdb.teams.save(pp['team'])
+                raise web.seeother('/teams/' + str(pp['team']['_id']))
+            else:
+                pp['teams'] = corpdb.teams.find({"_id": {"$ne": pp['team']['_id']}}).sort("name", pymongo.ASCENDING)
+                pp['employees'] = corpdb.employees.find({"employee_status": {"$ne": "Former"}}).sort("name", pymongo.ASCENDING)
+                pp['employees2'] = corpdb.employees.find({"employee_status": {"$ne": "Former"}}).sort("name", pymongo.ASCENDING)
+                pp['error_message'] = "You must have a team lead."
+                return env.get_template('employees/teams/edit.html').render(pp=pp)
         else:
             raise web.seeother('/teams')
 
