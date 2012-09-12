@@ -44,7 +44,7 @@
                     <div class="controls">
                         <select name="{{ skill_id }}" class="input-xlarge" value = "{{ skill_id }}" id="rating">
                             {% for i in [0,1,2,3] %}
-                            <option {% if i == pp['skills'][skill_group][skill_id] %} SELECTED {% endif %}   value={{i}}>{{pp['human_lang_levels'][i]}}</option>
+                            <option {% if i == pp['employee']['skills'][skill_id] %} SELECTED {% endif %}   value={{i}}>{{pp['human_lang_levels'][i]}}</option>
                             {% endfor %}
                         </select>
                     </div><!-- controls-->
