@@ -79,7 +79,7 @@ def get_issues(limit_time=None):
         jql = {"jql": filterrr + " ORDER BY created asc"}
         url_jql = urllib.urlencode(jql)
         url = "https://jira.mongodb.org/rest/api/latest/search?" + url_jql
-        x = requests.get(url, auth=("mpobrien", "ek223imi"))
+        x = requests.get(url, auth=("auto", "automenow"), verify=False)
         issues += json.loads(x.content)['issues']
 
     for issue in issues:
