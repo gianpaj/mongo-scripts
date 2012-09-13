@@ -2,8 +2,9 @@ from datetime import datetime
 import pymongo
 import hashlib
 from bson.objectid import ObjectId
+import settings
 
-from corpbase import corpdb
+corpdb = pymongo.Connection(settings.corpdb_host).corp
 
 def editable_keys():
 	return ['intercall_code', 
