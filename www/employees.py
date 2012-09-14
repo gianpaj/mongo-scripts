@@ -13,6 +13,7 @@ import csv
 from util import _url_split, url_cmp
 from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, mongowwwdb, usagedb, pstatsdb, corpdb, ftsdb
 from functools import wraps
+from datetime import datetime
 try:
     import cStringIO as StringIO
 except:
@@ -1415,16 +1416,15 @@ class PerformanceReviews(CorpBase):
             performance_review_id = args[0]
         except:
             performance_review_id = ""
-        current_user = corpdb.employees.find_one({"jira_uname" : pp['user']})
-        pp['current_user'] = current_user
+        pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user']})
         pp['current_user_role'] = current_user_role(pp)
-        print "Current user role: "
-        print pp['current_user_role']
 
         if len(performance_review_id) > 0 :
             pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
             
             if pp['performance_review']:
+                pp['manager'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['manager_id']))
+                pp['employee'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
                 if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
                     pp['view'] = "Employee"
                 elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
@@ -1436,12 +1436,8 @@ class PerformanceReviews(CorpBase):
                 print "performance review not found"
                 raise web.seeother('/performancereviews')
         else:
-
-            pp['performancereviews'] = corpdb.performancereviews.find().sort("name", pymongo.ASCENDING)
-            pp['my_performancereviews'] = corpdb.performancereviews.find( {"employee_id" : str(current_user['_id'])} ).sort("quarter", pymongo.ASCENDING)
-            pp['my_managing_performancereviews'] = corpdb.performancereviews.find( {"manager_id" : str(current_user['_id']) }).sort("name", pymongo.ASCENDING)
-            pp['current_quarter_performancereviews'] = corpdb.performancereviews.find({ "quarter" : 
-                employee_model.get_quarter() }).sort("name", pymongo.ASCENDING)
+            pp['my_performancereviews'] = corpdb.performancereviews.find( {"employee_id" : pp['current_user']['_id']} ).sort("quarter", pymongo.ASCENDING)
+            pp['my_managing_performancereviews'] = corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']) }).sort("name", pymongo.ASCENDING)
             return env.get_template('employees/performancereviews/index.html').render(pp=pp)
 
 
@@ -1453,29 +1449,29 @@ class PerformanceReviews(CorpBase):
 class EditPerformanceReview(CorpBase):
 
     @authenticated
-    @require_admin
     def GET(self, pp, *args):
         print "GET EditPerformanceReview"
         performance_review_id = args[0]
         pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
-        pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user'] })
+        if pp['performance_review'] is None:
+            print "performance review not found"
+            raise web.seeother('/performancereviews')
+
         # Which set of questions can the user see?
+        pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user'] })
         if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
             pp['view'] = "Employee"
         elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
             pp['view'] = "Manager"
+        # Only employee or manager should be able to edit.
         else:
-            pp['view'] = "None"
-
-        if pp['performance_review'] is None:
-            print "performance review not found"
+            print "unauthorized access to performance review edit page."
             raise web.seeother('/performancereviews')
-        else:
-            pp['employee'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
-            return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
+
+        pp['employee'] = corpdb.employees.find_one({'_id': pp['performance_review']['employee_id']})
+        return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
 
     @authenticated
-    @require_admin
     def POST(self, pp, *args):
         print "POST EditPerformanceReview"
         form = web.input()
@@ -1483,15 +1479,17 @@ class EditPerformanceReview(CorpBase):
         performance_review_id = args[0]
         pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
         pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user']})
+        # Save employee questions
         if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
             for question in pp['performance_review']['employee_questions']:
                 question['response'] = form[question['name']]
+        # Save manager questions
         elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
             for question in pp['performance_review']['manager_questions']:
                 question['response'] = form[question['name']]
         corpdb.performancereviews.save(pp['performance_review'])
 
-        # Fields cannot be blank (employee must answer all fields)
+        # Fields cannot be blank (must answer all questions)
         # TODO: make it so that you can fill out form partially and SAVE instead of SUBMIT
         for question in form:
             if len(form[question]) == 0 :
@@ -1508,6 +1506,29 @@ class EditPerformanceReview(CorpBase):
                     pp['view'] = "None"
                 return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
 
+        # Review submitted : send alert emails and flag review completed.
+        employee = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
+        manager = corpdb.employees.find_one(ObjectId(pp['performance_review']['manager_id']))
+        manager_email = manager['jira_uname']
+        # If employee has just finished review:
+        if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
+            # Send alert email to manager on first submit.
+            if 'employee_submitted' not in pp['performance_review'].keys():
+                web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', ('New Manager Performance Review: '+
+                    employee['first_name']+' '+employee['last_name']), 'You have a new performance review at http://corp.10gen.com/performancereviews.')
+            # Set employee submitted date.
+            pp['performance_review']['employee_submitted'] = datetime.now()
+        # If manager has just finished review:
+        elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
+            # On first submit, send alert email to HR and reminder email to manager to set up 1-1.
+            if 'manager_submitted' not in  pp['performance_review'].keys():
+                web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', ('Performance Review Completed: '+
+                    employee['first_name']+' '+employee['last_name']), ('Performance review for '+employee['first_name']+' '+employee['last_name']+' has been completed: https://corp.10gen.com/performancereviews/'+pp['performance_review']['_id']))
+                web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', 'Reminder: Schedule 1-1 for Performance Review',
+                ('Reminder: Schedule a 1-1 meeting with '+employee['first_name']+' '+employee['last_name']+' to discuss their performace review.'))            
+            # Set manager submitted date.
+            pp['performance_review']['manager_submitted'] = datetime.now()
+        
         corpdb.performancereviews.save(pp['performance_review'])
         raise web.seeother('/performancereviews/' + str(performance_review_id))
 
@@ -1518,6 +1539,8 @@ class NewPerformanceReview(CorpBase):
     def GET(self, pp, *args):
         print "GET NewPerformanceReview"
         pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
+        # Default email message to be sent with new performance review alert
+        pp['default_message'] = "You have a new performance review at http://corp.10gen.com/performancereviews. "
         return env.get_template('employees/performancereviews/new.html').render(pp=pp)
 
     @authenticated
@@ -1525,44 +1548,74 @@ class NewPerformanceReview(CorpBase):
     def POST(self, pp):
         print "POST NewPerformanceReview"
         form = web.input()
-        # Make sure there is an employee for the performance review.
-        if len(form['employee_id']) > 0:
-            employee = corpdb.employees.find_one(ObjectId(form['employee_id']))
+        pp['error_message'] = ''
+        # Set up employees to get reviews.
+        employees = []
+        if 'all_employees' in form.keys() and form['all_employees'] == 'on':
+            employees = corpdb.employees.find( {"employee_status" : { "$ne" : "Former"}, "title" : {"$ne" : "CEO"}} )
+        elif len(form['employee_id']) > 0:
+            employees.append(corpdb.employees.find_one(ObjectId(form['employee_id']))) 
+        else :
+            raise web.seeother('/performancereviews/new')
+
+        for employee in employees:
             name = employee['last_name']+employee['first_name']+employee_model.get_quarter()
-            # TODO: allow user to choose which manager gets the form
-            # TODO: does every employee always have a manager?
-            manager = employee_model.get_managers(employee)[0]
-            performance_review = {'employee_id': form['employee_id'], 'manager_id': manager['_id'], 'name' : name,
-                'quarter' : employee_model.get_quarter(), 'employee_questions' : [], 'manager_questions': [] }
-            
-            # Add in blank questions...
-            employee_question_texts = employee_model.get_questions('Employee')
-            employee_question_placeholders = employee_model.get_placeholders('Employee')
-            manager_question_texts = employee_model.get_questions('Manager')
-            manager_question_placeholders = employee_model.get_placeholders('Manager')
-            for x in range(1, (len(employee_question_texts) + 1)):
-                performance_review['employee_questions'].append( {"name" : ("eq"+str(x)), "text": employee_question_texts[x-1], 
-                    "placeholder" : employee_question_placeholders[x-1] })
-            for x in range(1, (len(manager_question_texts) + 1)):
-                performance_review['manager_questions'].append( {"name" : ("mq"+str(x)), "text": manager_question_texts[x-1], 
-                    "placeholder" : manager_question_placeholders[x-1] })
-            print "performance review: " 
-            print performance_review
-            try:
-                objectid = corpdb.performancereviews.insert(performance_review)
-                print "inserted employee -- success"
-            except:
-                print "performance review not inserted"
-            if objectid:
-                raise web.seeother('/performancereviews/')
+            #Make sure there is not already a review for this employee this quarter.
+            if corpdb.performancereviews.find( {'name': name} ).count() == 0:
+                # TODO: allow user to choose which manager gets the form
+                # TODO: does every employee always have a manager?
+                managers = employee_model.get_managers(employee)
+                if len(managers) > 0:
+                    manager = managers[0]
+                else:
+                    print employee['first_name']
+                    print "no manager"
+                performance_review = {'employee_id': employee['_id'], 'manager_id': manager['_id'], 'name' : name,
+                    'quarter' : employee_model.get_quarter(), 'complete_by_date' : form['complete_by_date'], 'employee_questions' : [], 'manager_questions': [] }
+                
+                # Add in review questions...
+                employee_question_texts = employee_model.get_questions('Employee')
+                employee_question_placeholders = employee_model.get_placeholders('Employee')
+                manager_question_texts = employee_model.get_questions('Manager')
+                manager_question_placeholders = employee_model.get_placeholders('Manager')
+                for x in range(1, (len(employee_question_texts) + 1)):
+                    performance_review['employee_questions'].append( {"name" : ("eq"+str(x)), "text": employee_question_texts[x-1], 
+                        "placeholder" : employee_question_placeholders[x-1] })
+                for x in range(1, (len(manager_question_texts) + 1)):
+                    performance_review['manager_questions'].append( {"name" : ("mq"+str(x)), "text": manager_question_texts[x-1], 
+                        "placeholder" : manager_question_placeholders[x-1] })
+                
+                try:
+                    objectid = corpdb.performancereviews.insert(performance_review)
+                except:
+                    pp['error_message']+='\n'+(employee['first_name'] + ' ' + employee['last_name']+ ' could not be inserted.')
+                if objectid:
+                    # send email alert to employee:
+                    employee_email = employee['jira_uname']+"@10gen.com"
+                    if form['complete_by_date']:
+                        message = form['message'] + ' Please complete by ' + form['complete_by_date']+'.'
+                    else:
+                        message = form['message'] + ' ' + employee['first_name']
+                    web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', 'New Performance Review', message)
             else:
-                raise web.seeother('/performancereviews/')
-        
-        else:
-            pp['error_message'] = "You must enter an employee name for the review..."
-            pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
-            pp['type'] = form['type']
-            return env.get_template('employees/performancereviews/new.html').render(pp=pp)
+                pp['error_message']+='\n'+(employee['first_name'] + ' ' + employee['last_name']+ ' could not be inserted: a review for this employee already exists.')
+
+        raise web.seeother('/performancereviews/')
+
+class PerformanceReviewHRDashboard(CorpBase):
+    @authenticated
+    @require_admin
+    def GET(self, pp, *args):
+        print "GET PerformanceReviewHRDashboard"
+        pp['current_quarter_performancereviews'] = corpdb.performancereviews.find({ "quarter" : 
+                employee_model.get_quarter() }).sort("name", pymongo.ASCENDING)
+        pp['performancereviews'] = corpdb.performancereviews.find().sort("name", pymongo.ASCENDING)
+        return env.get_template('employees/performancereviews/hrdashboard.html').render(pp=pp)
+    @authenticated
+    @require_admin
+    def POST(self, pp, *args):
+        print "POST PerformanceReviewHRDashboard"
+        raise web.seeother('/performancereviews')
 
 
 class DeletePerformanceReview(CorpBase):
@@ -1572,18 +1625,9 @@ class DeletePerformanceReview(CorpBase):
         print "POST DeletePerformanceReview"
         performance_review_id = args[0]
         corpdb.performancereviews.remove(ObjectId(performance_review_id))
-        pp['performancereviews'] = corpdb.performancereviews.find().sort("employee_id", pymongo.ASCENDING).sort(
-            "quarter", pymongo.ASCENDING)
-        pp['my_performancereviews'] = corpdb.performancereviews.find( {"employee_id" : str(current_user['_id']),
-                "type" : "Employee"} ).sort("quarter", pymongo.ASCENDING)
-        pp['my_managing_performancereviews'] = corpdb.performancereviews.find( {"manager_id" : str(current_user['_id']) }).sort("name", pymongo.ASCENDING)
-        pp['current_quarter_performancereviews'] = corpdb.performancereviews.find({ "quarter" : 
-                employee_model.get_quarter() }).sort("employee_id", pymongo.ASCENDING)
-        raise web.seeother('/performancereviews/index.html')
+        raise web.seeother('/performancereviews/')
 
-                
-
-                
+                           
     
 
 
@@ -1636,6 +1680,7 @@ urls = (
         '/profileimage/(.*)', ProfileImage,
         
         '/performancereviews/new', NewPerformanceReview,
+        '/performancereviews/hrdashboard', PerformanceReviewHRDashboard,
         '/performancereviews/(.*)/edit', EditPerformanceReview,
         '/performancereviews/(.*)/delete', DeletePerformanceReview,
         '/performancereviews/(.*)', PerformanceReviews,

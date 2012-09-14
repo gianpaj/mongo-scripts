@@ -462,5 +462,13 @@ footer.global-footer a:hover {
   margin-bottom: 1px;
 }
 
+.reviewdisplay {
+	padding: 20px 20px;
+	border-style:solid;
+	border-width:1px;
+	border-color: #778899;
+}
+
+
 /* END */
 

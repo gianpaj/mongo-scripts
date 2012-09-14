@@ -26,16 +26,16 @@
 </header>
 
 {% if pp['error_message'] %}
-<h3 style="color:red;">{{ pp['error_message'] }}</h3>
+    <h3 style="color:red;">{{ pp['error_message'] }}</h3>
 {% endif %}
 
-<form action="/performancereviews/new" method="post" class="form-horizontal" style="height:275px;width:500px;">
+<form action="/performancereviews/new" method="post" class="form-horizontal" style="height:275px;width:500px;" name="NewPerformanceReview">
 	<fieldset>
 		
 		<div class="control-group">
 			<label class="control-label">Employee </label>
             <div class="controls">
-                <select data-placeholder="Select..." class="input-xlarge" name="employee_id" id="employee_id">
+                <select data-placeholder="Select..." class="input-xlarge" name="employee_id" id="employee_id" >
                     <option></option>
 					{% for employee in pp['employees'] %}
                     <option {% if employee['_id'] == pp['employee_id'] %} SELECTED {% endif %} value="{{ employee['_id'] }}" >
@@ -44,6 +44,27 @@
                 </select>
             </div><!-- controls -->
 		</div><!-- control-group -->
+
+        <div class="control-group">
+            <label class="control-label">All Employees </label>
+            <div class="controls">
+                <input type="checkbox" name="all_employees" onchange="toggleEmployees();">
+            </div><!-- controls -->
+        </div><!-- control-group -->
+
+        <div class="control-group">
+            <label class="control-label" for="textarea">Complete By </label>
+                <div class="controls">
+                    <textarea class="input-xlarge" id="complete_by_date" name="complete_by_date" rows ="2" placeholder="Optional: Enter a date that the employee must complete review by before sending to managers."></textarea>                    
+                </div><!-- controls -->
+        </div><!-- control-group -->
+
+        <div class="control-group">
+            <label class="control-label" for="textarea">Email Alert Message </label>
+                <div class="controls">
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4">{{pp['default_message']}}</textarea>                    
+                </div><!-- controls -->
+        </div><!-- control-group -->
 
 	</fieldset>
     <br/>		
@@ -54,6 +75,12 @@
 	jQuery(function($){
            $('#employee_id').select2();
            });
+    </script>
+
+<script type="text/javascript" charset="utf-8">
+    function toggleEmployees() {
+        NewPerformanceReview.employee_id.disabled = NewPerformanceReview.all_employees.checked;
+    }
     </script>
 
 {% endblock %}

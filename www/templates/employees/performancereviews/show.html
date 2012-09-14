@@ -3,37 +3,77 @@
 {% block content %}
 
 <link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
 
 <header class="page-header" style="height:120px;">
   <div class="team-header-info">
     <h1>Performance Review: {{pp['performance_review']['name']}}</h1>
     </div>
 </header>
+    
+<div class="row show-grid">
+    	{%if pp['view'] == "Employee" %}
+	    	<div class="span6">
+	    		<div class="reviewdisplay">
+			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
+			    	<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id'] }}/edit" style="display:inline-block;">(Edit)</a></div>
+			    	<br/>
+			    	<br/>
+				    {% for question in pp['performance_review']['employee_questions'] %}
+				    	<p><b><i>{{question['text']}}</i></b></p>
+				    	<p>{{question['response']}}</p>
+				    		<br/>
+				    {% endfor %}
+				</div>
+			</div>
 
+		{% elif (pp['view'] == "Manager") or (pp['current_user_role'] == "admin") %}
+			<div class="span6">
+				<div class="reviewdisplay">
+			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h1>
+			    	{% if pp['performance_review']['employee_submitted'] %}
+			    		<p><i>(Completed)</i></p>
+			    	{% else %}
+			    		<p><i>(Uncompleted)</i></p>
+			    	{% endif %}
+			    	<br/>
+			    	<br>
+				    {% for question in pp['performance_review']['employee_questions'] %}
+				    	<p><b><i>{{question['text']}}</i></b></p>
+				    		{%if pp['performance_review']['employee_submitted'] %}<p>{{question['response']}}</p>{% endif %}
+				    		<br/>
+				    {% endfor %}
+				</div>
+			</div>
+	
+		{% endif %}
 
-    {%if (pp['view'] == "Employee") or (pp['current_user_role'] == "admin") %}
-    	<h1>Employee Performance Review:</h1>
-    	<br/>
-    	<br/>
-	    {% for question in pp['performance_review']['employee_questions'] %}
-	    	<h2>{{question['text']}}</h2>
-	    		<p>{{question['response']}}</p>
-	    		<br/>
-	    {% endfor %}
-	{% endif %}
+    	{%if (pp['view'] == "Manager") or (pp['current_user_role'] == "admin") %}
+    	  	<div class="span6">
+	    		<div class="reviewdisplay">
+			    	<h2>Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</h2>
+			    	{% if pp['performance_review']['manager_submitted'] %}
+			    		<p><i>(Completed)</i></p>
+			    	{% else %}
+			    		<p><i>(Uncompleted)</i></p>
+			    	{% endif %}
+			    	{% if pp['view'] == "Manager" %}
+			    		<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id']}}/edit" style="display:inline-block;">(Edit)</a></div>
+			    	{% endif %}
+			    	<br/>
+			    	<br/>
+				    {% for question in pp['performance_review']['manager_questions'] %}
+				    	<p><b><i>{{question['text']}}</i></b></p>
+				    	<p>{{question['response']}}</p>
+				    	<br/>
+				    {% endfor %}
+				</div>
+			</div>
 
-    {%if (pp['view'] == "Employee") or (pp['current_user_role'] == "admin") %}
-    	<h1>Manager Performance Review:</h1>
-    	<br/>
-    	<br/>
-	    {% for question in pp['performance_review']['manager_questions'] %}
-	    	<h2>{{question['text']}}</h2>
-	    		<p>{{question['response']}}</p>
-	    		<br/>
-	    {% endfor %}
-	{% endif %}
+	</div>
 
-
+{% endif %}
+</div>
 
 {% endblock %}
 
