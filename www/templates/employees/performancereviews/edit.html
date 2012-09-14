@@ -1,0 +1,66 @@
+{% extends "employees/layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Performance Review: {{pp['employee']['first_name']}} {{pp['employee']['last_name']}}: {{pp['performance_review']['quarter']}} </h1>
+
+{% if pp['error_message'] %}
+<br/>
+<h3 style="color:red;">{{ pp['error_message'] }}</h3>
+{% endif %}
+
+<form action="" method="post" class="form-horizontal">
+    <input type="hidden" name="id" value="{{ pp['performance_review']['_id'] }}" >
+        
+        <div>
+                
+                <br/>
+                <br/>
+                
+                <fieldset>
+
+                    {% if pp['view'] == "Employee" %}
+                        {% for question in pp['performance_review']['employee_questions'] %}
+                        <div class="control-group">
+                            <label class="control-label" for="textarea">{{question['text']}}</label>
+                            <div class="controls">
+                                <textarea class="input-xlarge" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
+                            </div><!-- controls-->
+                        </div><!-- control-group-->	
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if pp['view'] == "Manager" %}
+                        {% for question in pp['performance_review']['manager_questions'] %}
+                        <div class="control-group">
+                            <label class="control-label" for="textarea">{{question['text']}}</label>
+                            <div class="controls">
+                                <textarea class="input-xlarge" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
+                            </div><!-- controls-->
+                        </div><!-- control-group--> 
+                        {% endfor %}
+                    {% endif %}                    
+
+
+                </fieldset>
+            
+        </div>
+        <br/>
+        <input type="submit" class ="btn btn-primary" style="float:right;">
+</form>
+
+{% endblock %}

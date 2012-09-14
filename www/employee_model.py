@@ -2,6 +2,7 @@ from datetime import datetime
 import hashlib
 from bson.objectid import ObjectId
 from corpbase import corpdb
+import math
 
 
 def editable_keys():
@@ -107,7 +108,6 @@ def get_team_managers(employee):
                 if manager not in managers:
                     managers.append(manager)
     return managers
-
 
 def get_ad_hoc_managers(employee):
     managers = []
@@ -243,3 +243,58 @@ def to_vcard(employee):
         vcard += "END:VCARD"
 
     return vcard
+
+
+# Returns the quarter / year in the format 'Q1_2012'
+def get_quarter():
+	now = datetime.now()
+	quarter = int(math.ceil(now.month/3.0))
+
+	return "Q"+str(quarter)+"_"+str(now.year)
+
+# Returns list of performance review questions:
+def get_questions(review_type):
+	if (review_type == "Employee"):
+		return ['How do you provide value?  In what areas are you amazing?  Provide an example of something you did that was particularly positive over the past period or year.',
+				'Identify something you did that was neat, unorthodox, clever, innovative, crazy-but-turns-out-to-be-useful, etc.',
+				'Over the course of this year or period, what have been your strength areas?',
+				'Over the course of the past year or period, what could you have improved?',
+				'How are you active with the 10gen community?',
+				'Are you happy? Are you having fun? What are your aspirations for growth?',
+				'Plan; identify a few high level, strategic goals to accomplish over the course of the following period or year.'
+				]
+	elif (review_type == "Manager"):
+		return ['Where does your employee provide value?  In what areas is she/he amazing?  Provide an example of something he/she did that was particularly positive over the past period or year.',
+				'Identify something he/she did that was neat, unorthodox, clever, innovative, crazy-but-turns-out-to-be-useful, etc.',
+				'Over the course of this year, what would you say are his/her strengths?',
+				'Over the course of the past year, what would you say are his/her weaknesses?',
+				'How is he/she active with the 10gen community?',
+				'Question to pose to the employee:  Are you happy? Are you having fun? What are your aspirations for growth?',
+				'Plan; identify a few high level, strategic goals to accomplish over the course of the following year.'
+				]
+	else:
+		return []
+
+# Returns a list of performance review question placeholders.
+def get_placeholders(review_type):
+	if(review_type == "Employee"):
+		return ['',
+				'think differently!',
+				'',
+				'weaknesses are hard to fix. either have a hard plan to fix the item or propose a work-around',
+				'i.e. give a talk, volunteer at a recruiting event, attend a tech talk',
+				'i.e. what do you enjoy about 10gen and what would make your experience better?',
+				''
+				]
+	elif(review_type == "Manager"):
+		return ['i.e. nudge that you have to be really good here - at something.  doing 10 jiras in a mad overnight session might be a good example; so it is not impossible!',
+				'nudge to think differently. e.g. "give away mms,"',
+				'',
+				'weaknesses are hard to fix. either have a hard plan to fix the item, or propose workarounds, or just decide that for the job at hand they are not important.',
+				'this could probably be measured objectively using variation indirect metrics out there',
+				'this is career planning section for the 20 percent for whom that is the right thing to talk about.  sometimes it is not about career planning maybe it is a no-op or maybe it is "i want to do something different or learn xyz" instead.',
+				''
+				]
+	else:
+		return []
+

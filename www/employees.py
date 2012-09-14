@@ -126,6 +126,7 @@ def current_user_role(pp):
         role = "employee"
     return role
 
+
 ############################################################
 # Employees
 ############################################################
@@ -1403,6 +1404,189 @@ class DeleteProjectGroup(CorpBase):
         raise web.seeother('/projectgroups')
 
 
+############################################################
+# Performance Reviews
+############################################################
+class PerformanceReviews(CorpBase):
+    @authenticated
+    def GET(self, pp, *args):
+        print "GET PerformanceReviews"
+        try:
+            performance_review_id = args[0]
+        except:
+            performance_review_id = ""
+        current_user = corpdb.employees.find_one({"jira_uname" : pp['user']})
+        pp['current_user'] = current_user
+        pp['current_user_role'] = current_user_role(pp)
+        print "Current user role: "
+        print pp['current_user_role']
+
+        if len(performance_review_id) > 0 :
+            pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
+            
+            if pp['performance_review']:
+                if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
+                    pp['view'] = "Employee"
+                elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
+                    pp['view'] = "Manager"
+                else:
+                    pp['view'] = "None"
+                return env.get_template('employees/performancereviews/show.html').render(pp=pp)
+            else:
+                print "performance review not found"
+                raise web.seeother('/performancereviews')
+        else:
+
+            pp['performancereviews'] = corpdb.performancereviews.find().sort("name", pymongo.ASCENDING)
+            pp['my_performancereviews'] = corpdb.performancereviews.find( {"employee_id" : str(current_user['_id'])} ).sort("quarter", pymongo.ASCENDING)
+            pp['my_managing_performancereviews'] = corpdb.performancereviews.find( {"manager_id" : str(current_user['_id']) }).sort("name", pymongo.ASCENDING)
+            pp['current_quarter_performancereviews'] = corpdb.performancereviews.find({ "quarter" : 
+                employee_model.get_quarter() }).sort("name", pymongo.ASCENDING)
+            return env.get_template('employees/performancereviews/index.html').render(pp=pp)
+
+
+    @authenticated
+    def POST(self, pp):
+        print "POST PerformanceReview"
+        raise web.seeother('/performancereviews')
+
+class EditPerformanceReview(CorpBase):
+
+    @authenticated
+    @require_admin
+    def GET(self, pp, *args):
+        print "GET EditPerformanceReview"
+        performance_review_id = args[0]
+        pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
+        pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user'] })
+        # Which set of questions can the user see?
+        if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
+            pp['view'] = "Employee"
+        elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
+            pp['view'] = "Manager"
+        else:
+            pp['view'] = "None"
+
+        if pp['performance_review'] is None:
+            print "performance review not found"
+            raise web.seeother('/performancereviews')
+        else:
+            pp['employee'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
+            return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
+
+    @authenticated
+    @require_admin
+    def POST(self, pp, *args):
+        print "POST EditPerformanceReview"
+        form = web.input()
+        print form
+        performance_review_id = args[0]
+        pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
+        pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user']})
+        if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
+            for question in pp['performance_review']['employee_questions']:
+                question['response'] = form[question['name']]
+        elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
+            for question in pp['performance_review']['manager_questions']:
+                question['response'] = form[question['name']]
+        corpdb.performancereviews.save(pp['performance_review'])
+
+        # Fields cannot be blank (employee must answer all fields)
+        # TODO: make it so that you can fill out form partially and SAVE instead of SUBMIT
+        for question in form:
+            if len(form[question]) == 0 :
+                pp['error_message'] = "You must answer all questions before submitting."
+                pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
+                pp['employee'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
+                pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user'] })
+                # Which set of questions can the user see?
+                if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
+                    pp['view'] = "Employee"
+                elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
+                    pp['view'] = "Manager"
+                else:
+                    pp['view'] = "None"
+                return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
+
+        corpdb.performancereviews.save(pp['performance_review'])
+        raise web.seeother('/performancereviews/' + str(performance_review_id))
+
+
+class NewPerformanceReview(CorpBase):
+    @authenticated
+    @require_admin
+    def GET(self, pp, *args):
+        print "GET NewPerformanceReview"
+        pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
+        return env.get_template('employees/performancereviews/new.html').render(pp=pp)
+
+    @authenticated
+    @require_admin
+    def POST(self, pp):
+        print "POST NewPerformanceReview"
+        form = web.input()
+        # Make sure there is an employee for the performance review.
+        if len(form['employee_id']) > 0:
+            employee = corpdb.employees.find_one(ObjectId(form['employee_id']))
+            name = employee['last_name']+employee['first_name']+employee_model.get_quarter()
+            # TODO: allow user to choose which manager gets the form
+            # TODO: does every employee always have a manager?
+            manager = employee_model.get_managers(employee)[0]
+            performance_review = {'employee_id': form['employee_id'], 'manager_id': manager['_id'], 'name' : name,
+                'quarter' : employee_model.get_quarter(), 'employee_questions' : [], 'manager_questions': [] }
+            
+            # Add in blank questions...
+            employee_question_texts = employee_model.get_questions('Employee')
+            employee_question_placeholders = employee_model.get_placeholders('Employee')
+            manager_question_texts = employee_model.get_questions('Manager')
+            manager_question_placeholders = employee_model.get_placeholders('Manager')
+            for x in range(1, (len(employee_question_texts) + 1)):
+                performance_review['employee_questions'].append( {"name" : ("eq"+str(x)), "text": employee_question_texts[x-1], 
+                    "placeholder" : employee_question_placeholders[x-1] })
+            for x in range(1, (len(manager_question_texts) + 1)):
+                performance_review['manager_questions'].append( {"name" : ("mq"+str(x)), "text": manager_question_texts[x-1], 
+                    "placeholder" : manager_question_placeholders[x-1] })
+            print "performance review: " 
+            print performance_review
+            try:
+                objectid = corpdb.performancereviews.insert(performance_review)
+                print "inserted employee -- success"
+            except:
+                print "performance review not inserted"
+            if objectid:
+                raise web.seeother('/performancereviews/')
+            else:
+                raise web.seeother('/performancereviews/')
+        
+        else:
+            pp['error_message'] = "You must enter an employee name for the review..."
+            pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
+            pp['type'] = form['type']
+            return env.get_template('employees/performancereviews/new.html').render(pp=pp)
+
+
+class DeletePerformanceReview(CorpBase):
+    @authenticated
+    @require_admin
+    def POST(self, pp, *args):
+        print "POST DeletePerformanceReview"
+        performance_review_id = args[0]
+        corpdb.performancereviews.remove(ObjectId(performance_review_id))
+        pp['performancereviews'] = corpdb.performancereviews.find().sort("employee_id", pymongo.ASCENDING).sort(
+            "quarter", pymongo.ASCENDING)
+        pp['my_performancereviews'] = corpdb.performancereviews.find( {"employee_id" : str(current_user['_id']),
+                "type" : "Employee"} ).sort("quarter", pymongo.ASCENDING)
+        pp['my_managing_performancereviews'] = corpdb.performancereviews.find( {"manager_id" : str(current_user['_id']) }).sort("name", pymongo.ASCENDING)
+        pp['current_quarter_performancereviews'] = corpdb.performancereviews.find({ "quarter" : 
+                employee_model.get_quarter() }).sort("employee_id", pymongo.ASCENDING)
+        raise web.seeother('/performancereviews/index.html')
+
+                
+
+                
+    
+
+
 urls = (
         '/employees/(.*).vcf', ExportEmployeeVcard,
         '/employees/(.*)/edit', EditEmployee,
@@ -1450,4 +1634,10 @@ urls = (
         '/projectgroups', ProjectGroups,
 
         '/profileimage/(.*)', ProfileImage,
+        
+        '/performancereviews/new', NewPerformanceReview,
+        '/performancereviews/(.*)/edit', EditPerformanceReview,
+        '/performancereviews/(.*)/delete', DeletePerformanceReview,
+        '/performancereviews/(.*)', PerformanceReviews,
+        '/performancereviews', PerformanceReviews,
 )

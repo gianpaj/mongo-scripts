@@ -1,0 +1,90 @@
+{% extends "employees/layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+{% block content %}
+
+
+<header class="page-header" style="height:120px;">
+  <div class="team-header-info">
+    <h1>Performance Reviews: </h1>
+    {% if pp['current_user_role'] == "admin" %}
+      <div>
+        <a href="/performancereviews/new">New Performance Review</a>
+      </div>
+    {% endif %}
+  </div>
+</header>
+
+
+
+
+<div>
+
+
+      <div class="control-group">
+        <label class="control-label"><b>My Reviews:</b></label>
+        <br/>
+          <div class="controls">
+            {% for review in pp['my_performancereviews'] %}
+              <p><a href="/performancereviews/{{review['_id'] }}/edit">{{review['name']}}</a></p>
+            {% endfor %}
+          </div><!-- controls-->
+      </div><!-- control-group-->
+      <br/>
+
+
+      {% if pp['managing_performancereviews'].__len__() > 0 %}
+        <div class="control-group">
+          <label class="control-label"><b>My Managing Reviews:</b></label>
+          <br/>
+            <div class="controls">
+              {% for review in pp['my_managing_performancereviews'] %}
+                <p><a href="/performancereviews/{{review['_id'] }}/edit">{{review['name']}}</a></p>
+              {% endfor %}
+            </div><!-- controls-->
+        </div><!-- control-group-->
+        <br/>
+      {% endif %}
+
+
+      {% if pp['current_user_role'] == "admin" %}
+
+        <div class="control-group">
+          <label class="control-label"><b>This Quarter's Reviews:</b></label>
+          <br/>
+            <div class="controls">
+              {% for review in pp['current_quarter_performancereviews'] %}
+                <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a></p>
+              {% endfor %}
+            </div><!-- controls-->
+        </div><!-- control-group-->
+        <br/>
+
+
+        <div class="control-group">
+          <label class="control-label"><b>All Reviews:</b></label>
+          <br/>
+            <div class="controls">
+              {% for review in pp['performancereviews'] %}
+                <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a></p>
+              {% endfor %}
+            </div><!-- controls-->
+        </div><!-- control-group-->
+        <br/>
+
+      {% endif %}
+    
+</div>
+
+
+{% endblock %}

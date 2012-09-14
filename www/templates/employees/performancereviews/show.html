@@ -1,0 +1,46 @@
+{% extends "employees/layouts/application.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
+
+<header class="page-header" style="height:120px;">
+  <div class="team-header-info">
+    <h1>Performance Review: {{pp['performance_review']['name']}}</h1>
+    </div>
+</header>
+
+
+    {%if (pp['view'] == "Employee") or (pp['current_user_role'] == "admin") %}
+    	<h1>Employee Performance Review:</h1>
+    	<br/>
+    	<br/>
+	    {% for question in pp['performance_review']['employee_questions'] %}
+	    	<h2>{{question['text']}}</h2>
+	    		<p>{{question['response']}}</p>
+	    		<br/>
+	    {% endfor %}
+	{% endif %}
+
+    {%if (pp['view'] == "Employee") or (pp['current_user_role'] == "admin") %}
+    	<h1>Manager Performance Review:</h1>
+    	<br/>
+    	<br/>
+	    {% for question in pp['performance_review']['manager_questions'] %}
+	    	<h2>{{question['text']}}</h2>
+	    		<p>{{question['response']}}</p>
+	    		<br/>
+	    {% endfor %}
+	{% endif %}
+
+
+
+{% endblock %}
+
+
+
+
+		
+	
+
+ 
