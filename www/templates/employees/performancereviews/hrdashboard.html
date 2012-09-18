@@ -1,0 +1,84 @@
+{% extends "employees/layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+{% block content %}
+
+
+
+
+<header class="page-header" style="height:120px;">
+  <div class="team-header-info">
+    <h1>HR Dashboard: </h1>
+    <br/>
+    <br/>
+    <div><a class="btn" style="float:right" href="/performancereviews/new" id="new_performancereview">+ New Performance Review</a></div>
+    <div><a class="btn" style="float:right" href="/performancereviews/sendreminders" id="sendreminders">+ Send Reminders</a></div>
+  </div>
+</header>
+
+
+{% if (pp['error_message'] and (pp['error_message'].__len__() > 0)) %}
+  <br/>
+  <h3 style="color:red;">{{ pp['error_message'] }}</h3>
+{% endif %}
+
+<div class="row show-grid">
+
+  <div class="span6">
+    <div class="reviewdisplay">
+      <form action="" method="post" class="form-horizontal" style="margin: 0px 0px 0px -50px;">
+        <fieldset>
+          <div class="control-group">
+            <label class="control-label"><b>All Reviews:</b></label>
+            <div class="controls">
+              <select name="all_search" data-placeholder="Search by name..." class="chzn-select-deselect" id="all_search" style="width:100%;">
+                <option></option>
+                {% for review in pp['performancereviews'] %}
+                  <option value="{{ review['_id'] }}">{{ review['name'] }}</option>
+                {% endfor %}
+              </select><input type="submit" value="Search" class ="btn btn-review" style="margin: 10px" position: right>     
+            </div><!-- controls -->
+          </div><!-- control-group -->
+        </fieldset>
+        
+      </form>
+    </div>
+  </div>
+
+  <div class="span6">
+    <div class="reviewdisplay">
+        <div class="control-group">
+          <label class="control-label"><b>Uncompleted Reviews ({{pp['uncompleted_reviews'].__len__()}}):</b></label>
+          <br/>
+            <div class="controls">
+              <div class="redtext">
+                {% for review in pp['uncompleted_reviews'] %}
+                  <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: (<i>{{review['status']}})</i></p>
+                {% endfor %}
+              </div>
+            </div><!-- controls-->
+        </div><!-- control-group-->
+        <br/>
+    </div>
+  </div>
+
+</div>
+
+<script type="text/javascript" charset="utf-8">
+  jQuery(function($){
+      $('#all_search').select2();
+  });
+</script>
+
+
+{% endblock %}
