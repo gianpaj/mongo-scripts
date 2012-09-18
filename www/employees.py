@@ -1449,6 +1449,9 @@ class PerformanceReviews(CorpBase):
     @authenticated
     def POST(self, pp, *args):
         print "POST PerformanceReview"
+        form = web.input()
+        if 'past_managee_reviews_search' in form.keys():
+            raise web.seeother('/performancereviews/'+form['past_managee_reviews_search'])
         raise web.seeother('/performancereviews')
 
 class EditPerformanceReview(CorpBase):
