@@ -5,7 +5,7 @@
 <header class="page-header">
 	<div class="team-header-info">
 		<h1><span class="name">{{ pp['team']['name'] }}</span></h1>
-		{% if pp['current_user_role'] == "admin" %}<div class="team-edit"><a href="/teams/{{ pp['team']['_id'] }}/edit">(Edit)</a>&nbsp;<form enctype="multipart/form-data" action="/teams/{{ pp['team']['_id'] }}/delete" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form></div>{% endif %}
+		{% if "admin" in pp['current_user_roles'] %}<div class="team-edit"><a href="/teams/{{ pp['team']['_id'] }}/edit">(Edit)</a>&nbsp;<form enctype="multipart/form-data" action="/teams/{{ pp['team']['_id'] }}/delete" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form></div>{% endif %}
 	</div>	
 </header>
 

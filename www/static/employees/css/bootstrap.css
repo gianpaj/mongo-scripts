@@ -2764,6 +2764,11 @@ button.close {
   background-color: #004099 \9;
 }
 
+.btn-review {
+  background-color: "white";
+  float: right;
+}
+
 .btn-warning {
   background-color: #faa732;
   *background-color: #f89406;

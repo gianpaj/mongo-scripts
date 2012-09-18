@@ -1521,7 +1521,7 @@ class EditPerformanceReview(CorpBase):
         # If employee has just finished review:
         if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
             # Send alert email to manager on first submit.
-            if pp['status'] == "needs employee review":
+            if pp['performance_review']['status'] == "needs employee review":
                 web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', ('New Manager Performance Review: '+
                     employee['first_name']+' '+employee['last_name']), 'You have a new performance review at http://corp.10gen.com/performancereviews.')
             # Set status flag to "needs manager review".
@@ -1529,7 +1529,7 @@ class EditPerformanceReview(CorpBase):
         # If manager has just finished review:
         elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
             # On first submit, send alert email to HR and reminder email to manager to set up 1-1.
-            if pp['status'] ==  "needs manager review":
+            if pp['performance_review']['status'] ==  "needs manager review":
                 web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', ('Performance Review Completed: '+
                     employee['first_name']+' '+employee['last_name']), ('Performance review for '+employee['first_name']+' '+employee['last_name']+' has been completed: https://corp.10gen.com/performancereviews/'+pp['performance_review']['_id']))
                 web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', 'Reminder: Schedule 1-1 for Performance Review',
@@ -1650,9 +1650,13 @@ class SendPerformanceReviewReminders(CorpBase):
     def POST(self, pp,  *args):
         print "POST SendPerformanceReviewReminders"
         form = web.input()
+        performance_review = corpdb.performancereviews.find_one( ObjectId(form['review_id']))
+        employee = corpdb.employees.find_one({"_id" : performance_review['employee_id']})
         message = ""
         if 'message' in form.keys():
              message = form['message']
+        employee_email = employee['jira_uname'] + "@10gen.com"
+        web.sendmail('cookbook@webpy.org', 'louisa.berger@10gen.com', 'Reminder: Performance Review due soon', message)
         # uncompleted_employee_reviews = corpdb.performancereviews.find( { "quarter" : employee_model.get_quarter(),
         #     "status" : "needs employee review"} )
         # uncompleted_manager_reviews = corpdb.performancereviews.find( { "quarter" : employee_model.get_quarter(),

@@ -32,7 +32,7 @@
 <br/>
 <!-- IF USER IS A MANAGER --> 
 <div style="float:right;">
-	{% if pp['current_user_role'] == "manager" %}
+	{% if "manager" in pp['current_user_roles'] %}
 	<a class="btn" href="/projectgroups/new" id="new_project_group">+ new project group</a>
 	{% endif %}
 </div>

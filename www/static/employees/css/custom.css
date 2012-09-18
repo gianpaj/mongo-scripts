@@ -469,6 +469,10 @@ footer.global-footer a:hover {
 	border-color: #778899;
 }
 
+.redtext:link {
+	color: "red";
+}
+
 
 /* END */
 

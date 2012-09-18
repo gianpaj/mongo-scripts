@@ -21,7 +21,9 @@
 
 <header class="page-header" style="height:90px;">
     <div>
-        <h1>New Performance Review</h1>
+        <h1>Send Reminders</h1>
+        <br/>
+        <p><i>Send email reminders for uncompleted reviews from this quarter.</i></p>
     </div>
 </header>
 
@@ -29,27 +31,24 @@
     <h3 style="color:red;">{{ pp['error_message'] }}</h3>
 {% endif %}
 
-
-<form action="/performancereviews/new" method="post" class="form-horizontal" style="height:275px;width:500px;" name="NewPerformanceReview">
+<form action="/performancereviews/sendreminders" method="post" class="form-horizontal" style="height:275px;width:500px;" name="SendReminders">
 	<fieldset>
-		
-		<div class="control-group">
-			<label class="control-label">Employee </label>
+        <div class="control-group">
+            <label class="control-label"><b>Performance Review:</b></label>
             <div class="controls">
-                <select data-placeholder="Select..." class="input-xlarge" name="employee_id" id="employee_id" >
+              <select data-placeholder="Select..." class="input-xlarge" name="review_id" id="review_id" >
                     <option></option>
-					{% for employee in pp['employees'] %}
-                    <option {% if employee['_id'] == pp['employee_id'] %} SELECTED {% endif %} value="{{ employee['_id'] }}" >
-                        {{ employee['first_name'] }} {{ employee['last_name']}}</option>
-					{% endfor %}
-                </select>
+                    {% for review in pp['performancereviews'] %}
+                    <option value="{{ review['_id'] }}" > {{ review['name'] }}</option>
+                    {% endfor %}
+                </select>     
             </div><!-- controls -->
-		</div><!-- control-group -->
+          </div><!-- control-group -->
 
         <div class="control-group">
-            <label class="control-label" for="textarea">Email Alert Message </label>
+            <label class="control-label" for="textarea">Message </label>
                 <div class="controls">
-                    <textarea class="input-xlarge" id="message" name="message" rows ="4">{{pp['default_message']}}</textarea>                    
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>                    
                 </div><!-- controls -->
         </div><!-- control-group -->
 
@@ -60,20 +59,8 @@
 
 <script type="text/javascript" charset="utf-8">
 	jQuery(function($){
-           $('#employee_id').select2();
+           $('#review_id').select2();
            });
-    </script>
-
-
-<script type="text/javascript" charset="utf-8">
-    function toggleEmployees() {
-        if (NewPerformanceReview.all_employees.checked) {
-            $("#employee_id").select2("disable");
-        }
-        else {
-            $("#employee_id").select2("enable")
-        }
-    }
     </script>
 
 {% endblock %}

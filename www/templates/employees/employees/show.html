@@ -15,7 +15,7 @@
 	{% if pp['can_edit'] %}
 	<div class="edit"><a href="/employees/{{ pp['employee']['jira_uname'] }}/edit" style="display:inline-block;">(Edit)</a>
 	<a href="/employees/{{ pp['employee']['jira_uname'] }}/rateskills" style="display:inline-block;">(Rate Skills)</a>
-	{% if pp['current_user_role'] == "admin" %}
+	{% if "admin" in pp['current_user_roles'] %}
 		<form enctype="multipart/form-data" action="/employees/{{ pp['employee']['jira_uname'] }}/delete" method="post" style="display:inline-block;" id="delete_employee"><a id="delete" href="#" onclick="javascript:confirmDelete()">(Delete)</a></form>
 	{% endif %}
 	</div>

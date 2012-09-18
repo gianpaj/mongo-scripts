@@ -1,4 +1,6 @@
 from datetime import datetime
+from datetime import timedelta
+import pymongo
 import hashlib
 from bson.objectid import ObjectId
 from corpbase import corpdb
@@ -245,12 +247,16 @@ def to_vcard(employee):
     return vcard
 
 
-# Returns the quarter / year in the format 'Q1_2012'
-def get_quarter():
-	now = datetime.now()
-	quarter = int(math.ceil(now.month/3.0))
+# Returns today's date.
+def get_date():
+	return datetime.now()
 
-	return "Q"+str(quarter)+"_"+str(now.year)
+def add_days_to_date(date, days):
+	days = timedelta(days = days)
+	return (date + days)
+
+def review_overdue(created_date):
+	return complete_by_date < datetime.now()
 
 # Returns list of performance review questions:
 def get_questions(review_type):

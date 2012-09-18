@@ -199,7 +199,7 @@
 						{% endif %}
 					</div><!-- controls-->
 			</div><!-- control-group-->
-    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}
+    {% if "manager" in pp['current_user_roles'] or "admin" in pp['current_user_roles'] %}
 		   <div class="control-group">
 		   	<label class="control-label"><b>MongoDB</b> skills</label>
 		   		<div class="controls">
@@ -212,7 +212,7 @@
 		   </div><!-- control-group -->
     {% endif %}
     
-    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}	   
+    {% if "manager" in pp['current_user_roles'] or "admin" in pp['current_user_roles'] %}	   
 			<div class="control-group">
 				<label class="control-label"><b>Programming</b> skills</label>
 					<div class="controls">
@@ -235,7 +235,7 @@
 						</select>
 					</div><!-- controls -->
                 
-    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}				
+    {% if "manager" in pp['current_user_roles'] or "admin" in pp['current_user_roles'] %}				
 			</div><!-- control-group -->	
 			<div class="control-group">
 				<label class="control-label"><b>Specialty</b> skills</label>
@@ -248,7 +248,7 @@
 					</div><!-- controls -->
     {% endif %}
 			
-    {% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}     
+    {% if "manager" in pp['current_user_roles'] or "admin" in pp['current_user_roles'] %}     
 			</div><!-- control-group -->
 			<div class="control-group">
 				<label class="control-label"><b>General</b> skills</label>
@@ -262,7 +262,7 @@
 			</div><!-- control-group -->
     {% endif %}
 
-		{% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}
+		{% if "manager" in pp['current_user_roles'] or "admin" in pp['current_user_roles'] %}
 		<!-- 	<div class="control-group">
 				<label class="control-label">Managing</label>
 					<div class="controls">
@@ -277,7 +277,7 @@
 		
 		{% endif %}
 
-		{% if pp['current_user_role'] == "manager" or pp['current_user_role'] == "admin" %}
+		{% if "manager" in pp['current_user_roles'] or "admin" in pp['current_user_roles'] %}
 			<div class="control-group">
 				<label class="control-label">Team(s)</label>
 					<div class="controls">
