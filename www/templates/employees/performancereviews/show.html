@@ -42,7 +42,7 @@
 				</div>
 			{% endif %}
 
-		{% elif (pp['view'] == "Manager") or ("admin" in pp['current_user_roles']) %}
+		{% elif (pp['view'] == "Manager") or ("hr" in pp['current_user_roles']) %}
 			<div class="span6">
 				<div class="reviewdisplay">
 			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>

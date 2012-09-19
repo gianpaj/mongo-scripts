@@ -247,16 +247,10 @@ def to_vcard(employee):
     return vcard
 
 
-# Returns today's date.
-def get_date():
-	return datetime.now()
-
+# Returns a datetime object that is 'days' days after 'date' 
 def add_days_to_date(date, days):
-	days = timedelta(days = days)
-	return (date + days)
-
-def review_overdue(created_date):
-	return complete_by_date < datetime.now()
+	change_in_days = timedelta(days = days)
+	return (date + change_in_days)
 
 # Returns list of performance review questions:
 def get_questions(review_type):

@@ -34,7 +34,15 @@
 <form action="/performancereviews/sendreminders" method="post" class="form-horizontal" style="height:275px;width:500px;" name="SendReminders">
 	<fieldset>
         <div class="control-group">
-            <label class="control-label"><b>Performance Review:</b></label>
+            <label class="control-label">All Overdue Reviews</label>
+            <div class="controls">
+                <input type="checkbox" name="all_overdue" id= "all_overdue" onchange="toggleReviews();"></input>
+            </div>
+        </div>
+
+
+        <div class="control-group">
+            <label class="control-label">Performance Review:</label>
             <div class="controls">
               <select data-placeholder="Select..." class="input-xlarge" name="review_id" id="review_id" >
                     <option></option>
@@ -61,6 +69,17 @@
 	jQuery(function($){
            $('#review_id').select2();
            });
+    </script>
+
+<script type="text/javascript" charset="utf-8">
+    function toggleReviews() {
+        if (SendReminders.all_overdue.checked) {
+            $("#review_id").select2("disable");
+        }
+        else {
+            $("#review_id").select2("enable")
+        }
+    }
     </script>
 
 {% endblock %}

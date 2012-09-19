@@ -41,10 +41,12 @@
             <br/>
               <div class="controls">
                 {% for review in pp['my_performancereviews'] %}
-                  {% if review['status'] != "done" %}
-                    <p><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<i> ({{review['status']}})</i></p>
+                  {% if (review['due_date'] < pp['overdue_date']) and (review['status'] in ["needs employee review", "needs employee signature"]) %}
+                    <p><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<i> ({{review['status']}})</i><b style="color: red"> OVERDUE</b></p>
+                  {% elif review['status'] == "done" %}
+                    <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> (done)</i></p>
                   {% else %}                 
-                    <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}<i></a>: ({{review['status']}})</i></p>
+                    <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> ({{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
                   {% endif %}
                 {% endfor %}
               </div><!-- controls-->
@@ -61,7 +63,13 @@
               <br/>
                 <div class="controls">
                   {% for review in pp['uncompleted_manager_reviews'] %}
-                    <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: <i>({{review['status']}})</i></p>                 
+                    {% if (review['due_date'] < pp['overdue_date']) and (review['status'] in ["needs manager review", "needs meeting"]) %}
+                      <p><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<i> ({{review['status']}})</i><b style="color: red"> OVERDUE</b></p>
+                    {% elif review['status'] == "done" %}
+                      <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> (done)</i></p>
+                    {% else %}                 
+                      <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> ({{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
+                    {% endif %}                 
                   {% endfor %}
                 </div><!-- controls-->
             </div><!-- control-group-->

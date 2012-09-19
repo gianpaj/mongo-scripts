@@ -58,19 +58,36 @@
   <div class="span6">
     <div class="reviewdisplay">
         <div class="control-group">
-          <label class="control-label"><b>Uncompleted Reviews ({{pp['uncompleted_reviews'].__len__()}}):</b></label>
+          <label class="control-label"><b>Overdue Reviews ({{pp['overdue_reviews'].__len__()}}):</b></label>
           <br/>
             <div class="controls">
               <div class="redtext">
-                {% for review in pp['uncompleted_reviews'] %}
-                  <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: (<i>{{review['status']}})</i></p>
+                {% for review in pp['overdue_reviews'] %}
+                  <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: <i>({{review['status'][6:]}} was due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
                 {% endfor %}
               </div>
             </div><!-- controls-->
         </div><!-- control-group-->
         <br/>
-    </div>
-  </div>
+    </div><!-- reviewdisplay -->
+
+    <br/>
+
+    <div class="reviewdisplay">
+        <div class="control-group">
+          <label class="control-label"><b>Uncompleted Reviews ({{pp['uncompleted_reviews'].__len__()}}):</b></label>
+          <br/>
+            <div class="controls">
+              <div class="redtext">
+                {% for review in pp['uncompleted_reviews'] %}
+                  <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: (<i>{{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
+                {% endfor %}
+              </div>
+            </div><!-- controls-->
+        </div><!-- control-group-->
+        <br/>
+    </div><!-- reviewdisplay -->
+  </div><!-- span6 -->
 
 </div>
 
