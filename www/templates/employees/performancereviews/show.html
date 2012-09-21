@@ -21,8 +21,8 @@
 	    			{{pp['performance_review']['status']}}</div>
 	    	</div>
 	    {% endif %}
+	    <br/>
 	{% endif %}
-	<br/>
 </header>
     
 <div class="row show-grid">
@@ -47,7 +47,7 @@
     
     {%if pp['view'] == "Employee" %}
 	    	<div class="span6">
-	    		<div class="reviewdisplay">
+	    		<div class="reviewdisplay2">
 			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
 			    	{% if pp['performance_review']['status'] not in ["needs employee signature", "done"] %}
 			    		<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id'] }}/edit" style="display:inline-block;">(Edit)</a></div>
@@ -63,7 +63,7 @@
 			</div>
 			{% if pp['performance_review']['early_employee_view'] %}
 				<div class="span6">
-		    		<div class="reviewdisplay">
+		    		<div class="reviewdisplay2">
 				    	<br/>
 				    	<br/>
 					    {% for question in pp['performance_review']['manager_questions'] %}
@@ -77,7 +77,7 @@
 
 	{% elif (pp['view'] == "Manager") or ("hr" in pp['current_user_roles']) %}
 			<div class="span6">
-				<div class="reviewdisplay">
+				<div class="reviewdisplay2">
 			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
 			    		{% if pp['performance_review']['status'] != "needs employee review" %}
 			    			<p><i>(Completed)</i></p>
@@ -95,7 +95,7 @@
 			</div>
 
     	  	<div class="span6">
-	    		<div class="reviewdisplay">
+	    		<div class="reviewdisplay2">
 			    	<h2>Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</h2>
 			    	{% if pp['performance_review']['status'] == "needs employee review" %}
 			    		<p><i>(Needs Employee Review)</i></p>

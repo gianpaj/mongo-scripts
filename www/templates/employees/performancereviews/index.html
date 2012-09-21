@@ -19,8 +19,7 @@
     {% if "admin" in pp['current_user_roles'] or "hr" in pp['current_user_roles'] %}
       <br/>
       <br/>
-      <br/>
-      <div><a class="btn" style="float:right" href="/performancereviews/hrdashboard" id="hrdashboard">+ HR Dashboard</a></div>
+      <div><a class="reviewbtn" style="float:right" href="/performancereviews/hrdashboard" id="hrdashboard">+ HR Dashboard</a></div>
     {% endif %}
 </header>
 
@@ -33,7 +32,7 @@
 <div class="row show-grid">
 
   <div class="span6">
-    <div class= "reviewdisplay">
+    <div class= "reviewdisplay2">
           <div class="control-group">
             <label class="control-label"><b>My Self Reviews{% if pp['current_performancereview'] %} (1){% endif %}:</b></label>
             <br/>
@@ -50,12 +49,12 @@
               </div><!-- controls-->
           </div><!-- control-group-->
           <br/>
-    </div><!-- reviewdisplay-->
+    </div><!-- reviewdisplay2-->
   </div><!-- span6-->
 
 {% if "manager" in pp['current_user_roles'] %}
   <div class="span6">
-    <div class="reviewdisplay">
+    <div class="reviewdisplay2">
             <div class="control-group">
               <label class="control-label"><b>My Manager Reviews ({{pp['uncompleted_manager_reviews'].__len__()}}):</b></label>
               <br/>
@@ -76,11 +75,26 @@
   <br/>
   <br/>
 
-    <div class="reviewdisplay">
+    <div class="reviewdisplay2">
+            <div class="control-group">
+              <label class="control-label"><b>This Month's Upcoming Manager Reviews ({{pp['upcoming_manager_reviews'].__len__()}}):</b></label>
+              <br/>
+                <div class="controls">
+                  {% for employee in pp['upcoming_manager_reviews'] %}
+                    <p><a href="/employees/{{employee['jira_uname']}}">{{employee['first_name']}} {{employee['last_name']}}</a></p>
+                  {% endfor %}
+                </div><!-- controls-->
+            </div><!-- control-group-->
+            <br/>
+    </div>
+    <br/>
+    <br/>
+
+    <div class="reviewdisplay2">
         <form action="" method="post" class="form-horizontal" style="margin: 0px 0px 0px -37px;">
           <fieldset>
             <div class="control-group">
-              <label class="control-label"><b>Past Employee Reviews:</b></label>
+              <label class="control-label"><b>Past Manager Reviews:</b></label>
               <div class="controls">
                 <select name="past_managee_reviews_search" data-placeholder="Search by name..." class="chzn-select-deselect" id="past_managee_reviews_search" style="width:100%;">
                   <option></option>
@@ -92,7 +106,7 @@
             </div><!-- control-group -->
           </fieldset>
         </form>
-    </div><!-- reviewdisplay -->
+    </div><!-- reviewdisplay2 -->
 
 
   </div><!-- span6 -->

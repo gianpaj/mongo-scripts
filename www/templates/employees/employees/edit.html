@@ -323,6 +323,21 @@
 					<input type="text" class="input-xlarge" name="seat" value="{{ pp['employee']['seat'] }}" id="seat">
 				</div><!-- controls-->
 		</div><!-- controls-->
+
+		{% if "admin" in pp['current_user_roles'] %}
+		<div class="control-group">
+			<label class="control-label">Role(s)</label>
+				<div class = "controls">
+					<select multiple="multiple" name="roles" class="input-xlarge" id="roles">
+						{% for role in pp['roles'] %}
+							<option {% if role in pp['employee']['roles'] %} SELECTED {% endif %} value="{{role}}">{{ role }}</option>	
+						{% endfor %}
+					</select>
+				</div><!-- controls -->
+		</div><!-- control-group -->
+		{% endif %}
+
+
 		
 		{% for n in pp['extra_fields'] %}
 		<div class="control-group">
@@ -376,6 +391,7 @@
 		$('#team_ids').select2({
 			placeholder: "Select a team..."
             });
+		$('#roles').select2();
 	});
 	
 	$(document).ready(function() {

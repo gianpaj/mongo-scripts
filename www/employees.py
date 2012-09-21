@@ -359,6 +359,7 @@ class EditEmployee(CorpBase):
             pp['statuses'] = list(set(corpdb.employees.distinct("employee_status")+["Former"]))
             pp['team_members'] = corpdb.employees.find({"_id": {"$ne": pp['employee']['_id']}})
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
+            pp['roles'] = ["hr", "manager", "employee", "admin"]
 
             pp['extra_fields'] = []
             for n in pp['employee'].keys():
@@ -438,7 +439,7 @@ class EditEmployee(CorpBase):
     @require_manager_admin_or_self
     def POST(self, pp, *args): # maybe employee id?
         "POST EditEmployee"
-        form = web.input(managing_ids=[], skills_MONGODB=[], skills_PROG=[], skills_HUMAN=[], skills_SPECIALTY=[], skills_GENERAL=[], team_ids=[])
+        form = web.input(managing_ids=[], skills_MONGODB=[], skills_PROG=[], skills_HUMAN=[], skills_SPECIALTY=[], skills_GENERAL=[], team_ids=[], roles=[])
         print form
         jira_uname = args[0]
         employee = corpdb.employees.find_one({"jira_uname": jira_uname})
@@ -497,7 +498,7 @@ class EditEmployee(CorpBase):
             pp['statuses'] = list(set(corpdb.employees.distinct("employee_status")+["Former"]))
             pp['team_members'] = corpdb.employees.find({"_id": {"$ne": pp['employee']['_id']}})
             pp['primary_email'] = employee_model.primary_email(pp['employee'])
-
+            pp['roles'] = ["admin", "manager", "hr", "employee"]
             if pp['employee']['jira_uname'] == pp['user']:
                 pp['is_current_user'] = True
             else:
@@ -1095,6 +1096,8 @@ class EditSkill(CorpBase):
                 pp['error_message'] = "You must have a group for the skill."
                 return env.get_template('employees/skills/edit.html').render(pp=pp)
              # Save the skill group ids
+             print "skills[]"
+             print form['skill_groups']
              pp['skill']['groups'] = map(lambda skill_group_id: ObjectId(skill_group_id), form['skill_groups'])
              corpdb.skills.save(pp['skill'])
              raise web.seeother('/skills/' + str(pp['skill']['_id']))
@@ -1418,6 +1421,8 @@ class PerformanceReviews(CorpBase):
             performance_review_id = args[0]
         except:
             performance_review_id = ""
+
+
         pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user']})
         pp['current_user_roles'] = current_user_roles(pp)
 
@@ -1447,6 +1452,7 @@ class PerformanceReviews(CorpBase):
             if "manager" in pp['current_user_roles'] :
                 pp['uncompleted_manager_reviews'] = list(corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']), "status" : { "$ne" : "done"} } ).sort("name", pymongo.ASCENDING))
                 pp['past_managing_performancereviews'] = list(corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']), "status" : "done" }).sort("name", pymongo.ASCENDING))
+                pp['upcoming_manager_reviews'] = employee_model.get_upcoming_manager_reviews(pp['current_user']['_id'])
             return env.get_template('employees/performancereviews/index.html').render(pp=pp)
 
 
@@ -1614,7 +1620,7 @@ class NewPerformanceReview(CorpBase):
                 manager = employee_model.get_managers(employee)[0]
                 now = datetime.now()
 
-                performance_review = {'employee_id': employee['_id'], 'manager_id': manager['_id'], 'name' : name,'due_date' : datetime(now.year, now.month, (now.day + 7)), 
+                performance_review = {'employee_id': employee['_id'], 'manager_id': manager['_id'], 'name' : name, 'date' : datetime(now.year, now.month, now.day), 'due_date' : datetime(now.year, now.month, (now.day + 7)), 
                     'status' : "needs employee review", 'early_employee_view' : False, 'employee_questions' : [], 'manager_questions': [] }
                 
                 # Add in review questions...
@@ -1654,6 +1660,7 @@ class PerformanceReviewHRDashboard(CorpBase):
         pp['performancereviews'] = corpdb.performancereviews.find().sort("name", pymongo.ASCENDING)
         pp['uncompleted_reviews'] = list(corpdb.performancereviews.find( { "status" : { "$ne" : "done"}, "due_date" : { "$gte" : today }} ).sort("name", pymongo.ASCENDING))
         pp['overdue_reviews'] = list(corpdb.performancereviews.find( {"status" :  { "$ne" : "done"}, "due_date" : { "$lt" : today } } ))
+        pp['upcoming_reviews'] = list(employee_model.get_this_months_employees())
         return env.get_template('employees/performancereviews/hrdashboard.html').render(pp=pp)
     @authenticated
     @require_admin

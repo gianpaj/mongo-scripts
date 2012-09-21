@@ -93,8 +93,6 @@
 			{% endif %}
 		{% endfor %}
 
-
-
 	<div id="more_info" style="display:none;">
 
 		{% for n in pp['employee'].keys() %}
@@ -160,9 +158,6 @@
 			$(".btn").toggle();
 	    	return true;
 		}
-        
-    <script src="http://twitter.com/javascripts/blogger.js" type= "text/javascript"></script>
-    <script src= 
 		
 		$(document).ready(function() {
 			$.post('http://du.10gen.com/latest', {clientId: "{{pp['client_id']}}", email: "{{pp['employee']['jira_uname']}}", hash: "{{pp['hmac']}}"}, 
