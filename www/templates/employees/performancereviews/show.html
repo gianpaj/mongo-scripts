@@ -5,14 +5,47 @@
 <link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
 <link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
 
-<header class="page-header" style="height:120px;">
-  <div class="team-header-info">
+<header class="page-header" style="height:130px;">
     <h1>Performance Review: {{pp['performance_review']['name']}}</h1>
-    </div>
+    <br/><br/>
+    {% if "hr" in pp['current_user_roles'] or pp['view'] == "Manager" %}
+    	{% if pp['days_to_due_date'] < 0 %}	
+	    	<div class="statusbox">
+	    		<div style="padding: 1px;">	
+	    			{{pp['performance_review']['status']}}<b> (OVERDUE)</b>
+	    		</div>
+	    	</div>
+	    {% else %}
+	    	<div class="statusbox">
+	    		<div style="padding: 1px;">
+	    			{{pp['performance_review']['status']}}</div>
+	    	</div>
+	    {% endif %}
+	{% endif %}
+	<br/>
 </header>
     
 <div class="row show-grid">
-    	{%if pp['view'] == "Employee" %}
+
+	{% if pp['view'] == "Manager" and pp['performance_review']['status'] == "needs meeting" %}
+		<div style= "width: 250px;">
+			<form action = "/performancereviews/{{pp['performance_review']['_id']}}" method="post" class="form-horizontal" style="margin: 0px">
+		    	<input type="checkbox" name="reviewed" id= "reviewed" style="margin-left : 30px"></input> Met with Employee <input type="submit" value="Confirm" class="btn btn-review" style="margin-top: -5px">
+			</form>
+		</div>
+		<br/>
+	{% endif %}
+
+	{% if pp['view'] == "Employee" and pp['performance_review']['status'] == "needs employee signature" %}
+		<div style= "width: 590px;">
+			<form action = "/performancereviews/{{pp['performance_review']['_id']}}" method="post" class="form-horizontal" style="margin: 0 0 0 44px">
+		    	I have reviewed this with my manager.<input type="text" name="signature" id= "signature" style="margin-left : 17px" placeholder="Enter signature here"></input><input type="submit" value="Confirm" class="btn btn-review" style="margin-top: -1px">
+			</form>
+		</div>
+		<br/>
+	{% endif %}
+    
+    {%if pp['view'] == "Employee" %}
 	    	<div class="span6">
 	    		<div class="reviewdisplay">
 			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
@@ -42,7 +75,7 @@
 				</div>
 			{% endif %}
 
-		{% elif (pp['view'] == "Manager") or ("hr" in pp['current_user_roles']) %}
+	{% elif (pp['view'] == "Manager") or ("hr" in pp['current_user_roles']) %}
 			<div class="span6">
 				<div class="reviewdisplay">
 			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
@@ -84,8 +117,16 @@
 				</div>
 			</div>
 
-		{% endif %}
+	{% endif %}
 </div>
+
+
+<script type="text/javascript" charset="utf-8">
+    function disableReviewed() {
+        $("#reviewed").disabled = "disabled";
+    }
+    </script>
+
 
 {% endblock %}
 

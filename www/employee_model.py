@@ -1,11 +1,13 @@
 from datetime import datetime
 from datetime import timedelta
+from datetime import date
 import pymongo
 import hashlib
 from bson.objectid import ObjectId
 from corpbase import corpdb
 import math
-
+import smtplib
+from email.mime.text import MIMEText
 
 def editable_keys():
     return ['intercall_code',
@@ -247,10 +249,27 @@ def to_vcard(employee):
     return vcard
 
 
-# Returns a datetime object that is 'days' days after 'date' 
-def add_days_to_date(date, days):
-	change_in_days = timedelta(days = days)
-	return (date + change_in_days)
+#Returns a datetime object with minutes and seconds set to 0. Useful for comparing dates.
+def start_of_day(datetime_obj):
+	return datetime(datetime_obj.year, datetime_obj.month, datetime_obj.day)
+
+# Returns number of days from datetime_obj1 to datetime_obj2
+def days_difference(datetime_obj1, datetime_obj2):
+	day1 = start_of_day(datetime_obj1)
+	day2 = start_of_day(datetime_obj2)
+	return (day2 - day1).days
+
+# Send an email
+def send_email(from_address, to_addresses, subject, message, cc_addresses =[]):
+    msg = MIMEText(message)
+    msg['Subject'] = subject
+    msg['From']    = from_address
+    msg['To']      = ",".join(to_addresses)
+    msg['CC'] = ",".join(cc_addresses)
+    s = smtplib.SMTP( "ASPMX.L.GOOGLE.com" )
+    s.set_debuglevel(True)
+    s.sendmail( "louisa.berger@10gen.com", to_addresses , msg.as_string() )
+    print s.quit()
 
 # Returns list of performance review questions:
 def get_questions(review_type):

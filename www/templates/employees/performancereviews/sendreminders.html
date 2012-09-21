@@ -23,7 +23,7 @@
     <div>
         <h1>Send Reminders</h1>
         <br/>
-        <p><i>Send email reminders for uncompleted reviews from this quarter.</i></p>
+        <p><i>Send email reminders for uncompleted reviews.</i></p>
     </div>
 </header>
 
@@ -36,7 +36,14 @@
         <div class="control-group">
             <label class="control-label">All Overdue Reviews</label>
             <div class="controls">
-                <input type="checkbox" name="all_overdue" id= "all_overdue" onchange="toggleReviews();"></input>
+                <input type="checkbox" name="all_overdue" id= "all_overdue" onchange = "toggleReviews();"></input>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">All Reviews Due Today</label>
+            <div class="controls">
+                <input type="checkbox" name="due_today" id= "due_today" onchange = "toggleReviews();"></input>
             </div>
         </div>
 
@@ -73,7 +80,7 @@
 
 <script type="text/javascript" charset="utf-8">
     function toggleReviews() {
-        if (SendReminders.all_overdue.checked) {
+        if (SendReminders.all_overdue.checked || SendReminders.due_today.checked) {
             $("#review_id").select2("disable");
         }
         else {

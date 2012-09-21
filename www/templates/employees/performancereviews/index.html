@@ -15,7 +15,6 @@
 
 
 <header class="page-header" style="height:120px;">
-  <div class="team-header-info">
     <h1>Performance Reviews: {{pp['current_user']['first_name']}} {{pp['current_user']['last_name']}}</h1>
     {% if "admin" in pp['current_user_roles'] or "hr" in pp['current_user_roles'] %}
       <br/>
@@ -23,7 +22,6 @@
       <br/>
       <div><a class="btn" style="float:right" href="/performancereviews/hrdashboard" id="hrdashboard">+ HR Dashboard</a></div>
     {% endif %}
-  </div>
 </header>
 
 
@@ -41,7 +39,7 @@
             <br/>
               <div class="controls">
                 {% for review in pp['my_performancereviews'] %}
-                  {% if (review['due_date'] < pp['overdue_date']) and (review['status'] in ["needs employee review", "needs employee signature"]) %}
+                  {% if (review['due_date'] < pp['today']) and (review['status'] in ["needs employee review", "needs employee signature"]) %}
                     <p><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<i> ({{review['status']}})</i><b style="color: red"> OVERDUE</b></p>
                   {% elif review['status'] == "done" %}
                     <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> (done)</i></p>
@@ -63,7 +61,7 @@
               <br/>
                 <div class="controls">
                   {% for review in pp['uncompleted_manager_reviews'] %}
-                    {% if (review['due_date'] < pp['overdue_date']) and (review['status'] in ["needs manager review", "needs meeting"]) %}
+                    {% if (review['due_date'] < pp['today']) and (review['status'] in ["needs manager review", "needs meeting"]) %}
                       <p><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<i> ({{review['status']}})</i><b style="color: red"> OVERDUE</b></p>
                     {% elif review['status'] == "done" %}
                       <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> (done)</i></p>
