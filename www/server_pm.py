@@ -36,6 +36,16 @@ sys.path.append( here.rpartition( "/" )[0] + "/support" )
 import settings
 import jira
 
+from corpbase import authenticated, CorpBase
+
+import web
+scriptMode = False
+if __name__ == "__main__":
+    scriptMode = True
+else:
+    app = web.config.app
+    env = web.config.env
+
 db = pymongo.Connection()["jira_server_pm"]
 
 issues_collection = db["issues"]
@@ -48,6 +58,7 @@ myjira = jira.JiraRest( username=settings.jira_username, passwd=settings.jira_pa
 
 the_custom_fields = None
 the_global_versions = None
+
 
 def getVersions():
     global the_global_versions
@@ -175,5 +186,33 @@ def syncIssues():
     
     db["variables"].update( { "_id" : "last_sync_time" } , { "$set" : { "time" : start } } , upsert = True )
 
+
+def query( fixVersion = None , limit = 10 ):
+    q = { "deleted" : False }
+    if fixVersion:
+        q["fixVersions.name"] = fixVersion
+    return issues_collection.find( q ).sort( "score", pymongo.DESCENDING).limit( limit )
+
+if not scriptMode:
+    class ListView(app.page, CorpBase):
+        @authenticated
+        def GET(self, pageParams):
+            syncIssues()
+            queryFixVersion = None
+            params = dict(web.input())
+            if "fixVersion" in params:
+                queryFixVersion = params["fixVersion"]
+            return env.get_template( "pm/list.html" ).render( issues=query( fixVersion=queryFixVersion, limit=1000),
+                                                              versions=getVersions())
+        
+
 if __name__ == "__main__":
-    syncIssues()
+    command = "sync"
+    if len(sys.argv) > 1:
+        command = sys.argv[len(sys.argv)-1]
+
+    if command == "sync":
+        syncIssues()
+    elif command == "query":
+        for x in query():
+            print( "%s\t%d" % ( x["key"], x["score"] ) )

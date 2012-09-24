@@ -111,6 +111,7 @@ from perfstats import Pstats, PstatsCSV
 # import other handlers
 import perfstats
 import clienthub
+import server_pm
 
 
 
@@ -358,6 +359,7 @@ urls = (
     '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', clienthub.views.ClientDocDelete,
     '/clienthub/edit/(.+)', clienthub.views.ClientEdit,
     '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)', clienthub.views.ClientUploadView,
+    '/pm/', server_pm.ListView
 )
 
 urls = urls + employees.urls

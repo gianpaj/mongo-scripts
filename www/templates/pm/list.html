@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<table>
+  <tr>
+
+    <td valign="top">
+
+      <ul>
+        <li><a href="/pm/">all</a></li>
+        {% for v in versions %}
+        <li><a href="/pm/?fixVersion={{ v }}">{{ v }}</a></li>
+        {% endfor %}
+      </ul>
+      
+      <hr>
+
+      <h3>Mongo Dollars</h3>
+      
+      
+      
+    </td>
+
+    <td>
+      
+      <h2>Issues sorted by scores</h2>
+
+      <table>
+        <tr>
+          <th>key</th>
+          <th>summary</th>
+          <th>fix version</th>
+          <th>score</th>          
+        </tr>
+        {% for issue in issues %}
+        <tr>
+          <td><a href="https://jira.mongodb.org/browse/{{ issue['key'] }}">{{ issue["key"] }}</a></td>
+          <td>{{ issue["summary"] }}</td>
+          <td>{{ issue["fixVersions"][0]["name"] }}</td>
+          <td>{{ issue["score"] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </td>
+
+  </tr>
+</table>
+
+{% endblock %}
