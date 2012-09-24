@@ -5,10 +5,13 @@
 import traceback
 import suds.client
 import urllib2
+import urllib
 import base64
 import json
 import os
 import sys
+import time
+import pprint
 
 
 class JiraConnection(object):
@@ -77,7 +80,8 @@ class MyAuth(urllib2.BaseHandler):
 
 class JiraRest:
     
-    def __init__(self,username,passwd,version="2.0.alpha1",host="https://jira.mongodb.org"):
+    def __init__(self,username,passwd,version="2.0.alpha1",host="https://jira.mongodb.org",
+                 cache_collection=None,cache_time_seconds=300):
         self.username = username
         self.passwd = passwd
 
@@ -86,12 +90,29 @@ class JiraRest:
 
         self.opener = urllib2.build_opener( MyAuth( self.username , self.passwd ) )
 
+        self.cache_collection = cache_collection
+        self.cache_time_seconds = cache_time_seconds
 
-    def fetch(self,suffix):
+    def fetch(self,suffix,**params):
         url = "%s/rest/api/%s/%s" % ( self.host , self.version , suffix )
+
+        if params:
+            url = "%s?%s" % ( url , urllib.urlencode( params ) ) 
+
+        if self.cache_collection:
+            x = self.cache_collection.find_one( { "_id" : url , "time" : { "$gt" : time.time() - self.cache_time_seconds } } )
+            if x:
+                return x["data"]
+
         data = self.opener.open( url )
         data = data.read()
-        return json.loads( data )
+        result = json.loads( data )
+
+        if self.cache_collection:
+            x = { "_id" : url, "time" : time.time(),  "data" : result }
+            self.cache_collection.save( x )
+
+        return result
 
     def issue(self,key):
         return self.fetch( "issue/" + key )
