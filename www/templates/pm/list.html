@@ -2,11 +2,24 @@
 
 {% block content %}
 
+{% if msg %}
+<h2>{{ msg }}</h2>
+{% endif %}
+
 <table>
   <tr>
 
     <td valign="top">
 
+      <h3>Search</h3>
+      <form action="/pm/" method="GET">
+        <input name="search" value="{{ search }}">
+        <input type="submit">
+      </form>
+
+      <hr>
+
+      <h3>Restrict List to a Version</h3>
       <ul>
         <li><a href="/pm/">all</a></li>
         {% for v in versions %}
@@ -17,12 +30,13 @@
       <hr>
 
       <h3>Mongo Dollars</h3>
-      
+      Donated So Far: {{ donatedSoFar }}<br>
+      Donations Left:  {{ donateLeft }}
       
       
     </td>
 
-    <td>
+    <td valign="top">
       
       <h2>Issues sorted by scores</h2>
 
@@ -32,13 +46,28 @@
           <th>summary</th>
           <th>fix version</th>
           <th>score</th>          
+          <th>your donation</th>
         </tr>
         {% for issue in issues %}
         <tr>
-          <td><a href="https://jira.mongodb.org/browse/{{ issue['key'] }}">{{ issue["key"] }}</a></td>
-          <td>{{ issue["summary"] }}</td>
+          <td><a href="https://jira.mongodb.org/browse/{{ issue['key'] }}"><nobr>{{ issue["key"] }}</a></td>
+          <td
+             {% if issue['myDonation'] > 0 %}
+             style="color:green;font-weight:bold;"
+             {% endif %}
+             >
+            {{ issue["summary"] }}
+          </td>
           <td>{{ issue["fixVersions"][0]["name"] }}</td>
           <td>{{ issue["score"] }}</td>
+          <td>
+            <form action="/pm/" method="GET">
+              <nobr>
+              <input type="hidden" name="key" value="{{ issue['key'] }}">
+              <input name="md" size=10 value="{{ issue['myDonation'] }}">
+              <input type="submit" value="donate">
+            </form>
+          </td>
         </tr>
         {% endfor %}
       </table>
