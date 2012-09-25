@@ -237,6 +237,7 @@ if not scriptMode:
             syncIssues()
             
             username = pageParams["user"]
+            username = username.replace( "." , "_" )
             donatedSoFar = getDonatedSoFar( username )
             
             msg = None
