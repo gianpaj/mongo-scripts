@@ -47,7 +47,6 @@ else:
     env = web.config.env
 
 db = pymongo.Connection()["jira_server_pm"]
-db.read_preference = pymongo.ReadPreference.SECONDARY
 
 issues_collection = db["issues"]
 variables_collection = db["variables"]
