@@ -193,6 +193,32 @@ def query( fixVersion = None , limit = 10 ):
         q["fixVersions.name"] = fixVersion
     return issues_collection.find( q ).sort( "score", pymongo.DESCENDING).limit( limit )
 
+def scoredKeys( fixVersion = None ):
+    query = { "deleted" : False }
+    if fixVersion:
+        query["fixVersions.name"] = fixVersion
+    result = issues_collection.map_reduce( """
+function(){ 
+    var score = this.score; 
+    if ( this.mongoDollars ) { 
+        for ( x in this.mongoDollars ){ 
+               score += this.mongoDollars[x]; 
+        } 
+     } 
+     emit( this._id , score ); 
+}
+""" ,
+"""
+function(k,vs) { 
+     return Array.sum(vs); 
+}""" , { "inline" :True } , query=query)
+
+    result = [ ( x["_id"] , x["value"] ) for x in result["results"] ]
+    result.sort( lambda x,y: int(y[1] - x[1]) )
+
+    return result
+
+
 mongoDollarsPrefix = "mongoDollars"
 mongoDollarsMax = 1000
 
@@ -218,13 +244,14 @@ if not scriptMode:
             
             if "key" in params and "md" in params:
                 wantToDonate = int(params["md"])
-                if wantToDonate + donatedSoFar > mongoDollarsPrefix:
+                if ( wantToDonate + donatedSoFar ) > mongoDollarsMax:
                     msg = "trying to cheat, eh? (you're donating more than you are allowed)"
                 else:
                     issues_collection.update( { "_id" : params["key"] } , 
                                               { "$set" : { "%s.%s" % ( mongoDollarsPrefix , username ) : wantToDonate } } )
                     donatedSoFar = getDonatedSoFar( username )
                     msg = "you donated %s to %s" % ( wantToDonate , params["key"] )
+
             
             queryFixVersion = None
 
@@ -233,11 +260,19 @@ if not scriptMode:
 
             
             def fixMongoIssue(issue):
+                totalScore = issue["score"]
                 issue["myDonation"] = 0
+
+
                 if mongoDollarsPrefix in issue:
                     x = issue[mongoDollarsPrefix]
                     if username in x:
                         issue["myDonation"] = x[username]
+                    
+                    for u in x:
+                        totalScore = totalScore + x[u]
+                        
+                issue["totalScore"] = totalScore
                 return issue
 
             issues = []
@@ -250,12 +285,12 @@ if not scriptMode:
                         msg = "can't find message for %s" % x["key"]
                     else:
                         issues.append( fixMongoIssue( mi ) )
-            else:
-                for i in query( fixVersion=queryFixVersion, limit=5000):
+            elif "mine" in params and params["mine"]:
+                for i in issues_collection.find( { "mongoDollars." + username : { "$gt" : 0 } } ):
                     issues.append( fixMongoIssue( i ) )
-
-            for x in issues:
-                print( x["myDonation"] )
+            else:
+                for k,s in scoredKeys(queryFixVersion):
+                    issues.append( fixMongoIssue( issues_collection.find_one( { "_id" : k } ) ) )
 
             return env.get_template( "pm/list.html" ).render( issues=issues,
                                                               versions=getVersions(),
@@ -263,6 +298,7 @@ if not scriptMode:
                                                               msg=msg,
                                                               donatedSoFar=donatedSoFar,
                                                               donateLeft=mongoDollarsMax-donatedSoFar,
+                                                              queryFixVersion=queryFixVersion,
                                                               user=pageParams["user"])
         
 
@@ -276,6 +312,12 @@ if __name__ == "__main__":
     elif command == "query":
         for x in query():
             print( "%s\t%d" % ( x["key"], x["score"] ) )
+    elif command == "scored":
+        fixVersion = None
+        if len(sys.argv)>2:
+            fixVersion = sys.argv[2]
+        for x in scoredKeys(fixVersion)[0:10]:
+            print( x )
     elif command == "search":
         jql='project = server AND resolution is EMPTY AND summary ~ "%s" ' % sys.argv[2]
         issues = myjira.fetch( "search" , jql=jql, maxResults=100 )
