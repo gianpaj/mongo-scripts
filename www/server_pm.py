@@ -197,8 +197,9 @@ mongoDollarsPrefix = "mongoDollars"
 mongoDollarsMax = 1000
 
 def getDonatedSoFar( username ):
-    result = issues_collection.aggregate( [ { "$match" : { "deleted" : False } } , 
-                                            { "$group" : { "_id" : 1 , "total" : { "$sum" : "$%s.%s" % ( mongoDollarsPrefix , username ) } } } ] )
+    result = db.command( "aggregate" , "issues" , 
+                         pipeline=[ { "$match" : { "deleted" : False } } , 
+                                    { "$group" : { "_id" : 1 , "total" : { "$sum" : "$%s.%s" % ( mongoDollarsPrefix , username ) } } } ] )
     return result["result"][0]["total"]
     
 if not scriptMode:
@@ -252,6 +253,9 @@ if not scriptMode:
             else:
                 for i in query( fixVersion=queryFixVersion, limit=5000):
                     issues.append( fixMongoIssue( i ) )
+
+            for x in issues:
+                print( x["myDonation"] )
 
             return env.get_template( "pm/list.html" ).render( issues=issues,
                                                               versions=getVersions(),
