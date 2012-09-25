@@ -1489,12 +1489,12 @@ class PerformanceReviews(CorpBase):
             pp['current_performancereview'] = corpdb.performancereviews.find_one( {"employee_id" : pp['current_user']['_id'], "status" : { "$ne" : "done"} } )
             pp['my_performancereviews'] = list( corpdb.performancereviews.find( {"employee_id" : pp['current_user']['_id'] }).sort("date", pymongo.DESCENDING) )
             pp['all_managing_reviews'] = list( corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']) }).sort("name", pymongo.ASCENDING))
-            pp['uncompleted_manager_reviews'] = list(corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']), "status" : { "$ne" : "done"} } ).sort("name", pymongo.ASCENDING))
+            pp['uncompleted_manager_reviews'] = list(corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']), "status" : { "$ne" : "done"} } ).sort("due_date", pymongo.ASCENDING))
             pp['upcoming_manager_reviews'] = list(employee_model.get_upcoming_manager_reviews(pp['current_user']['_id']))
             
             managing_employee_ids = map(lambda employee: employee['_id'], employee_model.get_managing(pp['current_user']))
             pp['past_managing_performancereviews'] = list(corpdb.performancereviews.find( 
-                {"employee_id" : {"$in" : managing_employee_ids}, "status" : "done"}))
+                {"employee_id" : {"$in" : managing_employee_ids}, "status" : "done"}).sort("name", pymongo.ASCENDING))
             
             return env.get_template('employees/performancereviews/index.html').render(pp=pp)
 
@@ -1723,7 +1723,7 @@ class PerformanceReviewHRDashboard(CorpBase):
         print "GET PerformanceReviewHRDashboard"
         today = employee_model.start_of_day(datetime.now())
         pp['performancereviews'] = corpdb.performancereviews.find().sort("name", pymongo.ASCENDING)
-        pp['uncompleted_reviews'] = list(corpdb.performancereviews.find( { "status" : { "$ne" : "done"}, "due_date" : { "$gte" : today }} ).sort("name", pymongo.ASCENDING))
+        pp['uncompleted_reviews'] = list(corpdb.performancereviews.find( { "status" : { "$ne" : "done"}, "due_date" : { "$gte" : today }} ).sort("due_date", pymongo.ASCENDING))
         pp['overdue_reviews'] = list(corpdb.performancereviews.find( {"status" :  { "$ne" : "done"}, "due_date" : { "$lt" : today } } ))
         pp['upcoming_reviews'] = list(employee_model.get_upcoming_reviews_employees())
         return env.get_template('employees/performancereviews/hrdashboard.html').render(pp=pp)

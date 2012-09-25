@@ -41,17 +41,17 @@
                 <input type="checkbox" name="employee{{employee['_id']}}" id= "employee{{employee['_id']}}" disabled = true checked="on"> {{employee['first_name']}} {{employee['last_name']}} ({{employee['start_date']['month']}}/{{employee['start_date']['day']}}) </input>
             </div>
         {% endfor %}
-        <br/>
-        <div class="control-group" style="margin-left: 5px">
-            <label class="control-label" for="textarea">Email Alert Message </label>
-                <div class="controls">
-                    <textarea class="input-xlarge" id="message" name="message" rows ="4">{{pp['default_message']}}</textarea>                    
+        <div class="control-group" style="margin: 30px 0px 18px -65px">
+            <label class="control-label" for="textarea">Message </label>
+                <br/><br/>
+                <div class="controls" style="margin-left:80px">
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>                    
                 </div><!-- controls -->
         </div><!-- control-group -->
 
 	</fieldset>
     <br/>		
-	<input type="submit" class ="btn btn-review" style="float:right; margin-right:55px">
+	<input type="submit" class ="btn btn-review" style="float:right; margin-right:204px">
 </form>
 
 <script type="text/javascript" charset="utf-8">
