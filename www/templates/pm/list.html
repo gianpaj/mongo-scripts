@@ -31,7 +31,8 @@
 
       <h3>Mongo Dollars</h3>
       Donated So Far: {{ donatedSoFar }}<br>
-      Donations Left:  {{ donateLeft }}
+      Donations Left:  {{ donateLeft }}<br>
+      <a href="/pm/?mine=true">what i've donated to</a>
       
       
     </td>
@@ -59,13 +60,16 @@
             {{ issue["summary"] }}
           </td>
           <td>{{ issue["fixVersions"][0]["name"] }}</td>
-          <td>{{ issue["score"] }}</td>
+          <td>{{ issue["totalScore"] }}</td>
           <td>
             <form action="/pm/" method="GET">
               <nobr>
               <input type="hidden" name="key" value="{{ issue['key'] }}">
+              {% if queryFixVersion %}
+              <input type="hidden" name="fixVersion" value="{{ queryFixVersion }}">
+              {% endif %}
               <input name="md" size=10 value="{{ issue['myDonation'] }}">
-              <input type="submit" value="donate">
+              <input type="submit" value="change">
             </form>
           </td>
         </tr>

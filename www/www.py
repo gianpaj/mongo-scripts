@@ -359,7 +359,7 @@ urls = (
     '/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', clienthub.views.ClientDocDelete,
     '/clienthub/edit/(.+)', clienthub.views.ClientEdit,
     '/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)', clienthub.views.ClientUploadView,
-    '/pm/', server_pm.ListView
+    '/pm/?', server_pm.ListView,
 )
 
 urls = urls + employees.urls
