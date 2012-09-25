@@ -15,6 +15,7 @@ from corpbase import env, CorpBase, authenticated, the_crowd, eng_group, wwwdb, 
 from functools import wraps
 from datetime import datetime
 from datetime import date
+from datetime import timedelta
 try:
     import cStringIO as StringIO
 except:
@@ -110,6 +111,45 @@ def require_manager_admin_or_self(f):
                return f(self, *args, **kwargs)
        raise web.seeother('/employees')
     return wrapper
+
+# To be used for performance reviews.
+def require_hr(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        try:
+            crowd_uname = args[0]['user']
+            current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
+            roles = current_user['roles']
+        except:
+            current_user = None
+            roles = []
+        if "hr" in roles:
+            return f(self, *args, **kwargs)
+        raise web.seeother('/performancereviews')
+
+    return wrapper
+
+# To be used for performance reviews.
+def require_manager_or_self(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        try:
+            crowd_uname = args[0]['user']
+            current_user = corpdb.employees.find_one({"jira_uname" : crowd_uname })
+            requested_review = corpdb.performancereviews.find_one({"_id" : ObjectId(args[1])})
+        except:
+            current_user = None
+            requested_review = None
+
+        if requested_review and current_user:
+            print "requested review: ", requested_review['name']
+            requested_review_employee = corpdb.employees.find_one( {"_id" : ObjectId(requested_review['employee_id'])})
+            requested_review_manager = corpdb.employees.find_one( {"_id" : ObjectId(requested_review['manager_id'])})
+            if (current_user['_id'] == requested_review_employee['_id']) or (current_user['_id'] == requested_review_manager['_id']):
+                return f(self, *args, **kwargs)
+        raise web.seeother('/performancereviews')
+
+    return wrapper 
 
 
 ############################################################
@@ -1449,10 +1489,13 @@ class PerformanceReviews(CorpBase):
             pp['current_performancereview'] = corpdb.performancereviews.find_one( {"employee_id" : pp['current_user']['_id'], "status" : { "$ne" : "done"} } )
             pp['my_performancereviews'] = list( corpdb.performancereviews.find( {"employee_id" : pp['current_user']['_id'] }).sort("date", pymongo.DESCENDING) )
             pp['all_managing_reviews'] = list( corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']) }).sort("name", pymongo.ASCENDING))
-            if "manager" in pp['current_user_roles'] :
-                pp['uncompleted_manager_reviews'] = list(corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']), "status" : { "$ne" : "done"} } ).sort("name", pymongo.ASCENDING))
-                pp['past_managing_performancereviews'] = list(corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']), "status" : "done" }).sort("name", pymongo.ASCENDING))
-                pp['upcoming_manager_reviews'] = employee_model.get_upcoming_manager_reviews(pp['current_user']['_id'])
+            pp['uncompleted_manager_reviews'] = list(corpdb.performancereviews.find( {"manager_id" : ObjectId(pp['current_user']['_id']), "status" : { "$ne" : "done"} } ).sort("name", pymongo.ASCENDING))
+            pp['upcoming_manager_reviews'] = list(employee_model.get_upcoming_manager_reviews(pp['current_user']['_id']))
+            
+            managing_employee_ids = map(lambda employee: employee['_id'], employee_model.get_managing(pp['current_user']))
+            pp['past_managing_performancereviews'] = list(corpdb.performancereviews.find( 
+                {"employee_id" : {"$in" : managing_employee_ids}, "status" : "done"}))
+            
             return env.get_template('employees/performancereviews/index.html').render(pp=pp)
 
 
@@ -1463,7 +1506,7 @@ class PerformanceReviews(CorpBase):
         if 'past_managee_reviews_search' in form.keys():
             raise web.seeother('/performancereviews/'+form['past_managee_reviews_search'])
         if 'reviewed' in form.keys() and form['reviewed'] == "on":
-            # Reset status. 
+            # Set status to needs employee signature. 
             performance_review_id = args[0]
             pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
             pp['performance_review']['status'] = "needs employee signature"
@@ -1475,7 +1518,7 @@ class PerformanceReviews(CorpBase):
             message = str("Please sign your performance review to confirm that you have met with your manager to review it. http://corp.10gen.com/performancereviews/"+ str(pp['performance_review']['_id']))
             #employee_model.send_email("hr@10gen.com", [employee_email], subject, message)
         elif 'signature' in form.keys() and len(form['signature']) > 0:
-            # Reset status.
+            # Set status to done.
             performance_review_id = args[0]
             pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
             pp['performance_review']['status'] = "done"
@@ -1490,6 +1533,7 @@ class PerformanceReviews(CorpBase):
 class EditPerformanceReview(CorpBase):
 
     @authenticated
+    @require_manager_or_self
     def GET(self, pp, *args):
         print "GET EditPerformanceReview"
         performance_review_id = args[0]
@@ -1499,10 +1543,10 @@ class EditPerformanceReview(CorpBase):
             raise web.seeother('/performancereviews')
 
         # Which set of questions can the user see?
-        pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user'] })
-        if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
+        current_user = corpdb.employees.find_one({"jira_uname" : pp['user'] })
+        if str(current_user['_id']) == str(pp['performance_review']['employee_id']):
             pp['view'] = "Employee"
-        elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
+        elif str(current_user['_id']) == str(pp['performance_review']['manager_id']):
             pp['view'] = "Manager"
         # Only employee or manager should be able to edit.
         else:
@@ -1510,9 +1554,11 @@ class EditPerformanceReview(CorpBase):
             raise web.seeother('/performancereviews')
 
         pp['employee'] = corpdb.employees.find_one({'_id': pp['performance_review']['employee_id']})
+        pp['manager'] = corpdb.employees.find_one({'_id' : pp['performance_review']['manager_id']})
         return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
 
     @authenticated
+    @require_manager_or_self
     def POST(self, pp, *args):
         print "POST EditPerformanceReview"
         form = web.input()
@@ -1528,99 +1574,121 @@ class EditPerformanceReview(CorpBase):
         elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
             for question in pp['performance_review']['manager_questions']:
                 question['response'] = form[question['name']]
+
         corpdb.performancereviews.save(pp['performance_review'])
 
-        # Fields cannot be blank (must answer all questions)
-        # TODO: make it so that you can fill out form partially and SAVE instead of SUBMIT
-        for question in form:
-            if len(form[question]) == 0 :
-                pp['error_message'] = "You must answer all questions before submitting."
-                pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
-                pp['employee'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
-                pp['current_user'] = corpdb.employees.find_one({"jira_uname" : pp['user'] })
-                # Which set of questions can the user see?
-                if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
-                    pp['view'] = "Employee"
-                elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
-                    pp['view'] = "Manager"
-                else:
-                    raise web.seeother('/performancereviews')
-                return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
+        # If submitting:
+        if 'bsubmit' in form.keys() and form['bsubmit'] == "submit":
+            # Fields cannot be blank (must answer all questions)
+            for question in form:
+                if len(form[question]) == 0 :
+                    pp['error_message'] = "You must answer all questions before submitting. Click 'Save' to save responses to work on later instead."
+                    pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
+                    pp['employee'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
+                    pp['manager'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['manager_id']))
+                    # Which set of questions can the user see?
+                    current_user = corpdb.employees.find_one({"jira_uname" : pp['user'] })
+                    if str(current_user['_id']) == str(pp['performance_review']['employee_id']):
+                        pp['view'] = "Employee"
+                    elif str(current_user['_id']) == str(pp['performance_review']['manager_id']):
+                        pp['view'] = "Manager"
+                    else:
+                        raise web.seeother('/performancereviews')
+                    return env.get_template('employees/performancereviews/edit.html').render(pp=pp)
 
-        # Review submitted : send alert emails and set flag
-        employee = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
-        manager = corpdb.employees.find_one(ObjectId(pp['performance_review']['manager_id']))
-        manager_email = str(manager['jira_uname']+"@10gen.com")
-        # If employee has just finished review:
-        if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
-            # Send alert email to manager on first submit.
-            if pp['performance_review']['status'] == "needs employee review":
-                subject = str('New Manager Performance Review: '+ employee['first_name']+' '+employee['last_name'])
-                message = "You have a new performance review at http://corp.10gen.com/performancereviews."
-                #employee_model.send_email("hr@10gen.com", [manager_email], subject, message)
-            # Set status flag to "needs manager review".
-            pp['performance_review']['status'] = "needs manager review"
-            # Set due date to 1 wk later for manager review
-            now = datetime.now()
-            pp['performance_review']['due_date'] = datetime(now.year, now.month, (now.day + 7))
-        # If manager has just finished review:
-        elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
-            # On first submit, send alert email to HR and reminder email to manager to set up 1-1.
-            if pp['performance_review']['status'] ==  "needs manager review":
-                hr_subject = str('Performance Review Completed: '+ employee['first_name']+' '+employee['last_name'])
-                hr_message = str('Performance review for '+employee['first_name']+' '+employee['last_name']+' has been completed: https://corp.10gen.com/performancereviews/'+pp['performance_review']['_id'])                
-                needs_meeting_subject = "Reminder: Schedule 1-1 for Performance Review"
-                needs_meeting_message = str('Reminder: Schedule a 1-1 meeting with '+employee['first_name']+' '+employee['last_name']+' to discuss their performace review.')
+            # Review submitted : send alert emails and set flag
+            employee = corpdb.employees.find_one(ObjectId(pp['performance_review']['employee_id']))
+            manager = corpdb.employees.find_one(ObjectId(pp['performance_review']['manager_id']))
+            # If employee has just finished review:
+            if str(pp['current_user']['_id']) == str(pp['performance_review']['employee_id']):
+                # On first submit:
+                if pp['performance_review']['status'] == "needs employee review":
+                    subject = str('New Manager Performance Review: '+ employee['first_name']+' '+employee['last_name'])
+                    message = "You have a new performance review at http://corp.10gen.com/performancereviews."
+                    #employee_model.send_email("hr@10gen.com", [employee_model.primary_email(manager)], subject, message)
+                    # Set status flag to "needs manager review".
+                    pp['performance_review']['status'] = "needs manager review"
+                    # Set due date to 1 wk later for manager review
+                    pp['performance_review']['due_date'] = employee_model.start_of_day(datetime.now()) + timedelta(days = 7)
+            
+            # If manager has just finished review:
+            elif str(pp['current_user']['_id']) == str(pp['performance_review']['manager_id']):
+                # On first submit, send alert email to HR and reminder email to manager to set up 1-1.
+                if pp['performance_review']['status'] ==  "needs manager review":
+                    hr_subject = str('Performance Review Completed: '+ employee['first_name']+' '+employee['last_name'])
+                    hr_message = str('Performance review for '+employee['first_name']+' '+employee['last_name']+' has been completed: https://corp.10gen.com/performancereviews/'+str(pp['performance_review']['_id']) )               
+                    needs_meeting_subject = "Reminder: Schedule 1-1 for Performance Review"
+                    needs_meeting_message = str('Reminder: Schedule a 1-1 meeting with '+employee['first_name']+' '+employee['last_name']+' to discuss their performace review.') 
+                    #employee_model.send_email("hr@10gen.com", ["kirsten@10gen.com"], hr_subject, hr_message)
+                    #employee_model.send_email("hr@10gen.com", [employee_model.primary_email(manager)], needs_meeting_subject, needs_meeting_message)
+                    # Set status flag to "needs meeting".
+                    pp['performance_review']['status'] = "needs meeting"
+                    # Set due date to 3 days later for setting up a meeting
+                    pp['performance_review']['due_date'] = employee_model.start_of_day(datetime.now()) + timedelta(days = 3)
                 
-                #employee_model.send_email("hr@10gen.com", ["kirsten@10gen.com"], hr_subject, hr_message)
-                #employee_model.send_email("hr@10gen.com", [manager_email], needs_meeting_subject, needs_meeting_message)
-            # Set status flag to "needs meeting".
-            pp['performance_review']['status'] = "needs meeting"
-            # Set due date to 3 days later for setting up a meeting
-            now = datetime.now()
-            pp['performance_review']['due_date'] = datetime(now.year, now.month, (now.day + 3))
-            # Check if manager wants to allow employee to view manager form early.
+        # Check if manager wants to allow employee to view manager form early (only can do so after manager review submitted).
+        if pp['performance_review']['status'] not in ["needs employee review", "needs manager review"]:
             if 'early_employee_view' in form.keys() and form['early_employee_view'] == "on":
                 pp['performance_review']['early_employee_view'] = True
+            else:
+                pp['performance_review']['early_employee_view'] = False 
         
         corpdb.performancereviews.save(pp['performance_review'])
-        raise web.seeother('/performancereviews/' + str(performance_review_id))
+        raise web.seeother('/performancereviews/'+str(pp['performance_review']['_id']))
 
 
 class NewPerformanceReview(CorpBase):
     @authenticated
-    @require_admin
+    @require_hr
     def GET(self, pp, *args):
         print "GET NewPerformanceReview"
-        pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
-        # Default email message to be sent with new performance review alert
-        pp['default_message'] = "You have a new performance review at http://corp.10gen.com/performancereviews. "
-        return env.get_template('employees/performancereviews/new.html').render(pp=pp)
+        if args and args[0] == "upcoming":
+            pp['upcoming'] = list(employee_model.get_upcoming_reviews_employees())
+            pp['default_message'] = "You have a new performance review at http://corp.10gen.com/performancereviews. "
+            return env.get_template('employees/performancereviews/new_upcoming.html').render(pp=pp)
+        else:
+            pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
+            # Default email message to be sent with new performance review alert
+            pp['default_message'] = "You have a new performance review at http://corp.10gen.com/performancereviews. "
+            return env.get_template('employees/performancereviews/new.html').render(pp=pp)
 
     @authenticated
-    @require_admin
-    def POST(self, pp):
+    @require_hr
+    def POST(self, pp, *args):
         print "POST NewPerformanceReview"
         form = web.input()
         pp['error_message'] = ''
         # Set up employees to get reviews.
         employees = []
-        if 'all_employees' in form.keys() and form['all_employees'] == 'on':
-            employees = corpdb.employees.find( {"employee_status" : { "$ne" : "Former"}, "title" : {"$ne" : "CEO"}} )
-        elif len(form['employee_id']) > 0:
-            employees.append(corpdb.employees.find_one(ObjectId(form['employee_id']))) 
-        else :
-            raise web.seeother('/performancereviews/new')
+        # From upcoming New Performance Review form
+        if args and args[0] == "upcoming":
+            if "all_upcoming" in form.keys() and form['all_upcoming'] == 'on':
+                employees = employee_model.get_upcoming_reviews_employees()
+            else:
+                for key in form.keys():
+                    # For each checked employee, create new review for that employee.
+                    if key[0:8] == "employee" and form[key] == "on":
+                        employees.append(corpdb.employees.find_one(ObjectId(key[8:])))
+        # From regular New Performance Review form
+        else:
+            if 'all_employees' in form.keys() and form['all_employees'] == 'on':
+                employees = corpdb.employees.find( {"employee_status" : { "$ne" : "Former"}, "title" : {"$ne" : "CEO"}} )
+            elif 'employee_id' in form.keys() and len(form['employee_id']) > 0:
+                employees.append(corpdb.employees.find_one(ObjectId(form['employee_id'])))
 
         for employee in employees:
+            print "employee:"
+            print employee
             name = employee['last_name']+employee['first_name']+str(datetime.now().year)+"_"+str(datetime.now().month)
             #Make sure there is not already a review for this employee this quarter.
             if corpdb.performancereviews.find( {'name': name} ).count() == 0:
                 # TODO: better way to find manager...
                 manager = employee_model.get_managers(employee)[0]
                 now = datetime.now()
+                date = datetime(now.year, now.month, now.day)
+                due_date = datetime(now.year, now.month, now.day) + timedelta(days = 7)
 
-                performance_review = {'employee_id': employee['_id'], 'manager_id': manager['_id'], 'name' : name, 'date' : datetime(now.year, now.month, now.day), 'due_date' : datetime(now.year, now.month, (now.day + 7)), 
+                performance_review = {'employee_id': employee['_id'], 'manager_id': manager['_id'], 'name' : name, 'date' : date, 'due_date' : due_date, 
                     'status' : "needs employee review", 'early_employee_view' : False, 'employee_questions' : [], 'manager_questions': [] }
                 
                 # Add in review questions...
@@ -1641,11 +1709,8 @@ class NewPerformanceReview(CorpBase):
                     pp['error_message']+='\n'+(employee['first_name'] + ' ' + employee['last_name']+ ' could not be inserted.')
                 if objectid:
                     # send email alert to employee and manager:
-                    employee_email = str(employee['jira_uname']+"@10gen.com")
-                    manager_email = str(manager['jira_uname']+"@10gen.com")
                     message = str(form['message'] + ' \n\nEmployee self-review due by ' + str(performance_review['due_date'].month)+"/"+str(performance_review['due_date'].day)+'.')
-                    #employee_model.send_email("hr@10gen.com", [employee_email], 'New Performance Review', message, [manager_email])
-
+                    #employee_model.send_email("hr@10gen.com", [employee_model.primary_email(employee)], 'New Performance Review', message, [employee_model.primary_email(manager)])
             else:
                 pp['error_message']+='\n'+(employee['first_name'] + ' ' + employee['last_name']+ ' could not be inserted: a review for this employee already exists.')
 
@@ -1653,17 +1718,17 @@ class NewPerformanceReview(CorpBase):
 
 class PerformanceReviewHRDashboard(CorpBase):
     @authenticated
-    @require_admin
+    @require_hr
     def GET(self, pp, *args):
         print "GET PerformanceReviewHRDashboard"
         today = employee_model.start_of_day(datetime.now())
         pp['performancereviews'] = corpdb.performancereviews.find().sort("name", pymongo.ASCENDING)
         pp['uncompleted_reviews'] = list(corpdb.performancereviews.find( { "status" : { "$ne" : "done"}, "due_date" : { "$gte" : today }} ).sort("name", pymongo.ASCENDING))
         pp['overdue_reviews'] = list(corpdb.performancereviews.find( {"status" :  { "$ne" : "done"}, "due_date" : { "$lt" : today } } ))
-        pp['upcoming_reviews'] = list(employee_model.get_this_months_employees())
+        pp['upcoming_reviews'] = list(employee_model.get_upcoming_reviews_employees())
         return env.get_template('employees/performancereviews/hrdashboard.html').render(pp=pp)
     @authenticated
-    @require_admin
+    @require_hr
     def POST(self, pp, *args):
         print "POST PerformanceReviewHRDashboard"
         form = web.input()
@@ -1675,7 +1740,7 @@ class PerformanceReviewHRDashboard(CorpBase):
 
 class DeletePerformanceReview(CorpBase):
     @authenticated
-    @require_admin
+    @require_hr
     def POST(self, pp, *args):
         print "POST DeletePerformanceReview"
         performance_review_id = args[0]
@@ -1685,50 +1750,73 @@ class DeletePerformanceReview(CorpBase):
 
 class SendPerformanceReviewReminders(CorpBase):
     @authenticated
-    @require_admin
+    @require_hr
     def GET(self, pp, *args):
         print "GET SendPerformanceReviewReminders"
         # Incomplete performance reviews.
-        pp['performancereviews'] = corpdb.performancereviews.find( {"status" : { "$ne" : "done"}}).sort("name", pymongo.ASCENDING)
-        return env.get_template('employees/performancereviews/sendreminders.html').render(pp=pp)
+        if args and args[0] == "overdue":
+            today = employee_model.start_of_day(datetime.now())            
+            pp['overdue_reviews'] = list(corpdb.performancereviews.find( {"status" :  { "$ne" : "done"}, "due_date" : { "$lt" : today } } ))
+            return env.get_template('employees/performancereviews/sendreminders_overdue.html').render(pp=pp)
+        elif args:
+            pp['performance_review'] = corpdb.performancereviews.find_one( {"name" : args[0]} )
+            return env.get_template('employees/performancereviews/sendreminders_review.html').render(pp=pp)
+        else:
+            pp['performancereviews'] = corpdb.performancereviews.find( {"status" : { "$ne" : "done"}}).sort("name", pymongo.ASCENDING)
+            return env.get_template('employees/performancereviews/sendreminders.html').render(pp=pp)
     @authenticated
-    @require_admin
+    @require_hr
     def POST(self, pp,  *args):
         print "POST SendPerformanceReviewReminders"
         form = web.input()
-        today = employee_model.start_of_day(datetime.now())
-        reminder_reviews = []
+        today = employee_model.start_of_day(datetime.now())            
         subject = "Performance Review Reminder"
-        if 'all_overdue' in form.keys() and form['all_overdue'] == "on":
-            for review in corpdb.performancereviews.find( {"status" :  { "$ne" : "done"}, "due_date" : { "$lt" : today } } ):
-                reminder_reviews.append(review)
-        if 'due_today' in form.keys() and form['due_today'] == "on":
-            for review in corpdb.performancereviews.find( {"status" : {"$ne" : "done"}, "due_date" : today }):
-                reminder_reviews.append(review)
-        if 'review_id' in form.keys() and len(form['review_id']) > 0:
-            reminder_reviews.append(corpdb.performancereviews.find_one( {"_id" : ObjectId(form['review_id'])}))
+        reminder_reviews = []
+        # Overdue reminder form (from hrdashboard overdue section) :
+        if args and args[0] == "overdue":
+            if 'all_overdue' in form.keys() and form['all_overdue'] == "on":
+                for review in corpdb.performancereviews.find( {"status" :  { "$ne" : "done"}, "due_date" : { "$lt" : today } } ):
+                    reminder_reviews.append(review)
+            else:
+                for key in form.keys():
+                    # For each checked employee, send reminder for that employee.
+                    if form[key] == "on":
+                        reminder_reviews.append(corpdb.performancereviews.find_one( {"name" : key}))
+        # Specific review reminder form (from show page):
+        elif args:
+            reminder_reviews.append(corpdb.performancereviews.find_one( {"name" : args[0]}))
+        # Regular reminder form:
+        else:      
+            if 'all_overdue' in form.keys() and form['all_overdue'] == "on":
+                for review in corpdb.performancereviews.find( {"status" :  { "$ne" : "done"}, "due_date" : { "$lt" : today } } ):
+                    reminder_reviews.append(review)
+            if 'due_today' in form.keys() and form['due_today'] == "on":
+                for review in corpdb.performancereviews.find( {"status" : {"$ne" : "done"}, "due_date" : today }):
+                    reminder_reviews.append(review)
+            if 'review_id' in form.keys() and len(form['review_id']) > 0:
+                reminder_reviews.append(corpdb.performancereviews.find_one( {"_id" : ObjectId(form['review_id'])}))
         
         for review in reminder_reviews:
             employee = corpdb.employees.find_one( ObjectId(review['employee_id']))
             manager = corpdb.employees.find_one(ObjectId(review['manager_id']))
 
             if review['status'] == "needs employee review":
-                email_address = str(employee['jira_uname']+"@10gen.com")
+                email_address = employee_model.primary_email(employee)
                 if review['due_date'] < today :
                     message = "Your employee self-review is overdue -- please fill it out at"
                 else:
                     message = ("Your employee self-review is due on " + str(review['due_date'].month)+"/"+str(review['due_date'].day))
             elif review['status'] == "needs manager review":
-                email_address = str(manager['jira_uname']+"@10gen.com")
+                email_address = employee_model.primary_email(manager)
                 if review['due_date'] < today :               
                     message = ("Your manager review for "+ str(employee['first_name'])+" "+str(employee['last_name'])+" is overdue. Please fill it out at")
                 else:
                     message = ("Your manager review for "+str(employee['first_name']) +" "+ str(employee['last_name'])+" is due "+str(review['due_date'].month) +"/"+str(review['due_date'].day))
             elif review['status'] == "needs meeting":
-                email_address = str(manager['jira_uname'] + "@10gen.com")             
+                email_address = employee_model.primary_email(manager)           
                 message = ("Please schedule a meeting with "+ str(employee['first_name'])+" "+str(employee['last_name'])+" to review their performance review.")
             elif review['status'] == "needs employee signature":
-                email_address = str(employee['jira_uname']+"@10gen.com")
+                email_address = employee_model.primary_email(employee)
                 message = "Please sign off on your performance review at"
             else:
                 raise web.seeother('performancereviews/hrdashboard')
@@ -1740,7 +1828,7 @@ class SendPerformanceReviewReminders(CorpBase):
             # Add performance review link on bottom of message.
             message += (" \nhttp://corp.10gen.com/performancereviews/" + str(review['_id']))
             #employee_model.send_email("hr@10gen.com", [email_address], subject, str(message))
-        
+
         raise web.seeother('/performancereviews/hrdashboard')
 
 
@@ -1797,8 +1885,10 @@ urls = (
         '/profileimage/(.*)', ProfileImage,
         
         '/performancereviews/new', NewPerformanceReview,
+        '/performancereviews/new/(.+)', NewPerformanceReview,
         '/performancereviews/hrdashboard', PerformanceReviewHRDashboard,
         '/performancereviews/sendreminders', SendPerformanceReviewReminders,
+        '/performancereviews/sendreminders/(.+)', SendPerformanceReviewReminders,
         '/performancereviews/(.*)/edit', EditPerformanceReview,
         '/performancereviews/(.*)/delete', DeletePerformanceReview,
         '/performancereviews/(.*)', PerformanceReviews,

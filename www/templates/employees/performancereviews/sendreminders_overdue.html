@@ -1,0 +1,75 @@
+{% extends "employees/layouts/application.html" %}
+
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<header class="review-header" style="height:90px;">
+    <h1>Send Reminders</h1>
+    <br/>
+    <p><i>Send email reminders for uncompleted reviews.</i></p>
+</header>
+
+{% if pp['error_message'] %}
+    <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
+{% endif %}
+
+<form action="/performancereviews/sendreminders/overdue" method="post" class="form-horizontal" style="height:275px;width:500px;" name="SendReminders">
+	<fieldset>
+        <div class="control-group">
+            <div class="controls" style="margin-left:15px">
+                <input type="checkbox" name="all_overdue" id= "all_overdue" checked= "on" onchange = "toggleReviews();">  All Overdue Reviews</input>
+            </div>
+        </div>
+        {% for review in pp['overdue_reviews'] %}
+            <div class="control-group" style="margin-left: 40px">
+                <input type="checkbox" name={{review['name']}} id={{review['name']}} disabled=true checked="on"> {{review['name']}} <i>(due {{review['due_date']['month']}}/{{review['due_date']['day']}})</i></input>
+            </div>
+        {% endfor %}
+
+        <div class="control-group" style="margin: 30px 0px 18px -65px">
+            <label class="control-label" for="textarea">Message </label>
+                <br/><br/>
+                <div class="controls" style="margin-left:80px">
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>                    
+                </div><!-- controls -->
+        </div><!-- control-group -->
+
+	</fieldset>
+    <br/>		
+	<input type="submit" class ="btn btn-review" style="float:right; margin-right: 204px">
+</form>
+
+<script type="text/javascript" charset="utf-8">
+    function toggleReviews() {
+        if (SendReminders.all_overdue.checked) {
+            {% for review in pp['overdue_reviews'] %}
+                SendReminders.{{review['name']}}.checked=true;
+                SendReminders.{{review['name']}}.disabled=true;
+            {% endfor %}
+        }
+        else {
+            {% for review in pp['overdue_reviews'] %}
+                SendReminders.{{review['name']}}.checked=false;
+                SendReminders.{{review['name']}}.disabled=false;
+            {% endfor %}
+        }
+    }
+    </script>
+
+{% endblock %}

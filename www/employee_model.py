@@ -99,6 +99,28 @@ def get_managers(employee):
                     managers.append(manager)
     return managers
 
+# Returns all employees with employee in their manager_ids fields and any members of the teams employee manages.
+def get_managing(employee):
+    managing = []
+    print "getting managing"
+    # all employees with employee in manager_ids:
+    for managing_employee in corpdb.employees.find( {"manager_ids" : employee['_id'] , "status" : {"$ne" : "Former"}}):
+        if managing_employee not in managing:
+            managing.append(managing_employee)
+    # all employees on teams that employee manages:
+    for team_id in employee['team_ids']:
+        print "team_id"
+        print corpdb.teams.find_one(ObjectId(team_id))
+        for managing_team_id in corpdb.teams.find_one(ObjectId(team_id))['managing_team_ids']:
+            print "managing_team_id"
+            print corpdb.teams.find_one(ObjectId(managing_team_id))
+            for team_employee in corpdb.employees.find( {"team_ids" : managing_team_id} ):
+                print "employee"
+                print team_employee
+                if team_employee not in managing:
+                    managing.append(team_employee)
+    return managing
+
 
 def get_team_managers(employee):
     managers = []
@@ -260,16 +282,8 @@ def days_difference(datetime_obj1, datetime_obj2):
 	return (day2 - day1).days
 
 # Returns all employees with a performance review this month who have not had one in the past year.
-def get_this_months_employees():
-	# year_day = datetime.now().timetuple().tm_yday
-	# pipeline = [
-	# 	{"$match" : {"start_date" : {"$nin" : [None, ""]}, "employee_status" : {"$ne" : "Former"}}},
-	# 	{"$project" : {"first_name" : 1, "last_name" : 1, "jira_uname" : 1, "start_date" : 1, "days_until_review" : {"$subtract" : [{"$dayOfYear" : "$start_date"}, year_day]}}},
-	# 	{"$match" : {"days_until_review" : {"$lte" : 14, "$gte" : 0} }},
-	# 	{"$sort" : {"days_until_review" : 1}},
-	# 	]
-	# results = corpdb.command('aggregate', 'employees', pipeline=pipeline)
-
+def get_upcoming_reviews_employees():
+    employee_ids = []
 	# Get all employees whose start date is in this month.
 	month = datetime.now().month
 	pipeline = [
@@ -279,19 +293,18 @@ def get_this_months_employees():
 		{"$sort" : {"first_name" : 1}}
 	]
 	results = corpdb.command('aggregate', 'employees', pipeline=pipeline)
-	month_employee_ids = []
 	# Add all employees who have not had a review in the past year.
 	for result in results.get(results.keys()[1]):
 		if not had_review_in_past_year(result['_id']):
-			month_employee_ids.append(result['_id'])
+			employee_ids.append(result['_id'])
 	
-	return corpdb.employees.find( {"_id" : {"$in" : month_employee_ids}})
+	return corpdb.employees.find( {"_id" : {"$in" : employee_ids}})
 
 # Returns all employees with a performance review coming up for a given manager.
 def get_upcoming_manager_reviews(manager_id):
 	upcoming_manager_reviews = []
 
-	for employee in get_this_months_employees():
+	for employee in get_upcoming_reviews_employees():
 		if get_managers(employee)[0]['_id'] == manager_id :
 			upcoming_manager_reviews.append(employee)
 
@@ -301,30 +314,9 @@ def get_upcoming_manager_reviews(manager_id):
 # Returns true if an employee has had a performance review in the past year
 def had_review_in_past_year(employee_id):
 	one_year_ago = datetime((datetime.now().year -1 ), datetime.now().month, datetime.now().day)
-	if corpdb.performancereviews.find( {"_employee_id" : employee_id, "date" : { "$gt" : one_year_ago}}).count() > 0 :
+	if corpdb.performancereviews.find( {"employee_id" : employee_id, "date" : {"$gt" : one_year_ago}}).count() > 0:
 		return True
 	return False
-
-# # Returns employees that have had a performance review in the past year -- right now not relevant because no employees have had reviews entered yet...
-# def employees_without_review_in_last_year():
-# 	# Find all employee ids that have had a review in the last year.
-# 	one_year_ago = datetime((datetime.now().year -1 ), datetime.now().month, datetime.now().day)
-# 	pipeline = [
-# 		{"$match" : {"date" : {"$gt" : one_year_ago}}},
-# 		{"$project" : {"employee_id" : 1, "_id" : 0}}
-# 		]
-# 	results = corpdb.command('aggregate', 'performancereviews', pipeline=pipeline)
-# 	employee_ids_with_review_in_last_year = []
-# 	for result in results.get(results.keys()[1]):
-# 		employee_ids_with_review_in_last_year.append(result['employee_id'])
-# 	# Find all employees that are not in this list, sorted by how long ago they were due for a review.
-# 	year_day = datetime.now().timetuple().tm_yday
-# 	pipeline2 = [
-# 		{"$match" : {"_id" : {"$nin" : employee_ids_with_review_in_last_year}, "employee_status" : {"$ne" : "Former"} }},
-# 		{"$sort" : {"$subtract" : [ {"$dayOfYear" : "$start_date"} , year_day] }}
-# 	]
-# 	results2 = corpdb.command('aggregate', 'employees', pipeline = pipeline2)
-# 	return results2.get(results2.keys()[1])
 
 # Send an email
 def send_email(from_address, to_addresses, subject, message, cc_addresses =[]):

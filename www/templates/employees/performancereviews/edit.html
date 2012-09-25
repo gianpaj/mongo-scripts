@@ -13,80 +13,91 @@
 
 
 {% block content %}
-<header class="page-header" style="height:120px;">
+<header class="review-header">
     <h1>Performance Review: {{pp['performance_review']['name']}}</h1>
 </header>
 
 {% if pp['error_message'] %}
 <br/>
-<h3 style="color:red;">{{ pp['error_message'] }}</h3>
+<h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
 {% endif %}
 
-{% if (pp['view'] == "Manager") and (pp['performance_review']['status'] != "needs employee review") %}
-    <div class="reviewdisplay">
-        <h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
+<div class ="row show-grid">
+    {% if pp['view'] == "Manager" and pp['performance_review']['status'] != "needs employee review" %}
+    <div class="span6">
+        <div class="reviewdisplay2">
             <br/>
-            <br/>
+            <header1 style="font-size:25px">Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
+            <br/><br/><br/>
+            <div>
             {% for question in pp['performance_review']['employee_questions'] %}
-               <p><b><i>{{question['text']}}</i></b></p>
+                <p><b><i>{{question['text']}}</i></b></p><br/>
                 <p>{{question['response']}}</p>
-                   <br/>
-            {% endfor %}
-    </div>
-{% endif %}
+                <br/>
+                {% endfor %}
+            </div>
+        </div><!-- reviewdisplay2 -->
+    </div><!-- span6 -->
+    {% endif %}
 
-    <br/>
-    <br/>
-
-    <div class= "reviewdisplay">
-        <form action="" method="post" class="form-horizontal">
-            <input type="hidden" name="id" value="{{ pp['performance_review']['_id'] }}" >
-            <div>    
-                <fieldset>
-
+    <div class="span6">
+        <div class= "reviewdisplay2">
+            <form action="" method="post" class="form-horizontal" name="EditReview">
+                <input type="hidden" name="id" value="{{ pp['performance_review']['_id'] }}" >
+                    <fieldset>
                     {% if pp['view'] == "Employee" %}
-                        <h2>Employee Review</h2>
                         <br/>
-                        <br/>
+                        <header1 style="font-size:25px">Employee Review</header1>
+                        <br/><br/><br/>
+                        <div>
                         {% for question in pp['performance_review']['employee_questions'] %}
-                        <div class="control-group">
-                            <label class="control-label" for="textarea">{{question['text']}}</label>
-                            <div class="controls">
-                                <textarea class="input-xlarge" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
-                            </div><!-- controls-->
-                        </div><!-- control-group-->	
+                            <p><b><i>{{question['text']}}</i></b></p><br/>
+                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
+                            <br/>
                         {% endfor %}
+                        <div>
 
                     {% elif pp['view'] == "Manager" %}
-                        <h2>Manager Review</h2>
                         <br/>
+                        <header1 style="font-size:25px">Manager Review</header1>
+                        <br/><br/><br/>
+                        {% for question in pp['performance_review']['manager_questions'] %}
+                            <p><b><i>{{question['text']}}</i></b></p>
+                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
+                            <br/>
+                        {% endfor %}
                         <br/>
-                        <div class="control-group">
-                            {% for question in pp['performance_review']['manager_questions'] %}
-                                <label class="control-label" for="textarea">{{question['text']}}</label>
-                                <div class="controls">
-                                    <textarea class="input-xlarge" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
-                                </div><!-- controls-->
-                                <br/>
-                            {% endfor %}
-                            <label class= "control-label" style="float: right">Allow employee to see results before 1-1 meeting.</label>
-                            <div class="controls" style="float: right">
-                                <input type="checkbox" name="early_employee_view">
-                            </div><!-- controls -->
-                        </div>
-                    {% endif %}                    
+                        <label class="review-label" style="width:340px">Allow employee to see results before 1-1 meeting?</label>
+                        <input type="checkbox" name="early_employee_view" style="margin-top: 19px" {% if pp['performance_review']['early_employee_view'] == true %} checked="on" {% endif %}></input>
+                        {% endif %}                    
 
 
-                </fieldset>
+                    </fieldset>
 
-            </div>
+                <br/><br/>
+                <input type="submit" class ="btn btn-review" style="float:right; margin-top: -24px" name="bsubmit" value="Submit" id="bsubmit">
+                <input type="submit" class ="btn btn-review" style="float:right; margin-top: -24px" name="bsubmit" value="Save" id="bsubmit">
+            </form>
+        </div><!-- reviewdisplay -->
+    </div><!-- span6 -->
+
+    {% if pp['view'] == "Employee" and pp['performance_review']['early_employee_view'] == true %}
+    <div class="span6">
+        <div class="reviewdisplay2">
             <br/>
-            <input type="submit" class ="btn btn-review" style="float:right;">
-        </form>
-    </div>
-
-
-
+            <header1 style="font-size:25px">Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
+            <br/><br/><br/>
+            <div>
+            {% for question in pp['performance_review']['manager_questions'] %}
+                <p><b><i>{{question['text']}}</i></b></p><br/>
+                <p>{{question['response']}}</p>
+                <br/>
+                {% endfor %}
+            </div>
+        </div><!-- reviewdisplay2 -->
+    </div><!-- span6 -->
+    {% endif %}
+</div><!-- row show-grid -->
 
 
 {% endblock %}

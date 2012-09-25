@@ -5,135 +5,120 @@
 <link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
 <link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
 
-<header class="page-header" style="height:130px;">
+<header class="review-header" style="height:140px;">
     <h1>Performance Review: {{pp['performance_review']['name']}}</h1>
-    <br/><br/>
     {% if "hr" in pp['current_user_roles'] or pp['view'] == "Manager" %}
-    	{% if pp['days_to_due_date'] < 0 %}	
+            <br/><br/>
 	    	<div class="statusbox">
 	    		<div style="padding: 1px;">	
-	    			{{pp['performance_review']['status']}}<b> (OVERDUE)</b>
+	    			{{pp['performance_review']['status']}}{% if pp['days_to_due_date'] < 0 %}<b> (OVERDUE)</b>{% endif %}
 	    		</div>
 	    	</div>
-	    {% else %}
-	    	<div class="statusbox">
-	    		<div style="padding: 1px;">
-	    			{{pp['performance_review']['status']}}</div>
-	    	</div>
-	    {% endif %}
-	    <br/>
+	{% endif %}
+	{% if "hr" in pp['current_user_roles'] %}
+        <div><a class="btn" style="float:right; margin: 0px 9px 0px 7px" href="/performancereviews/sendreminders/{{pp['performance_review']['name']}}" id="sendreminders">+ Send a Reminder</a></div>
 	{% endif %}
 </header>
     
 <div class="row show-grid">
 
 	{% if pp['view'] == "Manager" and pp['performance_review']['status'] == "needs meeting" %}
-		<div style= "width: 250px;">
-			<form action = "/performancereviews/{{pp['performance_review']['_id']}}" method="post" class="form-horizontal" style="margin: 0px">
-		    	<input type="checkbox" name="reviewed" id= "reviewed" style="margin-left : 30px"></input> Met with Employee <input type="submit" value="Confirm" class="btn btn-review" style="margin-top: -5px">
-			</form>
-		</div>
-		<br/>
+	<div style= "width: 250px;">
+		<form action = "/performancereviews/{{pp['performance_review']['_id']}}" method="post" class="form-horizontal" style="margin: 0px">
+	    	<input type="checkbox" name="reviewed" id= "reviewed" style="margin-left : 30px"></input> Met with Employee <input type="submit" value="Confirm" class="btn btn-review" style="margin-top: -5px">
+		</form>
+	</div>
+	<br/>
 	{% endif %}
 
 	{% if pp['view'] == "Employee" and pp['performance_review']['status'] == "needs employee signature" %}
-		<div style= "width: 590px;">
-			<form action = "/performancereviews/{{pp['performance_review']['_id']}}" method="post" class="form-horizontal" style="margin: 0 0 0 44px">
-		    	I have reviewed this with my manager.<input type="text" name="signature" id= "signature" style="margin-left : 17px" placeholder="Enter signature here"></input><input type="submit" value="Confirm" class="btn btn-review" style="margin-top: -1px">
-			</form>
-		</div>
-		<br/>
+	<div style= "width: 590px;">
+		<form action = "/performancereviews/{{pp['performance_review']['_id']}}" method="post" class="form-horizontal" style="margin: 0 0 0 44px">
+	    	I have reviewed this with my manager.<input type="text" name="signature" id= "signature" style="margin-left : 17px" placeholder="Enter signature here"></input><input type="submit" value="Confirm" class="btn btn-review" style="margin-top: -1px">
+		</form>
+	</div>
+	<br/>
 	{% endif %}
     
     {%if pp['view'] == "Employee" %}
-	    	<div class="span6">
-	    		<div class="reviewdisplay2">
-			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
-			    	{% if pp['performance_review']['status'] not in ["needs employee signature", "done"] %}
-			    		<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id'] }}/edit" style="display:inline-block;">(Edit)</a></div>
-			    	{% endif %}
+    	<div class="span6">
+    		<div class="reviewdisplay2">
+		    	<header1 style="font-size:25px">Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
+		    	{% if pp['performance_review']['status'] not in ["needs employee signature", "done"] %}
+		    		<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id'] }}/edit" style="display:inline-block;">(Edit)</a></div>
+		    	{% endif %}
+		    	<br/>
+		    	<br/>
+			    {% for question in pp['performance_review']['employee_questions'] %}
+			    	<p><b><i>{{question['text']}}</i></b></p>
+			    	<p>{{question['response']}}</p>
 			    	<br/>
+			    {% endfor %}
+			</div><!-- reviewdisplay2 -->
+		</div><!-- span6 -->
+		{% if pp['performance_review']['early_employee_view'] %}
+		<div class="span6">
+    		<div class="reviewdisplay2">
+    			<header1 style="font-size:25px">Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
+		    	<br/>
+		    	<br/>
+		    	<br/>
+			    {% for question in pp['performance_review']['manager_questions'] %}
+			    	<p><b><i>{{question['text']}}</i></b></p>
+			    	<p>{{question['response']}}</p>
 			    	<br/>
-				    {% for question in pp['performance_review']['employee_questions'] %}
-				    	<p><b><i>{{question['text']}}</i></b></p>
-				    	<p>{{question['response']}}</p>
-				    		<br/>
-				    {% endfor %}
-				</div>
-			</div>
-			{% if pp['performance_review']['early_employee_view'] %}
-				<div class="span6">
-		    		<div class="reviewdisplay2">
-				    	<br/>
-				    	<br/>
-					    {% for question in pp['performance_review']['manager_questions'] %}
-					    	<p><b><i>{{question['text']}}</i></b></p>
-					    	<p>{{question['response']}}</p>
-					    	<br/>
-					    {% endfor %}
-					</div>
-				</div>
-			{% endif %}
+			    {% endfor %}
+			</div><!-- reviewdisplay2 -->
+		</div><!-- span6 -->
+		{% endif %}
 
 	{% elif (pp['view'] == "Manager") or ("hr" in pp['current_user_roles']) %}
-			<div class="span6">
-				<div class="reviewdisplay2">
-			    	<h2>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</h2>
-			    		{% if pp['performance_review']['status'] != "needs employee review" %}
-			    			<p><i>(Completed)</i></p>
-			    		{% else %}
-			    			<p><i>(Not Completed)</i></p>
-			    		{% endif %}
+		<div class="span6">
+			<div class="reviewdisplay2">
+		    	<header1 style="font-size:25px">Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
+		    	{% if pp['performance_review']['status'] != "needs employee review" %}
+		    		<p><i>(Completed)</i></p>
+		    	{% else %}
+		    		<p><i>(Not Completed)</i></p>
+		    	{% endif %}
+		    	<br/>
+		    	<br>
+			    {% for question in pp['performance_review']['employee_questions'] %}
+			    	<p><b><i>{{question['text']}}</i></b></p>
+			    	{%if pp['performance_review']['status'] != "needs employee review" %}
+			    		<p>{{question['response']}}</p>
+			    	{% endif %}
 			    	<br/>
-			    	<br>
-				    {% for question in pp['performance_review']['employee_questions'] %}
-				    	<p><b><i>{{question['text']}}</i></b></p>
-				    		{%if pp['performance_review']['status'] != "needs employee review" %}<p>{{question['response']}}</p>{% endif %}
-				    		<br/>
-				    {% endfor %}
-				</div>
-			</div>
+			    {% endfor %}
+			</div><!-- reviewdisplay2 -->
+		</div><!-- span6 -->
 
-    	  	<div class="span6">
-	    		<div class="reviewdisplay2">
-			    	<h2>Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</h2>
-			    	{% if pp['performance_review']['status'] == "needs employee review" %}
-			    		<p><i>(Needs Employee Review)</i></p>
-			    	{% elif pp['performance_review']['status'] == "needs manager review" %}
-			    		<p><i>(Not Completed)</i></p>
-			    	{% else %}
-			    		<p><i>(Completed)</i></p>
-			    	{% endif %}
-			    	{% if pp['view'] == "Manager" and pp['performance_review']['status'] != "done" and pp['performance_review']['status'] != "needs employee review" %}
-			    		<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id']}}/edit" style="display:inline-block;">(Edit)</a></div>
+	  	<div class="span6">
+    		<div class="reviewdisplay2">
+		    	<header1 style="font-size:25px">Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
+		    	{% if pp['performance_review']['status'] == "needs employee review" %}
+		    		<p><i>(Needs Employee Review)</i></p>
+		    	{% elif pp['performance_review']['status'] == "needs manager review" %}
+		    		<p><i>(Not Completed)</i></p>
+		    	{% else %}
+		    		<p><i>(Completed)</i></p>
+		    	{% endif %}
+		    	{% if pp['view'] == "Manager" and pp['performance_review']['status'] != "done" and pp['performance_review']['status'] != "needs employee review" %}
+		    		<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id']}}/edit" style="display:inline-block;">(Edit)</a></div>
+		    	{% endif %}
+		    	<br/>
+		    	<br/>
+			    {% for question in pp['performance_review']['manager_questions'] %}
+			    	<p><b><i>{{question['text']}}</i></b></p>
+			    	{% if (pp['view'] == "Manager") or (pp['performance_review']['status'] != "needs employee review" and pp['performance_review'] != "needs manager review") %}
+			    	<p>{{question['response']}}</p>
 			    	{% endif %}
 			    	<br/>
-			    	<br/>
-				    {% for question in pp['performance_review']['manager_questions'] %}
-				    	<p><b><i>{{question['text']}}</i></b></p>
-				    	<p>{{question['response']}}</p>
-				    	<br/>
-				    {% endfor %}
-				</div>
-			</div>
+			    {% endfor %}
+			</div><!-- reviewdisplay2 -->
+		</div><!-- span6 -->
 
 	{% endif %}
-</div>
-
-
-<script type="text/javascript" charset="utf-8">
-    function disableReviewed() {
-        $("#reviewed").disabled = "disabled";
-    }
-    </script>
-
+</div><!-- row show-grid -->
 
 {% endblock %}
-
-
-
-
-		
-	
-
- 

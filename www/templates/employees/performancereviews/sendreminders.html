@@ -19,34 +19,30 @@
 {% block content %}
 
 
-<header class="page-header" style="height:90px;">
-    <div>
-        <h1>Send Reminders</h1>
-        <br/>
-        <p><i>Send email reminders for uncompleted reviews.</i></p>
-    </div>
+<header class="review-header" style="height:90px;">
+    <h1>Send Reminders</h1>
+    <p><i>Send email reminders for uncompleted reviews.</i></p>
 </header>
 
 {% if pp['error_message'] %}
-    <h3 style="color:red;">{{ pp['error_message'] }}</h3>
+    <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
 {% endif %}
 
 <form action="/performancereviews/sendreminders" method="post" class="form-horizontal" style="height:275px;width:500px;" name="SendReminders">
-	<fieldset>
+    <fieldset>
         <div class="control-group">
             <label class="control-label">All Overdue Reviews</label>
             <div class="controls">
                 <input type="checkbox" name="all_overdue" id= "all_overdue" onchange = "toggleReviews();"></input>
-            </div>
-        </div>
+            </div><!-- controls -->
+        </div><!-- control-group -->
 
         <div class="control-group">
             <label class="control-label">All Reviews Due Today</label>
             <div class="controls">
                 <input type="checkbox" name="due_today" id= "due_today" onchange = "toggleReviews();"></input>
-            </div>
-        </div>
-
+            </div><!-- controls -->
+        </div><!-- control-group -->
 
         <div class="control-group">
             <label class="control-label">Performance Review:</label>
@@ -58,7 +54,7 @@
                     {% endfor %}
                 </select>     
             </div><!-- controls -->
-          </div><!-- control-group -->
+        </div><!-- control-group -->
 
         <div class="control-group">
             <label class="control-label" for="textarea">Message </label>
@@ -66,21 +62,22 @@
                     <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>                    
                 </div><!-- controls -->
         </div><!-- control-group -->
-
-	</fieldset>
-    <br/>		
-	<input type="submit" class ="btn btn-primary" style="float:right;">
+    </fieldset>
+    <br/>
+    <input type="submit" class ="btn btn-review" style="float:right; margin-right: 60px">
 </form>
 
 <script type="text/javascript" charset="utf-8">
-	jQuery(function($){
-           $('#review_id').select2();
-           });
-    </script>
-
+jQuery(function($){
+    $('#review_id').select2({
+            allowClear: true,
+            placeholder: "Select a performance review..."
+    });
+});
+</script>
 <script type="text/javascript" charset="utf-8">
     function toggleReviews() {
-        if (SendReminders.all_overdue.checked || SendReminders.due_today.checked) {
+        if ((SendReminders.all_overdue.checked) || (SendReminders.due_today.checked)) {
             $("#review_id").select2("disable");
         }
         else {
@@ -88,5 +85,4 @@
         }
     }
     </script>
-
 {% endblock %}

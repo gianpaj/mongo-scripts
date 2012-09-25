@@ -14,9 +14,7 @@
 {% block content %}
 
 
-
-
-<header class="page-header" style="height:120px;">
+<header class="review-header">
     <h1>HR Dashboard: </h1>
     <br/><br/>
     <div><a class="reviewbtn" style="float:right; margin-left:7px" href="/performancereviews/new" id="new_performancereview">+ New Performance Review</a></div> 
@@ -26,7 +24,7 @@
 
 {% if (pp['error_message'] and (pp['error_message'].__len__() > 0)) %}
   <br/>
-  <h3 style="color:red;">{{ pp['error_message'] }}</h3>
+  <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
 {% endif %}
 
 <div class="row show-grid">
@@ -34,31 +32,35 @@
   <div class="span6">
 
     <div class="reviewdisplay2">
-        <div class="control-group">
-          <label class="control-label"><b>This Month's Upcoming Reviews ({{pp['upcoming_reviews'].__len__()}}):</b></label>
-          <br/>
+        <header1>This Month's Upcoming Reviews ({{pp['upcoming_reviews'].__len__()}}):</header1>
+          <div class="control-group">
+            <br/>
             <div class="controls">
               {% for review in pp['upcoming_reviews'] %}
-                <p><a href="/employees/{{review['jira_uname']}}">{{review['first_name']}} {{review['last_name']}}</a> <i>(start date: {{review['start_date'].month}}/{{review['start_date'].day}}/{{review['start_date'].year}})</i></p>
+                <div class="listtext"><a href="/employees/{{review['jira_uname']}}">{{review['first_name']}} {{review['last_name']}}</a> <i>(start date: {{review['start_date'].month}}/{{review['start_date'].day}}/{{review['start_date'].year}})</i></div>
               {% endfor %}
             </div><!-- controls-->
-        </div><!-- control-group-->
-        <br/>
+          </div><!-- control-group-->
+          {% if pp['upcoming_reviews'].__len__() > 0 %}
+            <div><a class="btn" style="float:right; margin: 0px -12px 0px 7px" href="/performancereviews/new/upcoming" id="new_performancereview">+ Create Performance Reviews</a></div>
+          {% endif %}
+          <br/>
     </div><!-- reviewdisplay2 -->
-    <br/>
+
+    <br/><br/>
 
     <div class="reviewdisplay2">
-      <form action="" method="post" class="form-horizontal" style="margin: 0px 0px 0px -50px;">
+      <header1>All Reviews:</header1><br/><br/><br/>
+      <form action="" method="post" class="form-horizontal" style="margin: 0px 0px -21px -37px;">
         <fieldset>
           <div class="control-group">
-            <label class="control-label"><b>All Reviews:</b></label>
-            <div class="controls">
-              <select name="all_search" data-placeholder="Search by name..." class="chzn-select-deselect" id="all_search" style="width:100%;">
+            <div class="controls" style="margin:0px 76px 0px 37px">
+              <select name="all_search" data-placeholder="Search by last name..." class="chzn-select-deselect" id="all_search" style="width:100%;">
                 <option></option>
                 {% for review in pp['performancereviews'] %}
                   <option value="{{ review['_id'] }}">{{ review['name'] }}</option>
                 {% endfor %}
-              </select><input type="submit" value="Search" class ="btn btn-review" style="margin: 10px" position: right>     
+              </select><input type="submit" value="Search" class ="btn btn-review" style="margin: 10px; float:left">     
             </div><!-- controls -->
           </div><!-- control-group -->
         </fieldset>
@@ -69,35 +71,32 @@
 
   <div class="span6">
     <div class="reviewdisplay2">
+      <header1>Overdue Reviews ({{pp['overdue_reviews'].__len__()}}):</header1>
+        <br/><br/>
         <div class="control-group">
-          <label class="control-label"><b>Overdue Reviews ({{pp['overdue_reviews'].__len__()}}):</b></label>
-          <br/>
             <div class="controls">
-              <div class="redtext">
-                {% for review in pp['overdue_reviews'] %}
-                  <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: <i>({{review['status'][6:]}} was due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
-                {% endfor %}
-              </div>
+              {% for review in pp['overdue_reviews'] %}
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: <i>({{review['status'][6:]}} was due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></div>
+              {% endfor %}
             </div><!-- controls-->
         </div><!-- control-group-->
+        {% if pp['overdue_reviews'].__len__() > 0 %}
+          <div><a class="btn" style="float:right; margin: 0px -12px 0px 7px" href="/performancereviews/sendreminders/overdue" id="sendreminders">+ Send Overdue Reminders</a></div>
+        {% endif %}
         <br/>
     </div><!-- reviewdisplay2 -->
 
     <br/>
 
     <div class="reviewdisplay2">
+      <header1>Uncompleted Reviews ({{pp['uncompleted_reviews'].__len__()}}):</header1><br/><br/>
         <div class="control-group">
-          <label class="control-label"><b>Uncompleted Reviews ({{pp['uncompleted_reviews'].__len__()}}):</b></label>
-          <br/>
             <div class="controls">
-              <div class="redtext">
-                {% for review in pp['uncompleted_reviews'] %}
-                  <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: (<i>{{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
-                {% endfor %}
-              </div>
+              {% for review in pp['uncompleted_reviews'] %}
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: (<i>{{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></div>
+              {% endfor %}
             </div><!-- controls-->
         </div><!-- control-group-->
-        <br/>
     </div><!-- reviewdisplay2 -->
   </div><!-- span6 -->
 

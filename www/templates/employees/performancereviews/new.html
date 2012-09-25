@@ -19,14 +19,12 @@
 {% block content %}
 
 
-<header class="page-header" style="height:90px;">
-    <div>
-        <h1>New Performance Review</h1>
-    </div>
+<header class="review-header" style="height:90px;">
+    <h1>New Performance Review</h1>
 </header>
 
 {% if pp['error_message'] %}
-    <h3 style="color:red;">{{ pp['error_message'] }}</h3>
+    <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
 {% endif %}
 
 
@@ -39,8 +37,7 @@
                 <select data-placeholder="Select..." class="input-xlarge" name="employee_id" id="employee_id" >
                     <option></option>
 					{% for employee in pp['employees'] %}
-                    <option {% if employee['_id'] == pp['employee_id'] %} SELECTED {% endif %} value="{{ employee['_id'] }}" >
-                        {{ employee['first_name'] }} {{ employee['last_name']}}</option>
+                    <option {% if employee['_id'] == pp['employee_id'] %} SELECTED {% endif %} value="{{ employee['_id'] }}" >{{ employee['first_name'] }} {{ employee['last_name']}}</option>
 					{% endfor %}
                 </select>
             </div><!-- controls -->
@@ -55,25 +52,14 @@
 
 	</fieldset>
     <br/>		
-	<input type="submit" class ="btn btn-primary" style="float:right;">
+	<input type="submit" class ="btn btn-review" style="float:right; margin-right: 60px">
 </form>
 
 <script type="text/javascript" charset="utf-8">
 	jQuery(function($){
            $('#employee_id').select2();
            });
-    </script>
+</script>
 
-
-<script type="text/javascript" charset="utf-8">
-    function toggleEmployees() {
-        if (NewPerformanceReview.all_employees.checked) {
-            $("#employee_id").select2("disable");
-        }
-        else {
-            $("#employee_id").select2("enable")
-        }
-    }
-    </script>
 
 {% endblock %}

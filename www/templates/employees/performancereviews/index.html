@@ -14,11 +14,10 @@
 {% block content %}
 
 
-<header class="page-header" style="height:120px;">
+<header class="review-header">
     <h1>Performance Reviews: {{pp['current_user']['first_name']}} {{pp['current_user']['last_name']}}</h1>
-    {% if "admin" in pp['current_user_roles'] or "hr" in pp['current_user_roles'] %}
-      <br/>
-      <br/>
+    {% if "hr" in pp['current_user_roles'] %}
+      <br/><br/>
       <div><a class="reviewbtn" style="float:right" href="/performancereviews/hrdashboard" id="hrdashboard">+ HR Dashboard</a></div>
     {% endif %}
 </header>
@@ -26,93 +25,87 @@
 
 {% if (pp['error_message'] and (pp['error_message'].__len__() > 0)) %}
   <br/>
-  <h3 style="color:red;">{{ pp['error_message'] }}</h3>
+  <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
 {% endif %}
 
 <div class="row show-grid">
 
   <div class="span6">
     <div class= "reviewdisplay2">
-          <div class="control-group">
-            <label class="control-label"><b>My Self Reviews{% if pp['current_performancereview'] %} (1){% endif %}:</b></label>
-            <br/>
-              <div class="controls">
-                {% for review in pp['my_performancereviews'] %}
-                  {% if (review['due_date'] < pp['today']) and (review['status'] in ["needs employee review", "needs employee signature"]) %}
-                    <p><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<i> ({{review['status']}})</i><b style="color: red"> OVERDUE</b></p>
-                  {% elif review['status'] == "done" %}
-                    <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> (done)</i></p>
-                  {% else %}                 
-                    <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> ({{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
-                  {% endif %}
-                {% endfor %}
-              </div><!-- controls-->
-          </div><!-- control-group-->
-          <br/>
+      <div class="control-group">
+        <header1>MY SELF-REVIEWS{% if pp['current_performancereview'] %} (1){% endif %}:</header1>
+        <br/><br/>
+          <div class="controls">
+            {% for review in pp['my_performancereviews'] %}
+              {% if (review['due_date'] < pp['today']) and (review['status'] in ["needs employee review", "needs employee signature"]) %}
+                <div class="listtext"><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<b><i> ({{review['status']}})</i> OVERDUE</b></div>
+              {% elif review['status'] == "done" %}
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a><i> (done)</i></div>
+              {% else %}                 
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> ({{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></div>
+              {% endif %}
+            {% endfor %}
+          </div><!-- controls-->
+      </div><!-- control-group-->
     </div><!-- reviewdisplay2-->
   </div><!-- span6-->
 
-{% if "manager" in pp['current_user_roles'] %}
+{% if pp['uncompleted_manager_reviews'].__len__() > 0 or pp['upcoming_manager_reviews'].__len__() > 0 or pp['past_managing_performancereviews'].__len__() > 0 %}
   <div class="span6">
     <div class="reviewdisplay2">
-            <div class="control-group">
-              <label class="control-label"><b>My Manager Reviews ({{pp['uncompleted_manager_reviews'].__len__()}}):</b></label>
-              <br/>
-                <div class="controls">
-                  {% for review in pp['uncompleted_manager_reviews'] %}
-                    {% if (review['due_date'] < pp['today']) and (review['status'] in ["needs manager review", "needs meeting"]) %}
-                      <p><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</b></a>:<i> ({{review['status']}})</i><b style="color: red"> OVERDUE</b></p>
-                    {% elif review['status'] == "done" %}
-                      <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> (done)</i></p>
-                    {% else %}                 
-                      <p><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> ({{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></p>
-                    {% endif %}                 
-                  {% endfor %}
-                </div><!-- controls-->
-            </div><!-- control-group-->
-            <br/>
-    </div>
-  <br/>
-  <br/>
+      <div class="control-group">
+        <header1>MY MANAGER REVIEWS ({{pp['uncompleted_manager_reviews'].__len__()}}):</header1>
+        <br/><br/>
+          <div class="controls">
+            {% for review in pp['uncompleted_manager_reviews'] %}
+              {% if (review['due_date'] < pp['today']) and (review['status'] in ["needs manager review", "needs meeting"]) %}
+                <div class="listtext"><b><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>:<i> ({{review['status']}})</i> OVERDUE</b></div>
+              {% elif review['status'] == "done" %}
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> (done)</i></div>
+              {% else %}                 
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}:</a><i> ({{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></div>
+              {% endif %}                 
+            {% endfor %}
+          </div><!-- controls-->
+      </div><!-- control-group-->
+    </div><!-- reviewdisplay2 -->
+    <br/><br/>
 
     <div class="reviewdisplay2">
-            <div class="control-group">
-              <label class="control-label"><b>This Month's Upcoming Manager Reviews ({{pp['upcoming_manager_reviews'].__len__()}}):</b></label>
-              <br/>
-                <div class="controls">
-                  {% for employee in pp['upcoming_manager_reviews'] %}
-                    <p><a href="/employees/{{employee['jira_uname']}}">{{employee['first_name']}} {{employee['last_name']}}</a></p>
-                  {% endfor %}
-                </div><!-- controls-->
-            </div><!-- control-group-->
-            <br/>
-    </div>
-    <br/>
-    <br/>
+      <div class="control-group">
+        <header1>Upcoming Manager Reviews ({{pp['upcoming_manager_reviews'].__len__()}}):</header1>
+        <br/><br/>
+          <div class="controls">
+            {% for employee in pp['upcoming_manager_reviews'] %}
+              <div class="listtext"><a href="/employees/{{employee['jira_uname']}}">{{employee['first_name']}} {{employee['last_name']}}</a> ({{employee['start_date']['month']}}/{{employee['start_date']['day']}})</div>
+            {% endfor %}
+          </div><!-- controls-->
+      </div><!-- control-group-->
+    </div><!-- reviewdisplay2-->
+    <br/><br/>
 
     <div class="reviewdisplay2">
-        <form action="" method="post" class="form-horizontal" style="margin: 0px 0px 0px -37px;">
+      <header1>Past Reviews for Employees:</header1>
+      <br/><br/><br/>
+        <form action="" method="post" class="form-horizontal" style="margin: 0px 0px -21px -37px;">
           <fieldset>
-            <div class="control-group">
-              <label class="control-label"><b>Past Manager Reviews:</b></label>
-              <div class="controls">
+            <div class="control-group">      
+              <div class="controls" style="margin:0px 76px 0px 37px">
                 <select name="past_managee_reviews_search" data-placeholder="Search by name..." class="chzn-select-deselect" id="past_managee_reviews_search" style="width:100%;">
                   <option></option>
                   {% for review in pp['past_managing_performancereviews'] %}
                     <option value="{{ review['_id'] }}">{{ review['name'] }}</option>
                   {% endfor %}
-                </select><input type="submit" value="Search" class ="btn btn-review" style="margin: 10px">     
+                </select><input type="submit" value="Search" class ="btn btn-review" style="margin: 10px; float:left">     
               </div><!-- controls -->
             </div><!-- control-group -->
           </fieldset>
         </form>
     </div><!-- reviewdisplay2 -->
-
-
   </div><!-- span6 -->
-{% endif %}
-</div><!-- show-grid -->
+  {% endif %}
 
+</div><!-- show-grid -->
 
 
 <script type="text/javascript" charset="utf-8">

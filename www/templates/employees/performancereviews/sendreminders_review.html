@@ -1,0 +1,51 @@
+{% extends "employees/layouts/application.html" %}
+
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<header class="review-header" style="height:90px;">
+    <h1>Send Reminders</h1>
+    <br/>
+    <p><i>Send an email reminder.</i></p>
+</header>
+
+{% if pp['error_message'] %}
+    <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
+{% endif %}
+
+<form action="/performancereviews/sendreminders/{{pp['performance_review']['name']}}" method="post" class="form-horizontal" style="height:275px;width:500px;" name="SendReminders">
+	<fieldset>
+        <div class="control-group" style="margin-left: 15px">
+            <input type="checkbox" name={{pp['performance_review']['name']}} id={{pp['performance_review']['name']}} checked="on"> {{pp['performance_review']['name']}} <i>(due {{pp['performance_review']['due_date']['month']}}/{{pp['performance_review']['due_date']['day']}})</i></input>
+        </div>
+
+        <div class="control-group" style="margin: 30px 0px 18px -65px">
+            <label class="control-label" for="textarea">Message </label>
+                <br/><br/>
+                <div class="controls" style="margin-left:80px">
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>                    
+                </div><!-- controls -->
+        </div><!-- control-group -->
+
+	</fieldset>
+    <br/>		
+	<input type="submit" class ="btn btn-review" style="float:right; margin-right: 204px">
+</form>
+
+{% endblock %}
