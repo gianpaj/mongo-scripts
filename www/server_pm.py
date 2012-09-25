@@ -193,26 +193,87 @@ def query( fixVersion = None , limit = 10 ):
         q["fixVersions.name"] = fixVersion
     return issues_collection.find( q ).sort( "score", pymongo.DESCENDING).limit( limit )
 
+mongoDollarsPrefix = "mongoDollars"
+mongoDollarsMax = 1000
+
+def getDonatedSoFar( username ):
+    result = issues_collection.aggregate( [ { "$match" : { "deleted" : False } } , 
+                                            { "$group" : { "_id" : 1 , "total" : { "$sum" : "$%s.%s" % ( mongoDollarsPrefix , username ) } } } ] )
+    return result["result"][0]["total"]
+    
 if not scriptMode:
     class ListView(app.page, CorpBase):
+
         @authenticated
         def GET(self, pageParams):
-            syncIssues()
-            queryFixVersion = None
             params = dict(web.input())
+            syncIssues()
+            
+            username = pageParams["user"]
+            donatedSoFar = getDonatedSoFar( username )
+            
+            msg = None
+            search = ""
+            
+            if "key" in params and "md" in params:
+                wantToDonate = int(params["md"])
+                if wantToDonate + donatedSoFar > mongoDollarsPrefix:
+                    msg = "trying to cheat, eh? (you're donating more than you are allowed)"
+                else:
+                    issues_collection.update( { "_id" : params["key"] } , 
+                                              { "$set" : { "%s.%s" % ( mongoDollarsPrefix , username ) : wantToDonate } } )
+                    donatedSoFar = getDonatedSoFar( username )
+                    msg = "you donated %s to %s" % ( wantToDonate , params["key"] )
+            
+            queryFixVersion = None
+
             if "fixVersion" in params:
                 queryFixVersion = params["fixVersion"]
-            return env.get_template( "pm/list.html" ).render( issues=query( fixVersion=queryFixVersion, limit=1000),
-                                                              versions=getVersions())
+
+            
+            def fixMongoIssue(issue):
+                issue["myDonation"] = 0
+                if mongoDollarsPrefix in issue:
+                    x = issue[mongoDollarsPrefix]
+                    if username in x:
+                        issue["myDonation"] = x[username]
+                return issue
+
+            issues = []
+            if "search" in params:
+                search = params["search"]
+                jql='project = server AND resolution is EMPTY AND summary ~ "%s" ' % search
+                for x in myjira.fetch( "search" , jql=jql, maxResults=100 )["issues"]:
+                    mi = issues_collection.find_one( { "_id" : x["key"] } )
+                    if not mi:
+                        msg = "can't find message for %s" % x["key"]
+                    else:
+                        issues.append( fixMongoIssue( mi ) )
+            else:
+                for i in query( fixVersion=queryFixVersion, limit=5000):
+                    issues.append( fixMongoIssue( i ) )
+
+            return env.get_template( "pm/list.html" ).render( issues=issues,
+                                                              versions=getVersions(),
+                                                              search=search,
+                                                              msg=msg,
+                                                              donatedSoFar=donatedSoFar,
+                                                              donateLeft=mongoDollarsMax-donatedSoFar,
+                                                              user=pageParams["user"])
         
 
 if __name__ == "__main__":
     command = "sync"
     if len(sys.argv) > 1:
-        command = sys.argv[len(sys.argv)-1]
+        command = sys.argv[1]
 
     if command == "sync":
         syncIssues()
     elif command == "query":
         for x in query():
             print( "%s\t%d" % ( x["key"], x["score"] ) )
+    elif command == "search":
+        jql='project = server AND resolution is EMPTY AND summary ~ "%s" ' % sys.argv[2]
+        issues = myjira.fetch( "search" , jql=jql, maxResults=100 )
+        for x in issues["issues"]:
+            print( x["key"] )
