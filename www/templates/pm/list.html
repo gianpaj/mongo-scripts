@@ -42,15 +42,16 @@
       <h2>Issues sorted by scores</h2>
 
       <table>
-        <tr>
+        <tr >
           <th>key</th>
           <th>summary</th>
           <th>fix version</th>
           <th>score</th>          
           <th>your donation</th>
         </tr>
+	{% set row_color = cycler( '#DDDDDD', 'white') %}
         {% for issue in issues %}
-        <tr>
+        <tr style="background-color:{{ row_color.next() }};">
           <td><a target="pm_jira" href="https://jira.mongodb.org/browse/{{ issue['key'] }}"><nobr>{{ issue["key"] }}</a></td>
           <td
              {% if issue['myDonation'] > 0 %}
