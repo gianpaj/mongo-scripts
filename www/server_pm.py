@@ -245,7 +245,9 @@ if not scriptMode:
             
             if "key" in params and "md" in params:
                 wantToDonate = int(params["md"])
-                if ( wantToDonate + donatedSoFar ) > mongoDollarsMax:
+                if wantToDonate < 0:
+                    msg = "please, trying to donate negative to cheat, go away"
+                elif ( wantToDonate + donatedSoFar ) > mongoDollarsMax:
                     msg = "trying to cheat, eh? (you're donating more than you are allowed)"
                 else:
                     issues_collection.update( { "_id" : params["key"] } , 
@@ -279,13 +281,18 @@ if not scriptMode:
             issues = []
             if "search" in params:
                 search = params["search"]
-                jql='project = server AND resolution is EMPTY AND summary ~ "%s" ' % search
-                for x in myjira.fetch( "search" , jql=jql, maxResults=100 )["issues"]:
-                    mi = issues_collection.find_one( { "_id" : x["key"] } )
-                    if not mi:
-                        msg = "can't find message for %s" % x["key"]
-                    else:
-                        issues.append( fixMongoIssue( mi ) )
+
+                mi = issues_collection.find_one( { "_id" : search.upper() } )
+                if mi:
+                    issues.append( fixMongoIssue( mi ) )
+                else:
+                    jql='project = server AND resolution is EMPTY AND summary ~ "%s" ' % search
+                    for x in myjira.fetch( "search" , jql=jql, maxResults=100 )["issues"]:
+                        mi = issues_collection.find_one( { "_id" : x["key"] } )
+                        if not mi:
+                            msg = "can't find message for %s" % x["key"]
+                        else:
+                            issues.append( fixMongoIssue( mi ) )
             elif "mine" in params and params["mine"]:
                 for i in issues_collection.find( { "mongoDollars." + username : { "$gt" : 0 } } ):
                     issues.append( fixMongoIssue( i ) )

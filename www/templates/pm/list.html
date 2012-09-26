@@ -51,7 +51,7 @@
         </tr>
         {% for issue in issues %}
         <tr>
-          <td><a href="https://jira.mongodb.org/browse/{{ issue['key'] }}"><nobr>{{ issue["key"] }}</a></td>
+          <td><a target="pm_jira" href="https://jira.mongodb.org/browse/{{ issue['key'] }}"><nobr>{{ issue["key"] }}</a></td>
           <td
              {% if issue['myDonation'] > 0 %}
              style="color:green;font-weight:bold;"
