@@ -14,10 +14,10 @@
 {% block content %}
 
 
-<header class="review-header">
-    <h1>Performance Reviews: {{pp['current_user']['first_name']}} {{pp['current_user']['last_name']}}</h1>
+<header class="review-header" style="height: 100px">
+    <h1><a href="/performancereviews">Performance Reviews</a>:</h1>
     {% if "hr" in pp['current_user_roles'] %}
-      <br/><br/>
+      <br/>
       <div><a class="reviewbtn" style="float:right" href="/performancereviews/hrdashboard" id="hrdashboard">+ HR Dashboard</a></div>
     {% endif %}
 </header>

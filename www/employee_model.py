@@ -270,6 +270,23 @@ def to_vcard(employee):
 
     return vcard
 
+def performance_review_to_string(performance_review):
+    employee = corpdb.employees.find_one( {"_id" : performance_review['employee_id']})
+    date = str(performance_review['date'].month)+'/'+str(performance_review['date'].year)
+    review = ""
+    review += '<div style="font-size: 20px"> <p>Performance Review:</p> <p>'+employee['first_name']+' '+employee['last_name']+': '+date+'</p></div>'
+    performance_review['name']+"<br/><br/>"
+    review += "Employee Questions: <br/><br/>"
+    for question in performance_review['employee_questions']:
+        review += '<b>'+question['text']+'</b><br/><br/>'
+        if 'response' in question.keys():
+            review += question['response'] + "<br/><br/><br/>"
+    review += "Manager Questions: <br/><br/>"
+    for question in performance_review['manager_questions']:
+        review += '<b>'+question['text']+'</b><br/><br/>'
+        if 'response' in question.keys():
+            review += question['response'] + "<br/><br/><br/>"
+    return review
 
 #Returns a datetime object with minutes and seconds set to 0. Useful for comparing dates.
 def start_of_day(datetime_obj):
@@ -329,29 +346,6 @@ def send_email(from_address, to_addresses, subject, message, cc_addresses =[]):
     s.set_debuglevel(True)
     s.sendmail( "louisa.berger@10gen.com", to_addresses , msg.as_string() )
     print s.quit()
-
-# Returns list of performance review questions:
-def get_questions(review_type):
-	if (review_type == "Employee"):
-		return ['How do you provide value?  In what areas are you amazing?  Provide an example of something you did that was particularly positive over the past period or year.',
-				'Identify something you did that was neat, unorthodox, clever, innovative, crazy-but-turns-out-to-be-useful, etc.',
-				'Over the course of this year or period, what have been your strength areas?',
-				'Over the course of the past year or period, what could you have improved?',
-				'How are you active with the 10gen community?',
-				'Are you happy? Are you having fun? What are your aspirations for growth?',
-				'Plan; identify a few high level, strategic goals to accomplish over the course of the following period or year.'
-				]
-	elif (review_type == "Manager"):
-		return ['Where does your employee provide value?  In what areas is she/he amazing?  Provide an example of something he/she did that was particularly positive over the past period or year.',
-				'Identify something he/she did that was neat, unorthodox, clever, innovative, crazy-but-turns-out-to-be-useful, etc.',
-				'Over the course of this year, what would you say are his/her strengths?',
-				'Over the course of the past year, what would you say are his/her weaknesses?',
-				'How is he/she active with the 10gen community?',
-				'Question to pose to the employee:  Are you happy? Are you having fun? What are your aspirations for growth?',
-				'Plan; identify a few high level, strategic goals to accomplish over the course of the following year.'
-				]
-	else:
-		return []
 
 # Returns a list of performance review question placeholders.
 def get_placeholders(review_type):

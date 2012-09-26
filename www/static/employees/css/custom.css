@@ -621,5 +621,24 @@ header.review-header h1 {
   opacity: .95;
 }
 
+header.review-header h1 a {
+  color: #696969;
+  opacity: .95;
+}
+
+header.review-header h1 a:hover {
+  color: #303030;
+  opacity: .95;
+  text-decoration: none;
+}
+
+header.review-header h2 {
+  font-size: 150%;
+  line-height: 1em;
+  padding:0;
+  color: #696969;
+  opacity: .95;
+}
+
 /* END */
 

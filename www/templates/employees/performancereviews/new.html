@@ -44,6 +44,18 @@
 		</div><!-- control-group -->
 
         <div class="control-group">
+            <label class="control-label">Review </label>
+            <div class="controls">
+                <select data-placeholder="Select..." class="input-xlarge" name="template_id" id="template_id" >
+                    <option></option>
+                    {% for template in pp['templates'] %}
+                    <option value="{{ template['_id'] }}" >{{ template['name'] }}</option>
+                    {% endfor %}
+                </select>
+            </div><!-- controls -->
+        </div><!-- control-group -->
+
+        <div class="control-group">
             <label class="control-label" for="textarea">Email Alert Message </label>
                 <div class="controls">
                     <textarea class="input-xlarge" id="message" name="message" rows ="4">{{pp['default_message']}}</textarea>                    

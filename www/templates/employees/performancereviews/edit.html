@@ -13,8 +13,8 @@
 
 
 {% block content %}
-<header class="review-header">
-    <h1>Performance Review: {{pp['performance_review']['name']}}</h1>
+<header class="review-header" style="height: 90px">
+    <h1><a href="/performancereviews/">Performance Reviews</a>: <a href="/performancereviews/{{pp['performance_review']['_id']}}">{{pp['performance_review']['name']}}</a></h1>
 </header>
 
 {% if pp['error_message'] %}
@@ -26,12 +26,11 @@
     {% if pp['view'] == "Manager" and pp['performance_review']['status'] != "needs employee review" %}
     <div class="span6">
         <div class="reviewdisplay2">
-            <br/>
-            <header1 style="font-size:25px">Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
+            <header1>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
             <br/><br/><br/>
             <div>
             {% for question in pp['performance_review']['employee_questions'] %}
-                <p><b><i>{{question['text']}}</i></b></p><br/>
+                <p><i>{{question['text']}}</i></p><br/>
                 <p>{{question['response']}}</p>
                 <br/>
                 {% endfor %}
@@ -46,24 +45,22 @@
                 <input type="hidden" name="id" value="{{ pp['performance_review']['_id'] }}" >
                     <fieldset>
                     {% if pp['view'] == "Employee" %}
-                        <br/>
-                        <header1 style="font-size:25px">Employee Review</header1>
+                        <header1>Employee Review</header1>
                         <br/><br/><br/>
                         <div>
                         {% for question in pp['performance_review']['employee_questions'] %}
                             <p><b><i>{{question['text']}}</i></b></p><br/>
-                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
+                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10">{{ question['response'] }}</textarea>
                             <br/>
                         {% endfor %}
                         <div>
 
                     {% elif pp['view'] == "Manager" %}
-                        <br/>
-                        <header1 style="font-size:25px">Manager Review</header1>
+                        <header1>Manager Review</header1>
                         <br/><br/><br/>
                         {% for question in pp['performance_review']['manager_questions'] %}
-                            <p><b><i>{{question['text']}}</i></b></p>
-                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10" placeholder= {{question['placeholder']}}>{{ question['response'] }}</textarea>
+                            <p><i>{{question['text']}}</i></p>
+                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10" </textarea>
                             <br/>
                         {% endfor %}
                         <br/>
@@ -84,8 +81,7 @@
     {% if pp['view'] == "Employee" and pp['performance_review']['early_employee_view'] == true %}
     <div class="span6">
         <div class="reviewdisplay2">
-            <br/>
-            <header1 style="font-size:25px">Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
+            <header1>Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
             <br/><br/><br/>
             <div>
             {% for question in pp['performance_review']['manager_questions'] %}

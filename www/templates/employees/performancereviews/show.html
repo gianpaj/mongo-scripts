@@ -5,10 +5,10 @@
 <link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
 <link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
 
-<header class="review-header" style="height:140px;">
-    <h1>Performance Review: {{pp['performance_review']['name']}}</h1>
+<header class="review-header" style="height:130px">
+    <h1><a href="/performancereviews/">Performance Reviews</a>: <a href="/performancereviews/{{pp['performance_review']['_id']}}">{{pp['performance_review']['name']}}</a></h1>
+    <br/><br/>
     {% if "hr" in pp['current_user_roles'] or pp['view'] == "Manager" %}
-            <br/><br/>
 	    	<div class="statusbox">
 	    		<div style="padding: 1px;">	
 	    			{{pp['performance_review']['status']}}{% if pp['days_to_due_date'] < 0 %}<b> (OVERDUE)</b>{% endif %}
@@ -16,9 +16,11 @@
 	    	</div>
 	{% endif %}
 	{% if "hr" in pp['current_user_roles'] %}
-        <div><a class="btn" style="float:right; margin: 0px 9px 0px 7px" href="/performancereviews/sendreminders/{{pp['performance_review']['name']}}" id="sendreminders">+ Send a Reminder</a></div>
+        <a class="btn" style="float:right; margin: 0px 9px 0px 7px" href="/performancereviews/{{pp['performance_review']['name']}}.pdf">+ Export PDF</a>
+        <a class="btn" style="float:right; margin: 0px 9px 0px 7px" href="/performancereviews/sendreminders/{{pp['performance_review']['name']}}" id="sendreminders">+ Send a Reminder</a>
 	{% endif %}
 </header>
+
     
 <div class="row show-grid">
 
@@ -43,7 +45,7 @@
     {%if pp['view'] == "Employee" %}
     	<div class="span6">
     		<div class="reviewdisplay2">
-		    	<header1 style="font-size:25px">Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
+		    	<header1>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
 		    	{% if pp['performance_review']['status'] not in ["needs employee signature", "done"] %}
 		    		<div class="edit"><a href="/performancereviews/{{ pp['performance_review']['_id'] }}/edit" style="display:inline-block;">(Edit)</a></div>
 		    	{% endif %}
@@ -59,7 +61,7 @@
 		{% if pp['performance_review']['early_employee_view'] %}
 		<div class="span6">
     		<div class="reviewdisplay2">
-    			<header1 style="font-size:25px">Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
+    			<header1 >Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
 		    	<br/>
 		    	<br/>
 		    	<br/>
@@ -75,7 +77,7 @@
 	{% elif (pp['view'] == "Manager") or ("hr" in pp['current_user_roles']) %}
 		<div class="span6">
 			<div class="reviewdisplay2">
-		    	<header1 style="font-size:25px">Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
+		    	<header1>Employee Review ({{pp['employee']['first_name']}} {{pp['employee']['last_name']}}):</header1>
 		    	{% if pp['performance_review']['status'] != "needs employee review" %}
 		    		<p><i>(Completed)</i></p>
 		    	{% else %}
@@ -95,7 +97,7 @@
 
 	  	<div class="span6">
     		<div class="reviewdisplay2">
-		    	<header1 style="font-size:25px">Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
+		    	<header1 >Manager Review ({{pp['manager']['first_name']}} {{pp['manager']['last_name']}}):</header1>
 		    	{% if pp['performance_review']['status'] == "needs employee review" %}
 		    		<p><i>(Needs Employee Review)</i></p>
 		    	{% elif pp['performance_review']['status'] == "needs manager review" %}

@@ -1479,7 +1479,6 @@ class PerformanceReviews(CorpBase):
                     pp['view'] = "Manager"
                 else:
                     pp['view'] = "None"
-
                 return env.get_template('employees/performancereviews/show.html').render(pp=pp)
             else:
                 print "performance review not found"
@@ -1648,6 +1647,7 @@ class NewPerformanceReview(CorpBase):
             return env.get_template('employees/performancereviews/new_upcoming.html').render(pp=pp)
         else:
             pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
+            pp['templates'] = corpdb.performancereview_templates.find({}).sort("name", pymongo.ASCENDING)
             # Default email message to be sent with new performance review alert
             pp['default_message'] = "You have a new performance review at http://corp.10gen.com/performancereviews. "
             return env.get_template('employees/performancereviews/new.html').render(pp=pp)
@@ -1658,6 +1658,12 @@ class NewPerformanceReview(CorpBase):
         print "POST NewPerformanceReview"
         form = web.input()
         pp['error_message'] = ''
+        try:
+            template = corpdb.performancereview_templates.find_one(ObjectId(form['template_id']))
+        except:
+            pp['employees'] = corpdb.employees.find({"employee_status" : {"$ne" : "Former"}}).sort("first_name", pymongo.ASCENDING)
+            pp['error_message'] = "Please select a performance review template."
+            return env.get_template('employees/performancereviews/new.html').render(pp=pp)
         # Set up employees to get reviews.
         employees = []
         # From upcoming New Performance Review form
@@ -1677,8 +1683,6 @@ class NewPerformanceReview(CorpBase):
                 employees.append(corpdb.employees.find_one(ObjectId(form['employee_id'])))
 
         for employee in employees:
-            print "employee:"
-            print employee
             name = employee['last_name']+employee['first_name']+str(datetime.now().year)+"_"+str(datetime.now().month)
             #Make sure there is not already a review for this employee this quarter.
             if corpdb.performancereviews.find( {'name': name} ).count() == 0:
@@ -1692,16 +1696,10 @@ class NewPerformanceReview(CorpBase):
                     'status' : "needs employee review", 'early_employee_view' : False, 'employee_questions' : [], 'manager_questions': [] }
                 
                 # Add in review questions...
-                employee_question_texts = employee_model.get_questions('Employee')
-                employee_question_placeholders = employee_model.get_placeholders('Employee')
-                manager_question_texts = employee_model.get_questions('Manager')
-                manager_question_placeholders = employee_model.get_placeholders('Manager')
-                for x in range(1, (len(employee_question_texts) + 1)):
-                    performance_review['employee_questions'].append( {"name" : ("eq"+str(x)), "text": employee_question_texts[x-1], 
-                        "placeholder" : employee_question_placeholders[x-1] })
-                for x in range(1, (len(manager_question_texts) + 1)):
-                    performance_review['manager_questions'].append( {"name" : ("mq"+str(x)), "text": manager_question_texts[x-1], 
-                        "placeholder" : manager_question_placeholders[x-1] })
+                for x in range(len(template['employee_questions'])):
+                    performance_review['employee_questions'].append( {"name" : ("eq"+str(x+1)), "text": template['employee_questions'][x]})
+                for x in range(len(template['manager_questions'])):
+                    performance_review['manager_questions'].append( {"name" : ("eq"+str(x+1)), "text": template['manager_questions'][x]})
                 
                 try:
                     objectid = corpdb.performancereviews.insert(performance_review)
@@ -1831,9 +1829,113 @@ class SendPerformanceReviewReminders(CorpBase):
 
         raise web.seeother('/performancereviews/hrdashboard')
 
+class ExportPerformanceReviewPdf(CorpBase):
+    @authenticated
+    @require_hr
+    def GET(self, pp, *args):
+        print "GET ExportPerformanceReviewPdf"
+        performance_review_name = args[0]
+        performance_review = corpdb.performancereviews.find_one( {"name" : performance_review_name})
+        if performance_review is None:
+            raise web.seeother('/performancereviews')
+        else:
+            performance_review_str = employee_model.performance_review_to_string(performance_review)
+            web.header('Content-type', 'text/html')
+            web.header('Content-disposition', "attachment: filename="+str(performance_review_name)+".pdf")
+            return performance_review_str
 
-                           
-    
+class PerformanceReviewTemplates(CorpBase):
+    @authenticated
+    @require_hr
+    def GET(self, pp, *args):
+        print "GET PerformanceReviewTemplate"
+        try:
+            template_id = args[0]
+        except:
+            template_id = ""
+        # Specific template view.
+        if len(template_id) > 0:
+            pp['template'] = corpdb.performancereview_templates.find_one(ObjectId(args[0]))
+
+            if pp['template']:
+                return env.get_template('employees/performancereview_templates/show.html').render(pp=pp)
+            else:
+                print "template not found"
+                raise web.seeother('/performancereview_templates')
+        # Index view.
+        else:
+            pp['all_templates'] = corpdb.performancereview_templates.find( {} ).sort("name", pymongo.ASCENDING)
+            return env.get_template('employees/performancereview_templates/index.html').render(pp=pp)
+
+class EditPerformanceReviewTemplate(CorpBase):
+    @authenticated
+    @require_hr
+    def GET(self, pp, *args):
+        print "GET EditPerformanceReviewTemplate"
+        pp['template'] = corpdb.performancereview_templates.find_one(ObjectId(args[0]))
+        if pp['template'] is None:
+            raise web.seeother('/performancereview_templates/')
+        else:
+            return env.get_template('employees/performancereview_templates/edit.html').render(pp=pp) 
+
+    @authenticated
+    @require_hr
+    def POST(self, pp, *args):
+        print "POST EditPerformanceReviewTemplate"
+        form = web.input()
+        print form
+        pp['template'] = corpdb.performancereview_templates.find_one(ObjectId(args[0]))
+        pp['template']['employee_questions'] = []
+        pp['template']['manager_questions'] = []
+        i = 1
+        while str("employee_question"+str(i)) in form.keys() and len(form["employee_question"+str(i)]) > 0:
+            pp['template']['employee_questions'].append(form["employee_question"+str(i)])
+            i+=1
+        i = 1
+        while str("manager_question"+str(i)) in form.keys() and len(form["manager_question"+str(i)]) > 0:
+            pp['template']['manager_questions'].append(form["manager_question"+str(i)])
+            i+=1
+        if "name" in form.keys() and len(form['name']) > 0:
+            pp['template']['name'] = form['name']
+        else:
+            pp['error_message'] = "Template must have a unique name."
+            return env.get_template('employees/performancereview_templates/edit.html').render(pp=pp)
+        corpdb.performancereview_templates.save(pp['template'])
+        raise web.seeother('/performancereview_templates/'+str(pp['template']['_id']))
+
+class NewPerformanceReviewTemplate(CorpBase):
+    @authenticated
+    @require_hr
+    def GET(self, pp, *args):
+        print "GET NewPerformanceReviewTemplate"
+        return env.get_template('employees/performancereview_templates/new.html').render(pp=pp)
+
+    @authenticated
+    @require_hr
+    def POST(self, pp, *args):
+        print "POST NewPerformanceReviewTemplate"
+        form = web.input()
+        print form
+        name = ""
+        if "name" in form.keys() and len(form['name']) > 0:
+            name = form['name']        
+        template =  {"name" : name}
+        objectid = corpdb.performancereview_templates.insert( template )
+        if objectid:
+            raise web.seeother('/performancereview_templates/'+str(objectid)+'/edit')
+        else:
+            raise web.seeother('/performancereview_templates')
+
+class DeletePerformanceReviewTemplate(CorpBase):
+    @authenticated
+    @require_hr
+    def POST(self, pp, *args):
+        print "POST DeletePerformanceReviewTemplate"
+        print args[0]
+        print corpdb.performancereview_templates.find_one(ObjectId(args[0]))
+        corpdb.performancereview_templates.remove(ObjectId(args[0]))
+        raise web.seeother('/performancereview_templates')
+
 
 
 urls = (
@@ -1891,6 +1993,14 @@ urls = (
         '/performancereviews/sendreminders/(.+)', SendPerformanceReviewReminders,
         '/performancereviews/(.*)/edit', EditPerformanceReview,
         '/performancereviews/(.*)/delete', DeletePerformanceReview,
+        '/performancereviews/(.+).pdf', ExportPerformanceReviewPdf,
         '/performancereviews/(.*)', PerformanceReviews,
         '/performancereviews', PerformanceReviews,
+
+        '/performancereview_templates/new', NewPerformanceReviewTemplate,
+        '/performancereview_templates/(.+)/edit', EditPerformanceReviewTemplate,
+        '/performancereview_templates/(.+)/delete', DeletePerformanceReviewTemplate,
+        '/performancereview_templates/(.+)', PerformanceReviewTemplates,
+        '/performancereview_templates', PerformanceReviewTemplates,
+
 )

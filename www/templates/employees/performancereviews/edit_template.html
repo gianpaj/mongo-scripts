@@ -1,0 +1,111 @@
+{% extends "employees/layouts/application.html" %}
+
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<header class="review-header" style="height:90px;">
+    <h1>Edit Performance Review Template</h1>
+</header>
+
+{% if pp['error_message'] %}
+    <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
+{% endif %}
+
+<div id="questionblock" style="display: none">
+    <label class="control-label">Question</label>
+    <div class="controls">
+        <textarea class="input-xlarge" rows ="3"></textarea>
+        <br/><br/>
+    </div>
+</div>
+
+<form action="/performancereviews/{{pp['template']['_id']}}/edit_template" method="post" class="form-horizontal" style="height:275px;width:500px;" name="EditPerformanceReviewTemplate">
+    <fieldset>
+        
+        <div class="control-group">
+            <label class="control-label">Name</label>
+                <div class="controls">
+                    <input type="text" class="input-xlarge" name="name" id="name" value="{{pp['template']['name']}}" placeholder="e.g. Engineer Review"></input>        
+                </div><!-- controls -->
+        </div><!-- control-group -->
+        <p>Employee Questions:</p>
+        <br/>
+        {% for i in range(1, pp['template']['employee_questions'].__len__()+1) %}
+            <div class="control-group">
+                <label class="control-label" for="textarea">Question</label>
+                    <div class="controls">
+                        <textarea class="input-xlarge" rows ="3" id="employee_question{{i}}" name="employee_question{{i}}">{{pp['template']['employee_questions'][i-1]}}</textarea>
+                    </div><!-- controls -->
+            </div><!-- control-group -->
+        {% endfor %}
+        <span id="writeroot"></span>
+        <br/><br/>
+
+        <input type="button" class="btn" value="Add Question" id="anotherQuestion('employee')" onclick="javacript:anotherQuestion('employee')"></input>
+
+        <p>Manager Questions:</p>
+        <br/>
+        {% for i in range(1, pp['template']['manager_questions'].__len__()+1) %}
+            <div class="control-group">
+                <label class="control-label" for="textarea">Question</label>
+                    <div class="controls">
+                        <textarea class="input-xlarge" rows ="3" id="manager_question{{i}}" name="manager_question{{i}}">{{pp['template']['manager_questions'][i-1]}}</textarea>
+                    </div><!-- controls -->
+            </div><!-- control-group -->
+        {% endfor %}
+        <span id="writeroot"></span>
+        <br/><br/>
+
+        <input type="button" class="btn" value="Add Question" id="anotherQuestion('manager')" onclick="javacript:anotherQuestion('manager')"></input>
+
+
+
+    </fieldset>
+    <br/>       
+    <input type="submit" class ="btn btn-review" style="float:right; margin-right: 60px"></input>
+</form>
+
+<script type="text/javascript" charset="utf-8">
+    var employee_counter = {{pp['template']['employee_questions'].__len__()}};
+    var manager_counter = {{pp['template']['manager_questions'].__len__()}};
+    function anotherQuestion(role){
+        if (role == "employee") {
+            employee_counter++;
+            var newQuestionBlock = document.getElementById('questionblock').cloneNode(true);
+            newQuestionBlock.style.display = "block";
+            questionInput = newQuestionBlock.childNodes[2].nextSibling.childNodes[1]
+            questionInput.name = "employee_question"+String(employee_counter);
+            questionInput.id = "employee_question"+String(employee_counter);
+        }
+        else {
+            manager_counter++;
+            var newQuestionBlock = document.getElementById('questionblock').cloneNode(true);
+            newQuestionBlock.style.display = "block";
+            questionInput = newQuestionBlock.childNodes[2].nextSibling.childNodes[1]
+            questionInput.name = "manager_question"+String(manager_counter);
+            questionInput.id = "manager_question"+String(manager_counter);
+        }
+
+        var insertHere = document.getElementById('writeroot');
+        insertHere.parentNode.insertBefore(newQuestionBlock, insertHere);
+    }
+</script>
+
+
+{% endblock %}
