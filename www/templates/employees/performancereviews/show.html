@@ -9,15 +9,14 @@
     <h1><a href="/performancereviews/">Performance Reviews</a>: <a href="/performancereviews/{{pp['performance_review']['_id']}}">{{pp['performance_review']['name']}}</a></h1>
     <br/><br/>
     {% if "hr" in pp['current_user_roles'] or pp['view'] == "Manager" %}
-	    	<div class="statusbox">
-	    		<div style="padding: 1px;">	
-	    			{{pp['performance_review']['status']}}{% if pp['days_to_due_date'] < 0 %}<b> (OVERDUE)</b>{% endif %}
-	    		</div>
-	    	</div>
+    	<div class="statusbox" style="margin-right:200px">
+    		<statustext>{{pp['performance_review']['status']}}{% if pp['days_to_due_date'] < 0 %}<b> (OVERDUE)</b>{% endif %}</statustext>
+    	</div>
 	{% endif %}
 	{% if "hr" in pp['current_user_roles'] %}
-        <a class="btn" style="float:right; margin: 0px 9px 0px 7px" href="/performancereviews/{{pp['performance_review']['name']}}.pdf">+ Export PDF</a>
-        <a class="btn" style="float:right; margin: 0px 9px 0px 7px" href="/performancereviews/sendreminders/{{pp['performance_review']['name']}}" id="sendreminders">+ Send a Reminder</a>
+        <a class="btn" href="/performancereviews/{{pp['performance_review']['name']}}.pdf" style="float:right; margin-left:8px">+ Export PDF</a>
+        <form enctype="multipart/form-data" action="/performancereviews/{{pp['performance_review']['_id']}}/delete" method="post" style="float:right; margin-left:8px"><a class="btn" href="#" onclick="parentNode.submit()">+ Delete Review</a></form>
+        <a class="btn" href="/performancereviews/sendreminders/{{pp['performance_review']['name']}}" id="sendreminders"style="float:right; margin-left:8px">+ Send a Reminder</a>
 	{% endif %}
 </header>
 

@@ -25,7 +25,7 @@
 </header>
 
 {% if pp['error_message'] %}
-    <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
+<header class="error-message">{{ pp['error_message'] }}</header>
 {% endif %}
 
 <form action="/performancereviews/sendreminders" method="post" class="form-horizontal" style="height:275px;width:500px;" name="SendReminders">

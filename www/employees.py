@@ -16,6 +16,7 @@ from functools import wraps
 from datetime import datetime
 from datetime import date
 from datetime import timedelta
+import urllib
 try:
     import cStringIO as StringIO
 except:
@@ -1467,7 +1468,11 @@ class PerformanceReviews(CorpBase):
         pp['current_user_roles'] = current_user_roles(pp)
 
         if len(performance_review_id) > 0 :
-            pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
+            try:
+                pp['performance_review'] = corpdb.performancereviews.find_one(ObjectId(performance_review_id))
+            except:
+                print "Invalid performance review id in url."
+                raise web.seeother('/performancereviews')
             
             if pp['performance_review']:
                 pp['manager'] = corpdb.employees.find_one(ObjectId(pp['performance_review']['manager_id']))
@@ -1577,7 +1582,8 @@ class EditPerformanceReview(CorpBase):
         corpdb.performancereviews.save(pp['performance_review'])
 
         # If submitting:
-        if 'bsubmit' in form.keys() and form['bsubmit'] == "submit":
+        if 'bsubmit' in form.keys() and form['bsubmit'] == "Submit":
+            print "Submitting.....*********"
             # Fields cannot be blank (must answer all questions)
             for question in form:
                 if len(form[question]) == 0 :
@@ -1834,15 +1840,11 @@ class ExportPerformanceReviewPdf(CorpBase):
     @require_hr
     def GET(self, pp, *args):
         print "GET ExportPerformanceReviewPdf"
-        performance_review_name = args[0]
-        performance_review = corpdb.performancereviews.find_one( {"name" : performance_review_name})
+        performance_review = corpdb.performancereviews.find_one( {"name" : str(args[0])})
         if performance_review is None:
             raise web.seeother('/performancereviews')
         else:
-            performance_review_str = employee_model.performance_review_to_string(performance_review)
-            web.header('Content-type', 'text/html')
-            web.header('Content-disposition', "attachment: filename="+str(performance_review_name)+".pdf")
-            return performance_review_str
+            return employee_model.performance_review_to_string(performance_review)
 
 class PerformanceReviewTemplates(CorpBase):
     @authenticated
@@ -1992,7 +1994,7 @@ urls = (
         '/performancereviews/sendreminders', SendPerformanceReviewReminders,
         '/performancereviews/sendreminders/(.+)', SendPerformanceReviewReminders,
         '/performancereviews/(.*)/edit', EditPerformanceReview,
-        '/performancereviews/(.*)/delete', DeletePerformanceReview,
+        '/performancereviews/(.+)/delete', DeletePerformanceReview,
         '/performancereviews/(.+).pdf', ExportPerformanceReviewPdf,
         '/performancereviews/(.*)', PerformanceReviews,
         '/performancereviews', PerformanceReviews,

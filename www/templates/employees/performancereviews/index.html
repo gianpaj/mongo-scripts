@@ -15,17 +15,17 @@
 
 
 <header class="review-header" style="height: 100px">
-    <h1><a href="/performancereviews">Performance Reviews</a>:</h1>
+    <h1><a href="/performancereviews">Performance Reviews</a></h1>
     {% if "hr" in pp['current_user_roles'] %}
       <br/>
-      <div><a class="reviewbtn" style="float:right" href="/performancereviews/hrdashboard" id="hrdashboard">+ HR Dashboard</a></div>
+      <div><a class="reviewbtn" href="/performancereviews/hrdashboard" id="hrdashboard">+ HR Dashboard</a></div>
     {% endif %}
 </header>
 
 
 {% if (pp['error_message'] and (pp['error_message'].__len__() > 0)) %}
   <br/>
-  <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
+  <header class="error-message">{{ pp['error_message'] }}</header>
 {% endif %}
 
 <div class="row show-grid">
@@ -96,7 +96,7 @@
                   {% for review in pp['past_managing_performancereviews'] %}
                     <option value="{{ review['_id'] }}">{{ review['name'] }}</option>
                   {% endfor %}
-                </select><input type="submit" value="Search" class ="btn btn-review" style="margin-top: 25px; float:left">     
+                </select><input type="submit" value="Search" class ="btn" style="margin-top: 25px;">     
               </div><!-- controls -->
             </div><!-- control-group -->
           </fieldset>

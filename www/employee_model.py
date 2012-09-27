@@ -272,16 +272,17 @@ def to_vcard(employee):
 
 def performance_review_to_string(performance_review):
     employee = corpdb.employees.find_one( {"_id" : performance_review['employee_id']})
+    manager = corpdb.employees.find_one( {"_id" : performance_review['manager_id']})
     date = str(performance_review['date'].month)+'/'+str(performance_review['date'].year)
     review = ""
-    review += '<div style="font-size: 20px"> <p>Performance Review:</p> <p>'+employee['first_name']+' '+employee['last_name']+': '+date+'</p></div>'
-    performance_review['name']+"<br/><br/>"
-    review += "Employee Questions: <br/><br/>"
+    review += '<h1>Performance Review:</h1><h2>'+employee['first_name']+' '+employee['last_name']+': '+date+'</h2>'
+    performance_review['name']+"<br/><br/><br/>"
+    review += "<h3>Employee Questions:</h3><br/><br/>"
     for question in performance_review['employee_questions']:
         review += '<b>'+question['text']+'</b><br/><br/>'
         if 'response' in question.keys():
             review += question['response'] + "<br/><br/><br/>"
-    review += "Manager Questions: <br/><br/>"
+    review += "<h3>Manager Questions: ("+manager['first_name']+" "+manager['last_name']+")</h3> <br/><br/>"
     for question in performance_review['manager_questions']:
         review += '<b>'+question['text']+'</b><br/><br/>'
         if 'response' in question.keys():

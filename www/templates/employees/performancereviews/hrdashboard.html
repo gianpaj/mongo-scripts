@@ -17,15 +17,15 @@
 <header class="review-header">
     <h1>HR Dashboard: </h1>
     <br/><br/>
-    <div><a class="reviewbtn" style="float:right; margin-left:7px" href="/performancereview_templates" id="templates">Performance Review Templates</a></div>
-    <div><a class="reviewbtn" style="float:right; margin-left:7px" href="/performancereviews/new" id="new_performancereview">+ New Performance Review</a></div> 
-    <div><a class="reviewbtn" style="float:right" href="/performancereviews/sendreminders" id="sendreminders">+ Send Reminders</a></div>
+    <div><a class="reviewbtn" href="/performancereview_templates" id="templates">Performance Review Templates</a></div>
+    <div><a class="reviewbtn" href="/performancereviews/new" id="new_performancereview">+ New Performance Review</a></div> 
+    <div><a class="reviewbtn" href="/performancereviews/sendreminders" id="sendreminders">+ Send Reminders</a></div>
 </header>
 
 
 {% if (pp['error_message'] and (pp['error_message'].__len__() > 0)) %}
   <br/>
-  <h3 style="color:#b22222; opacity: .7">{{ pp['error_message'] }}</h3>
+  <header class="error-message">{{ pp['error_message'] }}</header>
 {% endif %}
 
 <div class="row show-grid">
@@ -61,7 +61,7 @@
                 {% for review in pp['performancereviews'] %}
                   <option value="{{ review['_id'] }}">{{ review['name'] }}</option>
                 {% endfor %}
-              </select><input type="submit" value="Search" class ="btn btn-review" style="margin: 10px; float:left">     
+              </select><input type="submit" value="Search" class ="btn" style="margin: 10px;">     
             </div><!-- controls -->
           </div><!-- control-group -->
         </fieldset>
