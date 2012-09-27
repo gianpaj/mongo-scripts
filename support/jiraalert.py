@@ -109,7 +109,15 @@ queries = [
       "digest" : False ,
       "freq" : 1 ,
       "filter" : last_comment_from_10gen ,
-      "jql" : csBigFilter + " AND assignee is EMPTY" } ,
+      "jql" : csBigFilter + " AND assignee is EMPTY AND priority != Blocker" } ,
+
+    { "name" : "New Blocker CS" ,
+      "sms" : True ,
+      "who" : "AOS" ,
+      "digest" : False ,
+      "freq" : 1 ,
+      "filter" : last_comment_from_10gen ,
+      "jql" : csBigFilter + " AND assignee is EMPTY AND priority = Blocker" } ,
 
     { "name" : "SLA in danger - not assigned" ,
       "sms" : False ,
