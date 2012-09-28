@@ -289,6 +289,10 @@ def sendSMS( who , query , issue ):
         number = "+17189098546"
     elif who == "nyc2":
         number = "+19172975956"
+    elif who == "william.zola@10gen.com":
+        number = "+17189098244"
+    elif who == "ron.avnur@10gen.com":
+        number = "+14084204766"
     else:
         print( "CANNOT FIND SMS FOR: %s" % who )
         return
