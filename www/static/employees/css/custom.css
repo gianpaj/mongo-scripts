@@ -663,5 +663,13 @@ header.error-message {
   margin-left: 7px;
 }
 
+.newreviewform {
+  width: 280px;
+}
+
+.newreviewform .review-input {
+  padding-bottom: 20px;
+}
+
 /* END */
 

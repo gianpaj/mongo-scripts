@@ -60,14 +60,13 @@
                         <br/><br/><br/>
                         {% for question in pp['performance_review']['manager_questions'] %}
                             <p><i>{{question['text']}}</i></p>
-                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10" </textarea>
+                            <textarea class="questionresponse" id={{question['name']}} name={{question['name']}} rows= "10"></textarea>
                             <br/>
                         {% endfor %}
                         <br/>
                         <label class="review-label" style="width:340px">Allow employee to see results before 1-1 meeting?</label>
                         <input type="checkbox" name="early_employee_view" style="margin-top: 19px" {% if pp['performance_review']['early_employee_view'] == true %} checked="on" {% endif %}></input>
-                        {% endif %}                    
-
+                    {% endif %}                    
 
                     </fieldset>
 
@@ -75,7 +74,7 @@
                 <input type="submit" class ="btn form-review-btn" name="bsubmit" value="Submit" id="bsubmit">
                 <input type="submit" class ="btn form-review-btn" name="bsubmit" value="Save" id="bsubmit">
             </form>
-        </div><!-- reviewdisplay -->
+        </div><!-- reviewdisplay2 -->
     </div><!-- span6 -->
 
     {% if pp['view'] == "Employee" and pp['performance_review']['early_employee_view'] == true %}

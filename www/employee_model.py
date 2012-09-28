@@ -318,6 +318,13 @@ def get_upcoming_reviews_employees():
 	
     return corpdb.employees.find( {"_id" : {"$in" : employee_ids}}).sort("last_name", pymongo.ASCENDING)
 
+# Returns true if an employee has had a performance review in the past year
+def had_review_in_past_year(employee_id):
+    one_year_ago = datetime((datetime.now().year -1 ), datetime.now().month, datetime.now().day)
+    if corpdb.performancereviews.find( {"employee_id" : employee_id, "date" : {"$gt" : one_year_ago}}).count() > 0:
+        return True
+    return False
+
 # Returns all employees with a performance review coming up for a given manager.
 def get_upcoming_manager_reviews(manager_id):
 	upcoming_manager_reviews = []
@@ -328,14 +335,6 @@ def get_upcoming_manager_reviews(manager_id):
 
 	return upcoming_manager_reviews
 
-
-# Returns true if an employee has had a performance review in the past year
-def had_review_in_past_year(employee_id):
-	one_year_ago = datetime((datetime.now().year -1 ), datetime.now().month, datetime.now().day)
-	if corpdb.performancereviews.find( {"employee_id" : employee_id, "date" : {"$gt" : one_year_ago}}).count() > 0:
-		return True
-	return False
-
 # Send an email
 def send_email(from_address, to_addresses, subject, message, cc_addresses =[]):
     msg = MIMEText(message)
@@ -345,7 +344,7 @@ def send_email(from_address, to_addresses, subject, message, cc_addresses =[]):
     msg['CC'] = ",".join(cc_addresses)
     s = smtplib.SMTP( "ASPMX.L.GOOGLE.com" )
     s.set_debuglevel(True)
-    s.sendmail( "louisa.berger@10gen.com", to_addresses , msg.as_string() )
+    s.sendmail( from_address , to_addresses , msg.as_string() )
     print s.quit()
 
 # Returns a list of performance review question placeholders.

@@ -30,28 +30,40 @@
 
 <form action="/performancereviews/new/upcoming" method="post" class="form-horizontal" style="height:275px;width:500px;" name="NewPerformanceReview">
 	<fieldset>
-
-        <div class="control-group">
-            <div class="controls" style="margin-left: 15px">
+        <div class="newreviewform">
+            <div class = "review-input">
                 <input type="checkbox" name="all_upcoming" id= "all_upcoming" checked="on" onchange = "toggleEmployees();">  Send All This Month's Reviews</input>
-            </div>
-        </div>
+            </div><!-- review-input -->
         {% for employee in pp['upcoming'] %}
-            <div class="control-group" style="margin-left: 40px;">
+            <div class = "review-input" style="margin-left: 20px;">
                 <input type="checkbox" name="employee{{employee['_id']}}" id= "employee{{employee['_id']}}" disabled = true checked="on"> {{employee['first_name']}} {{employee['last_name']}} ({{employee['start_date']['month']}}/{{employee['start_date']['day']}}) </input>
-            </div>
+            </div><!-- review-input-->
         {% endfor %}
-        <div class="control-group" style="margin: 30px 0px 18px -65px">
-            <label class="control-label" for="textarea">Message </label>
-                <br/><br/>
-                <div class="controls" style="margin-left:80px">
-                    <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>                    
-                </div><!-- controls -->
-        </div><!-- control-group -->
+            <br/>
+            <div class="review-input">
+                <label>Review </label>
+                    <select data-placeholder="Select..." class="input-xlarge" name="template_id" id="template_id" >
+                        <option></option>
+                        {% for template in pp['templates'] %}
+                        <option value="{{ template['_id'] }}" >{{ template['name'] }}</option>
+                        {% endfor %}
+                    </select>
+            </div><!-- review-input-->
+            <div class="review-input">
+                <label for="textarea">Message </label>
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>
+            </div><!-- review-input -->
+
+            <div class="review-input">
+                <input type="submit" class ="btn" style="float:right;">
+                <a class ="btn" style="float:right; margin-right: 10px" href="/performancereviews/hrdashboard">Cancel</a>
+            </div><!-- review-input -->
+
+        <div/><!-- newreviewform-->                
 
 	</fieldset>
     <br/>		
-	<input type="submit" class ="btn btn-review" style="float:right; margin-right:204px">
+
 </form>
 
 <script type="text/javascript" charset="utf-8">
