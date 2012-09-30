@@ -220,7 +220,11 @@ def getSupportTriageList():
     global supportTriageList
 
     if len(supportTriageList) == 0:
-        supportTriageList += crowd.findGroupByName( "commercial support triage" )
+        for x in crowd.findGroupByName( "commercial support triage" ):
+            if x == "eliot":
+                continue
+            supportTriageList.append( x )
+
     return supportTriageList
 
 crowd = lib.crowd.Crowd( settings.crowdAppUser , settings.crowdAppPassword )
@@ -270,6 +274,37 @@ def getEmail( person ):
 
 theTwilio = None
 
+theWWWDBConn = None
+def getPhoneNumberForJirUserName( jiraUserName ):
+    global theWWWDBConn
+    
+    if not theWWWDBConn:
+        try:
+            theWWWDBConn = pymongo.Connection( "www-c1.10gen.cc" )
+        except Exception,e:
+            traceback.print_exc()
+            return None
+
+    u = theWWWDBConn["corp"]["employees"].find_one( { "jira_uname" : jiraUserName } )
+    if not u:
+        return None
+    
+    if not "primary_phone" in u:
+        return None
+    
+    p = u["primary_phone"]
+    p = p.replace( " " , "" )
+    p = p.replace( "(" , "" )
+    p = p.replace( ")" , "" )
+    p = p.replace( "-" , "" )
+    
+    if len(p) == 10:
+        # us phoen numbers
+        return "+1" + p
+
+    print( "don't know how to handle phone # " + p )
+    return None
+
 def sendSMS( who , query , issue ):
     global theTwilio
 
@@ -294,6 +329,9 @@ def sendSMS( who , query , issue ):
     elif who == "ron.avnur@10gen.com":
         number = "+14084204766"
     else:
+        number = getPhoneNumberForJirUserName( who )
+        
+    if not Number:
         print( "CANNOT FIND SMS FOR: %s" % who )
         return
 
@@ -494,7 +532,7 @@ def sendEmails( messages , managerSummary , digest ):
 
 def test_sms():
     t = lib.sms.Twilio()
-    t.sms( "+16462567013" , "a test from %s" % os.getenv( "USER" ) )
+    t.sms( getPhoneNumberForJirUserName( "eliot" ) , "a test from %s" % os.getenv( "USER" ) )
 
 if __name__ == "__main__":
 
