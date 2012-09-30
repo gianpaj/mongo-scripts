@@ -331,7 +331,7 @@ def sendSMS( who , query , issue ):
     else:
         number = getPhoneNumberForJirUserName( who )
         
-    if not Number:
+    if not number:
         print( "CANNOT FIND SMS FOR: %s" % who )
         return
 
