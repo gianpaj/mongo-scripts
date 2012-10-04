@@ -86,6 +86,7 @@ function jiraMultiCallback( data ) {
             if ( nodes[i].key != key )
                 continue;
             match = nodes[i];
+            console.log( "got a match [" + nodes[i].key + "] [" + key + "]" + data[key] )
             break;
         }
         
@@ -93,8 +94,9 @@ function jiraMultiCallback( data ) {
             console.log( "no match for: " + key );
             continue;
         }
-
+        
         var small = match.large.find( "span.y2" );
+        console.log( match.large )
         
         var issue = data[key];
 
@@ -129,15 +131,14 @@ function findAllJiraThings() {
     
     var config = [ 
         { r : /.MongoDB-JIRA. +\(([A-Z]+\-\d+)\)/ , l : "mongo-jira" } ,
-        { r : /(.mongodb-user. [\d\w\-\' ]+)/ , l : "google group" } 
+        { r : /(.mongodb-user. [\d\w\-\' \?\.:\(\)]+)/ , l : "google group" } 
     ];
-
-    $( "#canvas_frame" ).contents().find( "div.av" ).each(
+    
+    $( "#\\:rp" ).find( "div.av" ).each(
         function(index) {
             
             var x = null;
             var r = null;
-            
             for ( var i=0; i<config.length; i++ ) {
                 if ( $(this).html() == config[i].l ) {
                     x = $(this);
@@ -177,6 +178,7 @@ var doWork = function() {
     var srch = "[mongodb-user]";
     var srchIndex = document.title.indexOf( srch );
 
+    console.log( "title: " + document.title )
     if ( document.title.indexOf( "Inbox" ) >= 0 ) {
         setMyHTML( "" );
         
@@ -214,4 +216,4 @@ var doWork = function() {
 
 }
 
-var highlight = setInterval( doWork , 5000 );
+var highlight = setInterval( doWork , 30 * 1000 );
