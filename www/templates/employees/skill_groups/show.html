@@ -7,7 +7,7 @@
 <header class="page-header" style="height:120px;">
 	<div class="team-header-info">
 		<h1>Skill Group: <span class="name">{{ pp['skill_group']['name'] }}</span></h1>
-		{% if pp['current_user_role'] == "admin" %}<div class="team-edit"><a href="/skillgroups/{{ pp['skill_group']['_id'] }}/edit">(Edit)</a></a>&nbsp;<form enctype="multipart/form-data" action="/skillgroups/{{ pp['skill_group']['_id'] }}/delete" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form></div>{% endif %}	
+		{% if "admin" in pp['current_user_roles'] %}<div class="team-edit"><a href="/skillgroups/{{ pp['skill_group']['_id'] }}/edit">(Edit)</a></a>&nbsp;<form enctype="multipart/form-data" action="/skillgroups/{{ pp['skill_group']['_id'] }}/delete" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form></div>{% endif %}	
 </header>
 
 	<dl class="dl-horizontal">

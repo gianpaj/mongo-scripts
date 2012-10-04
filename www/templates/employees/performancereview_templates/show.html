@@ -1,0 +1,35 @@
+{% extends "employees/layouts/application.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/static/employees/css/custom.css">
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+
+<header class="review-header" style="height:90px;">
+    <h1><a href="/performancereview_templates">Performance Review Templates</a>:</h1>
+    <h2>{{pp['template']['name']}}</h2>
+    <div class="edit"><a href="/performancereview_templates/{{ pp['template']['_id'] }}/edit" style="display:inline-block; margin-top:7px">(Edit)</a>&nbsp;<form enctype="multipart/form-data" action="/performancereview_templates/{{ pp['template']['_id'] }}/delete" method="post" style="display:inline-block;"><a id="delete" href="#" onclick="parentNode.submit()">(Delete)</a></form></div>
+</header>
+
+<div class="row show-grid">
+	<div class="span6">
+		<div class="reviewdisplay2" style="background-color:white">
+			<header1>Employee Questions:</header1>
+			<br/><br/><br/>
+			{% for i in range(1, pp['template']['employee_questions'].__len__() + 1) %}
+				<p>{{i}}.&nbsp;&nbsp;	{{pp['template']['employee_questions'][i-1]}}</p><br/>
+			{% endfor %}
+		</div><!-- reviewdisplay2-->
+	</div><!-- span6 -->
+
+	<div class="span6">
+		<div class="reviewdisplay2" style="background-color:white">
+			<header1>Manager Questions:</header1>
+			<br/><br/><br/>
+			{% for i in range(1, pp['template']['manager_questions'].__len__() + 1) %}
+				<p>{{i}}.&nbsp;&nbsp;	{{pp['template']['manager_questions'][i-1]}}</p><br/>
+			{% endfor %}
+		</div><!-- reviewdisplay2-->
+	</div><!-- span6 -->
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "employees/layouts/application.html" %}
+
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<header class="review-header" style="height:90px;">
+    <h1>New Performance Review</h1>
+</header>
+
+{% if pp['error_message'] %}
+<header class="error-message">{{ pp['error_message'] }}</header>
+{% endif %}
+
+
+<form action="/performancereviews/new" method="post" class="form-horizontal" style="height:275px;width:500px;" name="NewPerformanceReview">
+	<fieldset>
+		
+		<div class="control-group">
+			<label class="control-label">Employee </label>
+            <div class="controls">
+                <select data-placeholder="Select..." class="input-xlarge" name="employee_id" id="employee_id" >
+                    <option></option>
+					{% for employee in pp['employees'] %}
+                    <option {% if employee['_id'] == pp['employee_id'] %} SELECTED {% endif %} value="{{ employee['_id'] }}" >{{ employee['first_name'] }} {{ employee['last_name']}}</option>
+					{% endfor %}
+                </select>
+            </div><!-- controls -->
+		</div><!-- control-group -->
+
+        <div class="control-group">
+            <label class="control-label">Review </label>
+            <div class="controls">
+                <select data-placeholder="Select..." class="input-xlarge" name="template_id" id="template_id" >
+                    <option></option>
+                    {% for template in pp['templates'] %}
+                    <option value="{{ template['_id'] }}" >{{ template['name'] }}</option>
+                    {% endfor %}
+                </select>
+            </div><!-- controls -->
+        </div><!-- control-group -->
+
+        <div class="control-group">
+            <label class="control-label" for="textarea">Email Alert Message </label>
+                <div class="controls">
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4">{{pp['default_message']}}</textarea>                    
+                </div><!-- controls -->
+        </div><!-- control-group -->
+
+	</fieldset>
+    <br/>		
+    <input type="submit" class ="btn" style="float:right; margin-right: 60px">
+    <a class ="btn" style="float:right; margin-right: 10px" href="/performancereviews/hrdashboard">Cancel</a>
+</form>
+
+<script type="text/javascript" charset="utf-8">
+	jQuery(function($){
+           $('#employee_id').select2();
+           });
+</script>
+
+
+{% endblock %}

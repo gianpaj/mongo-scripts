@@ -110,7 +110,7 @@ header.page-header .employee-header-info h3 {
 }
 header.page-header .team-header-info {
 	margin: 0 0 0 168px;
-}	
+}
 header.page-header h1 {
 	font-size: 200%;
 	line-height: 1.5em;
@@ -460,6 +460,215 @@ footer.global-footer a:hover {
   top: auto;
   bottom: 100%;
   margin-bottom: 1px;
+}
+
+.reviewdisplay {
+	padding: 20px 20px;
+	border-style:solid;
+	border-width:1px;
+	border-color: #778899;
+}
+
+.reviewdisplay2 {
+	padding : 20px 20px;
+  font-size: 13px;
+  line-height: 18px;
+  *line-height: 20px;
+  color: #333333;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+  vertical-align: middle;
+  background-color: #f5f5f5;
+  *background-color: #e6e6e6;
+  background-repeat: repeat-x;
+  border: 1px solid #cccccc;
+  *border: 0;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+  border-bottom-color: #b3b3b3;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+  *zoom: 1;
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.reviewbtn {
+  display: inline-block;
+  *display: inline;
+  float:right;
+  padding: 4px 10px 4px;
+  margin-left:7px;
+  margin-bottom: 0;
+  font-size: 13px;
+  line-height: 18px;
+  *line-height: 20px;
+  color: #333333;
+  text-align: center;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: rgba(34, 139, 34, 0.2);
+  *background-color: rgba(34, 139, 34, 0.2);
+  background-image: none;
+  background-repeat: repeat-x;
+  border: 1px solid #cccccc;
+  *border: 0;
+  border-color: #e6e6e6;
+  border-bottom-color: #b3b3b3;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  *zoom: 1;
+  filter: none;
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.reviewbtn:hover {
+	background-color: rgba(34, 139, 34, 0.4);
+  *background-color: rgba(34, 139, 34, 0.4);
+  color: #000000;
+  border-color: #d3d3d3;
+  text-decoration: none;
+  /* Buttons in IE7 don't get borders, so darken on hover */
+
+  background-position: 0 -15px;
+  -webkit-transition: background-position 0.1s linear;
+     -moz-transition: background-position 0.1s linear;
+      -ms-transition: background-position 0.1s linear;
+       -o-transition: background-position 0.1s linear;
+          transition: background-position 0.1s linear;
+}
+
+
+
+
+.statusbox {
+  display: inline-block;
+  *display: inline;
+  padding: 4px 10px 4px;
+  margin-bottom: 0;
+  *margin-left: .3em;
+  font-size: 13px;
+  line-height: 18px;
+  *line-height: 20px;
+  color: #333333;
+  text-align: center;
+  vertical-align: middle;
+  background-color: rgba(34, 139, 34, 0.2);
+  background-repeat: repeat-x;
+  *zoom: 1;
+  opacity: .65;
+  border: 1px solid #cccccc;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  /*border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;*/
+  width: 300px;
+}
+
+.statusbox statustext {
+  padding: 1px;
+}
+
+.reviewdisplay2 header1 {
+  font-size: 19px;
+  color: #696969;
+  text-transform: uppercase;
+}
+
+.reviewdisplay2 .listtext {
+  padding: 7px;
+}
+
+.reviewdisplay header1 {
+  font-size: 25px;
+  padding: 15px;
+  color: #696969;
+  text-transform: uppercase;
+}
+
+.reviewdisplay .questiontext {
+  float: left;
+  width: 75%;
+  padding: 15px;
+}
+
+.form-horizontal .review-label {
+  float: left;
+  width: 75%;
+  padding: 15px;
+  font-size: 15px;
+}
+
+.form-horizontal .questionresponse {
+  width: 74%;
+  margin: 15px 15px 20px 15px;
+}
+
+header.review-header {
+  height: 120px;
+  position: relative;
+  padding: 10px 0 0 0;
+  margin-top: 13px;
+  margin-bottom: 17px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+header.review-header h1 {
+  font-size: 200%;
+  line-height: 1.5em;
+  padding: 0;
+  color: #696969;
+  opacity: .95;
+}
+
+header.review-header h1 a {
+  color: #696969;
+  opacity: .95;
+}
+
+header.review-header h1 a:hover {
+  color: #303030;
+  opacity: .95;
+  text-decoration: none;
+}
+
+header.review-header h2 {
+  font-size: 150%;
+  line-height: 1em;
+  padding:0;
+  color: #696969;
+  opacity: .95;
+}
+
+header.error-message {
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 27px;
+  margin-top: -12px;
+  margin-bottom: 5px;
+  color:#b22222;
+  opacity: .7
+}
+
+.btn.form-review-btn {
+  float:right;
+  margin-top: -24px;
+  margin-left: 7px;
+}
+
+.newreviewform {
+  width: 280px;
+}
+
+.newreviewform .review-input {
+  padding-bottom: 20px;
 }
 
 /* END */

@@ -1,0 +1,94 @@
+{% extends "employees/layouts/application.html" %}
+
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/ui-lightness/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<header class="review-header" style="height:90px;">
+    <h1>New Performance Review</h1>
+</header>
+
+{% if pp['error_message'] %}
+<header class="error-message">{{ pp['error_message'] }}</header>
+{% endif %}
+
+
+<form action="/performancereviews/new/upcoming" method="post" class="form-horizontal" style="height:275px;width:500px;" name="NewPerformanceReview">
+	<fieldset>
+        <div class="newreviewform">
+            <div class = "review-input">
+                <input type="checkbox" name="all_upcoming" id= "all_upcoming" checked="on" onchange = "toggleEmployees();">  Send All This Month's Reviews</input>
+            </div><!-- review-input -->
+        {% for employee in pp['upcoming'] %}
+            <div class = "review-input" style="margin-left: 20px;">
+                <input type="checkbox" name="employee{{employee['_id']}}" id= "employee{{employee['_id']}}" disabled = true checked="on"> {{employee['first_name']}} {{employee['last_name']}} ({{employee['start_date']['month']}}/{{employee['start_date']['day']}}) </input>
+            </div><!-- review-input-->
+        {% endfor %}
+            <br/>
+            <div class="review-input">
+                <label>Review </label>
+                    <select data-placeholder="Select..." class="input-xlarge" name="template_id" id="template_id" >
+                        <option></option>
+                        {% for template in pp['templates'] %}
+                        <option value="{{ template['_id'] }}" >{{ template['name'] }}</option>
+                        {% endfor %}
+                    </select>
+            </div><!-- review-input-->
+            <div class="review-input">
+                <label for="textarea">Message </label>
+                    <textarea class="input-xlarge" id="message" name="message" rows ="4" placeholder="Enter a reminder message."></textarea>
+            </div><!-- review-input -->
+
+            <div class="review-input">
+                <input type="submit" class ="btn" style="float:right;">
+                <a class ="btn" style="float:right; margin-right: 10px" href="/performancereviews/hrdashboard">Cancel</a>
+            </div><!-- review-input -->
+
+        <div/><!-- newreviewform-->                
+
+	</fieldset>
+    <br/>		
+
+</form>
+
+<script type="text/javascript" charset="utf-8">
+	jQuery(function($){
+           $('#employee_id').select2();
+           });
+</script>
+
+
+<script type="text/javascript" charset="utf-8">
+    function toggleEmployees(employees) {
+        if (NewPerformanceReview.all_upcoming.checked) {
+            {% for employee in pp['upcoming'] %}
+                NewPerformanceReview.employee{{employee['_id']}}.checked =true;
+                NewPerformanceReview.employee{{employee['_id']}}.disabled =true;
+            {% endfor %}
+        }
+        else {
+            {% for employee in pp['upcoming'] %}
+                NewPerformanceReview.employee{{employee['_id']}}.checked =false;
+                NewPerformanceReview.employee{{employee['_id']}}.disabled =false;
+            {% endfor %}
+        }
+}
+</script>
+
+
+{% endblock %}

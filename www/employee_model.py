@@ -1,8 +1,13 @@
 from datetime import datetime
+from datetime import timedelta
+from datetime import date
+import pymongo
 import hashlib
 from bson.objectid import ObjectId
 from corpbase import corpdb
-
+import math
+import smtplib
+from email.mime.text import MIMEText
 
 def editable_keys():
     return ['intercall_code',
@@ -54,7 +59,7 @@ def no_show():
             'team_ids',
             'skills',
             'title',
-            'role',
+            'roles',
             'jira_uname',
             'bio',
             'manager_ids']
@@ -94,6 +99,28 @@ def get_managers(employee):
                     managers.append(manager)
     return managers
 
+# Returns all employees with employee in their manager_ids fields and any members of the teams employee manages.
+def get_managing(employee):
+    managing = []
+    print "getting managing"
+    # all employees with employee in manager_ids:
+    for managing_employee in corpdb.employees.find( {"manager_ids" : employee['_id'] , "status" : {"$ne" : "Former"}}):
+        if managing_employee not in managing:
+            managing.append(managing_employee)
+    # all employees on teams that employee manages:
+    for team_id in employee['team_ids']:
+        print "team_id"
+        print corpdb.teams.find_one(ObjectId(team_id))
+        for managing_team_id in corpdb.teams.find_one(ObjectId(team_id))['managing_team_ids']:
+            print "managing_team_id"
+            print corpdb.teams.find_one(ObjectId(managing_team_id))
+            for team_employee in corpdb.employees.find( {"team_ids" : managing_team_id} ):
+                print "employee"
+                print team_employee
+                if team_employee not in managing:
+                    managing.append(team_employee)
+    return managing
+
 
 def get_team_managers(employee):
     managers = []
@@ -107,7 +134,6 @@ def get_team_managers(employee):
                 if manager not in managers:
                     managers.append(manager)
     return managers
-
 
 def get_ad_hoc_managers(employee):
     managers = []
@@ -243,3 +269,104 @@ def to_vcard(employee):
         vcard += "END:VCARD"
 
     return vcard
+
+def performance_review_to_string(performance_review):
+    employee = corpdb.employees.find_one( {"_id" : performance_review['employee_id']})
+    manager = corpdb.employees.find_one( {"_id" : performance_review['manager_id']})
+    date = str(performance_review['date'].month)+'/'+str(performance_review['date'].year)
+    review = ""
+    review += '<h1>Performance Review:</h1><h2>'+employee['first_name']+' '+employee['last_name']+': '+date+'</h2>'
+    performance_review['name']+"<br/><br/><br/>"
+    review += "<h3>Employee Questions:</h3><br/><br/>"
+    for question in performance_review['employee_questions']:
+        review += '<b>'+question['text']+'</b><br/><br/>'
+        if 'response' in question.keys():
+            review += question['response'] + "<br/><br/><br/>"
+    review += "<h3>Manager Questions: ("+manager['first_name']+" "+manager['last_name']+")</h3> <br/><br/>"
+    for question in performance_review['manager_questions']:
+        review += '<b>'+question['text']+'</b><br/><br/>'
+        if 'response' in question.keys():
+            review += question['response'] + "<br/><br/><br/>"
+    return review
+
+#Returns a datetime object with minutes and seconds set to 0. Useful for comparing dates.
+def start_of_day(datetime_obj):
+	return datetime(datetime_obj.year, datetime_obj.month, datetime_obj.day)
+
+# Returns number of days from datetime_obj1 to datetime_obj2
+def days_difference(datetime_obj1, datetime_obj2):
+	day1 = start_of_day(datetime_obj1)
+	day2 = start_of_day(datetime_obj2)
+	return (day2 - day1).days
+
+# Returns all employees with a performance review this month who have not had one in the past year.
+def get_upcoming_reviews_employees():
+    employee_ids = []
+	# Get all employees whose start date is in this month.
+    month = datetime.now().month
+    pipeline = [
+        {"$match" : {"start_date" : {"$nin" : [None, ""]}}},
+        {"$project" : { "start_date_month" : {"$month" : "$start_date"}, "start_date_day" : {"$dayOfMonth" : "$start_date"}}},
+        {"$match" : { "start_date_month" : month, "employee_status" : {"$ne" : "Former"} }},
+        {"$sort" : {"start_date_day" : 1}}
+    ]
+    results = corpdb.command('aggregate', 'employees', pipeline=pipeline)
+    # Add all employees who have not had a review in the past year.
+    for result in results.get(results.keys()[1]):
+        if not had_review_in_past_year(result['_id']):
+            employee_ids.append(result['_id'])
+	
+    return corpdb.employees.find( {"_id" : {"$in" : employee_ids}}).sort("last_name", pymongo.ASCENDING)
+
+# Returns true if an employee has had a performance review in the past year
+def had_review_in_past_year(employee_id):
+    one_year_ago = datetime((datetime.now().year -1 ), datetime.now().month, datetime.now().day)
+    if corpdb.performancereviews.find( {"employee_id" : employee_id, "date" : {"$gt" : one_year_ago}}).count() > 0:
+        return True
+    return False
+
+# Returns all employees with a performance review coming up for a given manager.
+def get_upcoming_manager_reviews(manager_id):
+	upcoming_manager_reviews = []
+
+	for employee in get_upcoming_reviews_employees():
+		if get_managers(employee)[0]['_id'] == manager_id :
+			upcoming_manager_reviews.append(employee)
+
+	return upcoming_manager_reviews
+
+# Send an email
+def send_email(from_address, to_addresses, subject, message, cc_addresses =[]):
+    msg = MIMEText(message)
+    msg['Subject'] = subject
+    msg['From']    = from_address
+    msg['To']      = ",".join(to_addresses)
+    msg['CC'] = ",".join(cc_addresses)
+    s = smtplib.SMTP( "ASPMX.L.GOOGLE.com" )
+    s.set_debuglevel(True)
+    s.sendmail( from_address , to_addresses , msg.as_string() )
+    print s.quit()
+
+# Returns a list of performance review question placeholders.
+def get_placeholders(review_type):
+	if(review_type == "Employee"):
+		return ['',
+				'think differently!',
+				'',
+				'weaknesses are hard to fix. either have a hard plan to fix the item or propose a work-around',
+				'i.e. give a talk, volunteer at a recruiting event, attend a tech talk',
+				'i.e. what do you enjoy about 10gen and what would make your experience better?',
+				''
+				]
+	elif(review_type == "Manager"):
+		return ['i.e. nudge that you have to be really good here - at something.  doing 10 jiras in a mad overnight session might be a good example; so it is not impossible!',
+				'nudge to think differently. e.g. "give away mms,"',
+				'',
+				'weaknesses are hard to fix. either have a hard plan to fix the item, or propose workarounds, or just decide that for the job at hand they are not important.',
+				'this could probably be measured objectively using variation indirect metrics out there',
+				'this is career planning section for the 20 percent for whom that is the right thing to talk about.  sometimes it is not about career planning maybe it is a no-op or maybe it is "i want to do something different or learn xyz" instead.',
+				''
+				]
+	else:
+		return []
+

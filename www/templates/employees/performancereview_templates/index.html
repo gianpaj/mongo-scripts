@@ -1,0 +1,40 @@
+{% extends "employees/layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+{% block content %}
+
+
+<header class="review-header">
+    <h1><a href="/performancereview_templates"><a href="/performancereviews/hrdashboard">Performance Reviews</a>: Templates</h1>
+    <br/><br/>
+    <div><a class="btn" href="/performancereview_templates/new" id="new_performancereview_template">+ New Template</a></div>
+</header>
+
+
+{% if (pp['error_message'] and (pp['error_message'].__len__() > 0)) %}
+  <br/>
+  <header class="error-message">{{ pp['error_message'] }}</header>
+{% endif %}
+
+<div style="font-size:15px; padding:15px">
+{% for template in pp['all_templates'] %}
+  <a href="/performancereview_templates/{{template['_id']}}">{{template['name']}}</a><br/><br/>
+{% endfor %}
+
+
+<script type="text/javascript" charset="utf-8">
+  jQuery(function($){
+      $("a#new_performancereview_template").fancybox();
+  });
+</script>
+{% endblock %}

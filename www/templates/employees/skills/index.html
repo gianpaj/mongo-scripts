@@ -33,10 +33,10 @@
 </form>
 
 <div style="float:right;">
-	{% if pp['current_user_role'] == "admin" %}
+	{% if "admin" in pp['current_user_roles'] %}
 	<a class="btn" href="/skills/new" id="new_skill">+ new skill</a>
 	{% endif %}
-	{% if pp['current_user_role'] == "admin" or pp['current_user_role'] == "manager" %}
+	{% if "admin" in pp['current_user_roles'] or "manager" in pp['current_user_roles'] %}
 	<br/><br/>
 	<a class="btn" href="/skillmatrix.csv">skill matrix</a>
 	{% endif %}

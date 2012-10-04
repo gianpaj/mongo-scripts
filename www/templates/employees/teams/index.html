@@ -30,7 +30,7 @@
 	
 </form>
 
-{% if pp['current_user_role'] == "admin" %}
+{% if "admin" in pp['current_user_roles'] %}
 <!-- IF USER IS ADMIN --> 
 <div style="float:right;">
 <a class="btn" href="/teams/new" id="new_team">+ new team</a>

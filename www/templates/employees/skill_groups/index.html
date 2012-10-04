@@ -31,7 +31,7 @@
 </form>
 
 <div style="float:right;">
-	{% if pp['current_user_role'] == "admin" %}
+	{% if "admin" in pp['current_user_roles'] %}
 	<a class="btn" href="/skillgroups/new" id="new_skill_group">+ new skill group</a>
 	{% endif %}
 </div>

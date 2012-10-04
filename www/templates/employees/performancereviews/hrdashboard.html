@@ -1,0 +1,113 @@
+{% extends "employees/layouts/application.html" %}
+
+{% block js %}
+<script type="text/javascript" src="/static/employees/js/select2.js"></script>
+<script type="text/javascript" src="/static/employees/js/jquery.fancybox-1.3.4.pack.js"></script>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/employees/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/select2.css" />
+<link rel="stylesheet" type="text/css" href="/static/employees/css/jquery.fancybox-1.3.4.css" media="screen" />
+{% endblock %}
+
+{% block content %}
+
+
+<header class="review-header">
+    <h1>HR Dashboard: </h1>
+    <br/><br/>
+    <div><a class="reviewbtn" href="/performancereview_templates" id="templates">Performance Review Templates</a></div>
+    <div><a class="reviewbtn" href="/performancereviews/new" id="new_performancereview">+ New Performance Review</a></div> 
+    <div><a class="reviewbtn" href="/performancereviews/sendreminders" id="sendreminders">+ Send Reminders</a></div>
+</header>
+
+
+{% if (pp['error_message'] and (pp['error_message'].__len__() > 0)) %}
+  <br/>
+  <header class="error-message">{{ pp['error_message'] }}</header>
+{% endif %}
+
+<div class="row show-grid">
+
+  <div class="span6">
+
+    <div class="reviewdisplay2">
+        <header1>This Month's Upcoming Reviews ({{pp['upcoming_reviews'].__len__()}}):</header1>
+          <div class="control-group">
+            <br/>
+            <div class="controls">
+              {% for review in pp['upcoming_reviews'] %}
+                <div class="listtext"><a href="/employees/{{review['jira_uname']}}">{{review['first_name']}} {{review['last_name']}}</a> <i>(start date: {{review['start_date'].month}}/{{review['start_date'].day}}/{{review['start_date'].year}})</i></div>
+              {% endfor %}
+            </div><!-- controls-->
+          </div><!-- control-group-->
+          {% if pp['upcoming_reviews'].__len__() > 0 %}
+            <div><a class="btn" style="float:right; margin: 0px -12px 0px 7px" href="/performancereviews/new/upcoming" id="new_performancereview">+ Create Performance Reviews</a></div>
+          {% endif %}
+          <br/>
+    </div><!-- reviewdisplay2 -->
+
+    <br/><br/>
+
+    <div class="reviewdisplay2">
+      <header1>All Reviews:</header1><br/><br/><br/>
+      <form action="" method="post" class="form-horizontal" style="margin: 0px 0px -21px -37px;">
+        <fieldset>
+          <div class="control-group">
+            <div class="controls" style="margin:0px 76px 0px 37px">
+              <select name="all_search" data-placeholder="Search by last name..." class="chzn-select-deselect" id="all_search" style="width:100%;">
+                <option></option>
+                {% for review in pp['performancereviews'] %}
+                  <option value="{{ review['_id'] }}">{{ review['name'] }}</option>
+                {% endfor %}
+              </select><input type="submit" value="Search" class ="btn" style="margin: 10px;">     
+            </div><!-- controls -->
+          </div><!-- control-group -->
+        </fieldset>
+        
+      </form>
+    </div><!--reviewdisplay2-->
+  </div><!--span6-->
+
+  <div class="span6">
+    <div class="reviewdisplay2">
+      <header1>Overdue Reviews ({{pp['overdue_reviews'].__len__()}}):</header1>
+        <br/><br/>
+        <div class="control-group">
+            <div class="controls">
+              {% for review in pp['overdue_reviews'] %}
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: <i>({{review['status'][6:]}} was due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></div>
+              {% endfor %}
+            </div><!-- controls-->
+        </div><!-- control-group-->
+        {% if pp['overdue_reviews'].__len__() > 0 %}
+          <div><a class="btn" style="float:right; margin: 0px -12px 0px 7px" href="/performancereviews/sendreminders/overdue" id="sendreminders">+ Send Overdue Reminders</a></div>
+        {% endif %}
+        <br/>
+    </div><!-- reviewdisplay2 -->
+
+    <br/>
+
+    <div class="reviewdisplay2">
+      <header1>Uncompleted Reviews ({{pp['uncompleted_reviews'].__len__()}}):</header1><br/><br/>
+        <div class="control-group">
+            <div class="controls">
+              {% for review in pp['uncompleted_reviews'] %}
+                <div class="listtext"><a href="/performancereviews/{{review['_id'] }}">{{review['name']}}</a>: (<i>{{review['status'][6:]}} due <b>{{review['due_date'].month}}/{{review['due_date'].day}}</b>)</i></div>
+              {% endfor %}
+            </div><!-- controls-->
+        </div><!-- control-group-->
+    </div><!-- reviewdisplay2 -->
+  </div><!-- span6 -->
+
+</div>
+
+<script type="text/javascript" charset="utf-8">
+  jQuery(function($){
+      $('#all_search').select2();
+  });
+</script>
+
+
+{% endblock %}
