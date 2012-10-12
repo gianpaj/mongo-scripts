@@ -301,22 +301,23 @@ def days_difference(datetime_obj1, datetime_obj2):
 
 # Returns all employees with a performance review this month who have not had one in the past year.
 def get_upcoming_reviews_employees():
-    employee_ids = []
 	# Get all employees whose start date is in this month.
     month = datetime.now().month
+    year = datetime.now().year
     pipeline = [
         {"$match" : {"start_date" : {"$nin" : [None, ""]}}},
-        {"$project" : { "start_date_month" : {"$month" : "$start_date"}, "start_date_day" : {"$dayOfMonth" : "$start_date"}}},
-        {"$match" : { "start_date_month" : month, "employee_status" : {"$ne" : "Former"} }},
+        {"$project" : { "start_date_month" : {"$month" : "$start_date"}, "start_date_year" : {"$year" : "$start_date"}, "start_date_day" : {"$dayOfMonth" : "$start_date"}}},
+        {"$match" : { "start_date_month" : month, "start_date_year" : {"$ne" : year}, "employee_status" : {"$ne" : "Former"} }},
         {"$sort" : {"start_date_day" : 1}}
     ]
     results = corpdb.command('aggregate', 'employees', pipeline=pipeline)
     # Add all employees who have not had a review in the past year.
+    employees = []
     for result in results.get(results.keys()[1]):
         if not had_review_in_past_year(result['_id']):
-            employee_ids.append(result['_id'])
-	
-    return corpdb.employees.find( {"_id" : {"$in" : employee_ids}}).sort("last_name", pymongo.ASCENDING)
+            employee = corpdb.employees.find_one( {"_id" : ObjectId(result['_id'])} )
+            employees.append(employee)
+    return employees
 
 # Returns true if an employee has had a performance review in the past year
 def had_review_in_past_year(employee_id):
