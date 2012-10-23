@@ -1,6 +1,5 @@
 
 
-
 import os
 import sys
 import pymongo
@@ -173,14 +172,14 @@ queries = [
     # ------ community private ----------
 
     { "name" : "Community Private not touched in 45 days" ,
-      "jql" : "project = SUPPORT AND status in (Open, \"In Progress\", Reopened) and updated <= -45d" ,
+      "jql" : "project = SUPPORT AND type != Tracking AND status in (Open, \"In Progress\", Reopened) and updated <= -45d" ,
       "who" : "AO" ,
       "sms" : False ,
       "digest" : True } ,
 
 
     { "name" : "Community Private not touched in 3 days" ,
-      "jql" : "project = SUPPORT AND status in (Open, \"In Progress\", Reopened) and updated <= -3d" ,
+      "jql" : "project = SUPPORT AND type != Tracking AND status in (Open, \"In Progress\", Reopened) and updated <= -3d" ,
       "who" : "AO" ,
       "sms" : False ,
       "filter" : last_comment_from_10gen ,
