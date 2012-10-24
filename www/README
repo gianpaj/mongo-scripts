@@ -1,0 +1,6 @@
+# Corp web README
+
+## Configuration files
+
+* To specify that this is your development environment, simply run `touch devel`
+* To include your private settings put them in a file `settings_private.py`
