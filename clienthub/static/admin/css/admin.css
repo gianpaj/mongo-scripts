@@ -1,0 +1,252 @@
+/* global template fixes */
+div.content {
+  width:960px;
+}
+
+div.content div.main {
+  width:710px;
+}
+
+div.content table img {
+  border:none !important;
+  background:none !important;
+  background-color:transparent !important;
+  padding:0px !important;
+  margin:0px !important;
+  border-radius:0px;
+  -webkit-border-radius:0px;
+  -moz-border-radius:0px;
+}
+
+input[type="submit"] {
+  width:auto !important;
+}
+
+fieldset {
+  border:1px solid #ddd;
+  margin:20px 0px;
+  padding-top:7px;
+}
+
+fieldset dl {
+  padding-left:10px;
+}
+
+fieldset legend {
+  position:relative;
+  top:1px;
+  padding:0px 5px 5px 5px;
+  margin-left:5px;
+  font-family: ff-meta-web-pro, sans-serif;
+  color:#999;
+}
+
+dl dt.spacer, dl dd.spacer {
+  height:17px;
+  margin:0px;
+}
+
+div.styleguide {
+  width:460px;
+  float:right;
+  text-align:left;
+  color:#333;
+}
+
+table.tablesorter td.date {
+  white-space:nowrap;
+}
+
+pre, code {
+  font-family:Menlo, monospace;
+  font-size:90%;
+}
+
+
+/* exceptions list */
+table.exceptions span.date {
+    display:none;
+}
+
+/* exception detail */
+table.exception {
+    font-size:90%;
+}
+
+table.exception th {
+    width:140px;
+    font-weight:bold;
+    padding-right:20px;
+    white-space:nowrap;
+    text-align:left;
+}
+
+table.exception td {
+    font-family:Monaco, monospace;
+    font-size:87%;
+}
+
+table.exception code {
+    font-size:90%;
+}
+
+
+/* tablesorters */
+table.tablesorter {
+  clear:both;
+}
+table.tablesorter, table.tablesorter th, table.tablesorter td {
+  border:1px solid #ddd;
+  border-collapse:collapse;
+}
+table.tablesorter th, table.tablesorter td {
+  padding:3px 5px;
+}
+table.tablesorter thead tr th {
+  padding-right:20px;
+}
+table.tablesorter tbody tr:hover td {
+  background-color:#e8e8e8;
+  cursor:pointer;
+}
+table.tablesorter tbody tr td a {
+  display:block;
+}
+table.tablesorter tbody tr td.actions a {
+  display:inline;
+}
+table.tablesorter tbody tr.deleted td {
+  opacity:0.4;
+}
+div.pager {
+  text-align:center;
+  margin-top:8px;
+  width:710px;
+}
+div.pager a {
+  margin:0px 10px;
+  font-family:sans-serif;
+  font-size:85%;
+}
+div.pager a.first, div.pager a.prev {
+  float:left;
+}
+div.pager a.next, div.pager a.last {
+  float:right;
+}
+
+/* form viewer */
+div#formtype-filter {
+  font-family:sans-serif;
+  font-size:85%;
+}
+
+div.hidden {
+  display:none;
+}
+
+div.markdownguide {
+  font-weight:normal;
+  font-size:87%;
+  color:#666;
+}
+
+table.cmstable {
+  width:100%;
+}
+table.cmstable input[type="text"] {
+  width:100%;
+}
+table.cmstable input[type="submit"] {
+  width:auto;
+}
+table.cmstable textarea {
+  width:100%;
+  height:300px;
+}
+.helper {
+  color:#aaa;
+  font-size:80%;
+  margin-bottom:7px;
+  font-family:sans-serif;
+  font-style:italic;
+}
+table.cmstable th {
+  vertical-align:top;
+}
+table.cmstable > tbody > tr > th {
+  width:180px;
+  max-width:180px;
+}
+table.cmstable ul li {
+  border:1px solid #aaa;
+  margin-bottom:10px;
+  padding:3px 8px 8px;
+  background-color:#fff;
+  background-image:none;
+}
+table.cmstable table, table.cmstable table td, table.cmstable table th {
+  margin:0px;
+}
+table.cmstable ul.errors {
+  color:#c33;
+}
+table.cmstable ul.errors li {
+  border:none;
+}
+table.cmstable ul.errors li:last-child {
+  margin:0px;
+  padding:0px;
+}
+table.cmstable .ui-sortable-placeholder {
+  border:1px dashed #ccc;
+  visibility:visible;
+}
+
+#hiddens, .hidden {
+  display:none;
+}
+table.cmstable label.lbl {
+  white-space:nowrap;
+  display:block;
+}
+
+table.cmstable .HiddenField {
+  display:none;
+}
+
+table.cmstable .DateTimeTimezoneField input[type="text"] {
+  width:200px;
+  margin-right:20px;
+}
+
+div.toolbar {
+  text-align:right;
+}
+
+div.toolbar img {
+  background:none;
+  padding:none;
+  border:none;
+  position:relative;
+  top:6px;
+}
+
+table.cmstable .preview img {
+  max-width:350px;
+  max-height:150px;
+}
+
+#preview .controls {
+  padding-bottom:15px;
+  border-bottom:1px solid #999;
+  margin-bottom:15px;
+}
+
+div.content div.subnav.models li a {
+  padding-left:20px;
+}
+
+table.abtests .significant.winner {
+  background-color:#8e8;
+}

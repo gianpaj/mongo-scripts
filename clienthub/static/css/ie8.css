@@ -1,0 +1,8 @@
+#marketo-form-newslettersignup #mktFrmSubmit {
+  margin-top: -19px;
+}
+
+#marketo-form-newslettersignup label.error-message {
+  top: 64px !important;
+  position: relative;
+}

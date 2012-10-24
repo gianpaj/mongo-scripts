@@ -1,0 +1,41 @@
+{% extends "base_internal.html" %}
+
+{% block main %}
+      <div class="content {{web_ctx.current_section}} {{web_ctx.current_page}}{% if wide %} wide{% elif doublewide %} doublewide{% endif %} {{contentclass}}">
+        {% if doublewide %}
+        <div class="main">
+          {% block doublewidecontent %}{% endblock %}
+        </div>
+        {% else %}
+        {% block leftnav %}
+        <div class="leftbar">
+          <div class="subnav">
+            {% include 'leftnav.html' %}
+          </div>
+          {% block leftbelownav %}
+          <h2>Download MongoDB</h2>
+          <p>Download the latest stable releases, or new nightly builds.</p>
+          <p class="button"><a href="http://www.mongodb.org/downloads" class="download" target="_blank">Download MongoDB</a></p>
+          {% endblock %}
+        </div>
+        {% endblock %}
+        <div class="main">
+          <div class="above">
+            {% block abovecontent %}{% endblock %}
+          </div>
+          {% if not wide %}
+          <div class="rightbar">
+          {% block rightbar %}
+            {%- block fromourcustomers -%}
+              {% include '_fromourcustomers.html' %}
+            {%- endblock -%}
+          {% endblock %}
+          </div>
+          {% endif %}
+          <div class="center">
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+{% endblock %}

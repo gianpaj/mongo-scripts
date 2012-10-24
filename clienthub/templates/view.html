@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}{{client.name}} - {{super()}}{% endblock %}
+
+{% block morescripts %}
+    <script type="text/javascript">
+      function show_popup() {
+        var myself = this;
+        var popup = $(this).parent().find('div.popup');
+        $(popup).show();
+        $(document).find('body').click(function() { $(myself).click() });
+      }
+      function hide_popup() {
+        var popup = $(this).parent().find('div.popup');
+        $(popup).hide();
+        $(document).find('body').unbind('click');
+      }
+      function confirm_update() {
+        var url = $(this).attr('href');
+        if ( RegExp('notstarted').test(url) )
+          var message = 'not started';
+        else if ( RegExp('inprogress').test(url) )
+          var message = 'in progress';
+        else if ( RegExp('completed').test(url) )
+          var message = 'completed';
+        return confirm('Are you sure you want to mark this task as ' + message + '?');
+      }
+      $(document).ready(function() {
+        $('a.delete').click(function() { return confirm("Are you sure you want to delete {{client.name}}?"); });
+        $('span.clickable').toggle(show_popup, hide_popup);
+        $('table.tablesorter.jira').tablesorter({ sortList: [[6, 1]] });
+        $('table.tablesorter.docs').tablesorter({ sortList: [[3, 1]] });
+        $('table.tablesorter.contracts').tablesorter({ sortList: [[1, 1]] });
+        $('table.tablesorter.contacts').tablesorter({ sortList: [[0, 0]] });
+        $('table.tablesorter.tasks').tablesorter({ sortList: [[0, 1]] });
+        $('table.tablesorter.services').tablesorter({ sortList: [[0, 1]] });
+        $('a.confirm').click(confirm_update);
+      });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{{client.name}}</h1>
+
+<span style="float:right;font-size:85%"><a href="{{link('client.clientedit', client._id)}}">Edit {{client.name}}</a></span>
+<br/><span style="float:right;font-size:85%"><a href="{{link('client.clientdelete', client._id)}}" class="delete">Delete {{client.name}}</a></span>
+
+<dl>
+  <dt>Client Name</dt>
+  <dd>{{client.name}}</dd>
+
+  <dt>Main JIRA Group</dt>
+  <dd>
+    {% if client.jira_group %}
+    <a href="{{link('jira.jiragroup', client.jira_group)}}">{{client.jira_group}}</a>
+    {% else %}
+    <span class="helper">None selected</span>
+    {% endif %}
+  </dd>
+
+  <dt>Associated Groups</dt>
+  <dd>
+    {% for group in client.associated_jira_groups %}
+    <a href="{{link('jira.jiragroup', group.name)}}">{{group.name}}</a>{% if not loop.last %},{% endif %}
+    {% endfor %}
+  </dd>
+
+  <dt>Salesforce Account</dt>
+  <dd>
+    {% if client.sf_account_id %}
+    <a href="https://na7.salesforce.com/{{client.sf_account_id}}" target="_blank">{{client.sf_account_name}}</a>
+      {% if client.get_address() %}
+      <br/><pre style="font:inherit !important">{{client.get_address()}}</pre>
+      {% endif %}
+    {% else %}
+    <span class="helper">None selected</span><br/>
+    {% endif %}
+    <span class="helper">
+      <a href="{{link('client.clientcacherefresh', client._id, 'sf_account')}}">Refresh Cache</a>
+    </span>
+  </dd>
+
+  {% if client.has_mms %}
+  <dt>MMS</dt>
+  <dd>
+    <a href="https://mms.10gen.com/links/customer?id={{client.jira_group}},425989">MMS Dashboard</a>
+  </dd>
+  {% endif %}
+
+  <dt>Account Contact</dt>
+  <dd>
+    {% if client.account_contact %}
+    {{client.display_account_contact()}}
+    {% elif client.account_contact_email %}
+    {{client.account_contact_email}} <span class="helper">(no JIRA user!)</span>
+    {% else %}
+    <span class="helper">None set in Salesforce</span>
+    {% endif %}
+    <br/>
+    <span class="helper">
+      <a href="{{link('client.clientcacherefresh', client._id, 'sf_account')}}">Refresh Cache</a>
+    </span>
+  </dd>
+
+  <dt>Primary Engineer</dt>
+  <dd>
+    {% if client.primary_eng %}
+    {{client.display_engineering_contact()}}
+    {% else %}
+    <span class="helper">None selected</span>
+    {% endif %}
+  </dd>
+
+  <dt>Secondary Engineers</dt>
+  <dd>
+    {% if client.secondary_engs %}
+    {{client.display_secondary_engineers()}}
+    {% else %}
+    <span class="helper">None selected</span>
+    {% endif %}
+  </dd>
+</dl>
+
+{% set sf_account = client.get_sf_account() %}
+
+<h2>Paid Support</h2>
+{% if sf_account and sf_account.get('suspended', False) %}
+<h3 class="warning"><strong>Client is suspended{% if sf_account.get('suspended_reason', None) %} for {{sf_account.get('suspended_reason', 'unknown')}}{% endif %}.</strong>
+<br/>Contact <a href="mailto:salesops@10gen.com">salesops@10gen.com</a> for more information.</h3>
+{% endif %}
+<table class="tablesorter contracts">
+  <thead>
+    <tr>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Type</th>
+      <th># Servers</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for contract in client.get_sf_contracts() %}
+    <tr class="{{contract.end and (contract.active and "active" or "inactive") or "noend"}}">
+      <td class="start">{{contract['start']|datetimeformat('%Y-%m-%d')}}</td>
+      <td class="end">{{contract['end']|datetimeformat('%Y-%m-%d')|default('<em>none set</em>')}}</td>
+      <td class="type">{{contract['type']}}{% if contract.end and not contract.active %} (expired){% endif %}</td>
+      <td class="num">{{contract['num_servers']}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="5">
+        {% if not client.sf_account_id %}
+        No Salesforce Account associated. <a href="{{link('client.clientedit', client._id)}}?message=Select+a+Salesforce+Account">Add one now</a>.
+        {% else %}
+          {% if not client.get_sf_contracts() %}
+          No active support contracts.
+          {% endif %}
+          {% if client.get_expiry('sf_contracts') %}
+          Cached until {{client.get_expiry('sf_contracts')|datetimeformat('%Y-%m-%d %I:%M %p')}}.
+          {% else %}
+          Not cached.
+          {% endif %}
+          <a href="{{link('client.clientcacherefresh', client._id, 'sf_contracts')}}">Refresh now</a>.
+        {% endif %}
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<h2>Paid Services</h2>
+{% if sf_account and sf_account.get('suspended', False) %}
+<h3 class="warning"><strong>Client is suspended{% if sf_account.get('suspended_reason', None) %} for {{sf_account.get('suspended_reason', 'unknown')}}{% endif %}.</strong>
+<br/>Contact <a href="mailto:salesops@10gen.com">salesops@10gen.com</a> for more information.</h3>
+{% endif %}
+<table class="tablesorter services">
+  <thead>
+    <tr>
+      <th>Ordered Date</th>
+      <th>Service</th>
+      <th>Quantity</th>
+      <th>Delivered</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for service in client.get_sf_services() %}
+    <tr>
+      <td>{{service['ordered']|datetimeformat('%Y-%m-%d')}}</td>
+      <td>{{service['type']}}</td>
+      <td>{{service['quantity']|noNone}}</td>
+      <td>{{service['delivered']|noNone}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="5">
+        {% if not client.sf_account_id %}
+        No Salesforce Account associated. <a href="{{link('client.clientedit', client._id)}}?message=Select+a+Salesforce+Account">Add one now</a>.
+        {% else %}
+          {% if not client.get_sf_services() %}
+          No services.
+          {% endif %}
+          {% if client.get_expiry('sf_services') %}
+          Cached until {{client.get_expiry('sf_services')|datetimeformat('%Y-%m-%d %I:%M %p')}}.
+          {% else %}
+          Not cached.
+          {% endif %}
+          <a href="{{link('client.clientcacherefresh', client._id, 'sf_services')}}">Refresh now</a>.
+        {% endif %}
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<h2 style="float:left">Client Contacts</h2>
+<div class="new">
+  <span class="clickable"><img src="{{'/static/admin/images/add.png'|staticurl}}" /> New</span>
+  <div class="popup">
+    <ul>
+      {% if client.jira_group %}
+      <li><a href="{{link('jira.addjirausertogroup', client.jira_group)}}">Add a JIRA User</a></li>
+      {% endif %}
+      {% if not client.jira_group %}
+      <li><em>Client needs JIRA Group</em></li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+<table class="tablesorter contacts">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Title</th>
+      <th>Phone</th>
+      <th>JIRA User</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for contact in client.get_contacts() %}
+    <tr>
+      <td>
+        {{contact['name']}}
+        {% if client.contact_is_primary(contact.get('id', None)) %}(<em>Primary Contact</em>)
+        {% elif client.contact_is_secondary(contact.get('id', None)) %}(<em>Secondary Contact</em>)
+        {% endif %}
+      </td>
+      <td>{% if 'email' in contact %}<a href="mailto:{{contact['email']}}">{{contact['email']}}</a>{% endif %}</td>
+      <td>{{contact['title']}}</td>
+      <td>{{contact['phone']}}</td>
+      <td>
+        {% if 'jira_username' in contact %}
+        <a href="https://jira.mongodb.org/secure/ViewProfile.jspa?name={{contact['jira_username']}}">{{contact['jira_username']}}</a>
+        {% else %}&nbsp;
+        {% endif %}
+      </td>
+      <td>
+        <span class="clickable">Actions</span>
+        <div class="popup">
+          <ul>
+            {% if client.jira_group and not contact.is_jira %}
+            <li><a href="{{link('contact.clientcontactupdate', client._id, contact.id, 'addtojira')}}">Add to JIRA</a></li>
+            {% elif client.jira_group %}
+            <li><a href="{{link('contact.clientcontactupdate', client._id, contact.jira_username, 'removefromjira')}}">Remove from JIRA Group</a></li>
+            {% endif %}
+            {% if contact.is_sfdc %}
+              {# salesforce actions #}
+              {% if not client.contact_is_primary(contact.get('id', None)) %}
+              <li><a href="{{link('contact.clientcontactupdate', client._id, contact['id'], 'setprimary')}}">Make Primary</a></li>
+              {% else %}
+              <li><a href="{{link('contact.clientcontactupdate', client._id, contact['id'], 'unsetprimary')}}">Make Not Primary</a></li>
+              {% endif %}
+              {% if not client.contact_is_secondary(contact.get('id', None)) %}
+              <li><a href="{{link('contact.clientcontactupdate', client._id, contact['id'], 'setsecondary')}}">Make Secondary</a></li>
+              {% else %}
+              <li><a href="{{link('contact.clientcontactupdate', client._id, contact['id'], 'unsetsecondary')}}">Make Not Secondary</a></li>
+              {% endif %}
+            {% endif %}
+          </ul>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="5">
+        {% if not client.sf_account_id %}
+        No Salesforce Account associated. <a href="{{link('client.clientedit', client._id)}}?message=Select+a+Salesforce+Account">Add one now</a>.
+        {% endif %}
+        {% if not client.jira_group %}
+        No JIRA Group associated. <a href="{{link('client.clientedit', client._id)}}?message=Select+a+JIRA+Group">Add one now</a>.
+        {% endif %}
+        {% if client.get_expiry('contacts') %}
+        Cached until {{client.get_expiry('contacts')|datetimeformat('%Y-%m-%d %I:%M %p')}}. <a href="{{link('client.clientcacherefresh', client._id, 'contacts')}}">Refresh now</a>.
+        {% else %}
+        Not cached.
+        {% endif %}
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<h2 style="float:left">Documents</h2>
+<div class="new">
+  <span class="clickable"><img src="{{'/static/admin/images/add.png'|staticurl}}" /> New</span>
+  <div class="popup">
+    <ul>
+      <li><a href="{{link('doc.clientdocview', client._id, 'onboarding', 'new')}}">Onboarding Checklist</a></li>
+      <li><a href="{{link('doc.clientdocview', client._id, 'healthcheck', 'new')}}">Healthcheck</a></li>
+      <li><a href="{{link('doc.clientdocview', client._id, 'clientcheckin', 'new')}}">Client Checkin</a></li>
+      <li><a href="{{link('doc.clientdocview', client._id, 'consulting', 'new')}}">Consulting Report</a></li>
+      <li><a href="{{link('doc.clientdocview', client._id, 'note', 'new')}}">Note</a></li>
+      <li><a href="{{link('doc.clientdocview', client._id, 'partner_onboarding', 'new')}}">Partner Onboarding</a></li>
+      <li><a href="{{link('doc.clientdocview', client._id, 'upload', 'new')}}">Upload</a></li>
+
+    </ul>
+  </div>
+</div>
+<table class="tablesorter docs">
+  <thead>
+    <tr>
+      <th>Author</th>
+      <th>Type</th>
+      <th>Summary/Last Note</th>
+      <th>Last Updated</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for doc in docs %}
+    <tr>
+      <td><a href="{{link('doc.clientdocview', client._id, doc['_type'], doc['_id'])}}">{{client.display_names(doc['author'])}}</a></td>
+      <td><a href="{{link('doc.clientdocview', client._id, doc['_type'], doc['_id'])}}">{{doc['_type']}}</a></td>
+      <td><a href="{{link('doc.clientdocview', client._id, doc['_type'], doc['_id'])}}">{{doc['summary']|abbrev(100)}}</a></td>
+      <td class="date"><a href="{{link('doc.clientdocview', client._id, doc['_type'], doc['_id'])}}">{{doc['updated']|datetimeformat('%Y-%m-%d %I:%M %p')}}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  {% if not docs %}
+  <tfoot>
+    <tr>
+      <td colspan="5">No documents to show</td>
+    </tr>
+  </tfoot>
+  {% endif %}
+</table>
+
+<h2>10 Most Recently Updated JIRAs</h2>
+<table class="tablesorter jira">
+  <thead>
+    <tr>
+      <th>Case</th>
+      <th>Reporter</th>
+      <th>Assignee</th>
+      <th>Priority</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th>Last Updated</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for case in client.get_jira_cases_with_extras() %}
+    <tr>
+      <td><a href="http://jira.mongodb.org/browse/{{case['key']}}" target="_blank">{{case['key']}}</a></td>
+      <td><a href="http://jira.mongodb.org/browse/{{case['key']}}" target="_blank">{{case['reporter']}}</a></td>
+      <td><a href="http://jira.mongodb.org/browse/{{case['key']}}" target="_blank">{{case['assignee_fullname']}}</a></td>
+      <td><a href="http://jira.mongodb.org/browse/{{case['key']}}" target="_blank">{{case['priority']['name']}}</a></td>
+      <td><a href="http://jira.mongodb.org/browse/{{case['key']}}" target="_blank">{{case['summary']}}</a></td>
+      <td><a href="http://jira.mongodb.org/browse/{{case['key']}}" target="_blank">{{case['status']['name']}}</a></td>
+      <td class="date"><a href="http://jira.mongodb.org/browse/{{case['key']}}" target="_blank">{{case['updated']|datetimeformat('%Y-%m-%d %I:%M %p')}}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="7">
+        {% if not client.get_jira_cases() %}
+        No cases to show.
+        {% endif %}
+        {% if client.get_expiry('jira_cases') %}
+        Cached until {{client.get_expiry('jira_cases')|datetimeformat('%Y-%m-%d %I:%M %p')}}.
+        {% else %}
+        Not cached.
+        {% endif %}
+        <a href="{{link('client.clientcacherefresh', client._id, 'jira_cases')}}">Refresh now</a>.
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+
+{% endblock %}
+

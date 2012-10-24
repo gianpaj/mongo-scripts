@@ -1,0 +1,18 @@
+local:
+    du_host: localhost
+    clienthub_fts_host: localhost
+    crowd:
+        user: corp
+        password: eng718corp
+    db:
+        host: localhost
+        db_name: www
+    fts_db:
+        host: localhost
+        db_name: www
+    aux_db:
+        host: localhost
+        db_name: aux_www
+    jira:
+        user: auto
+        password: automenow

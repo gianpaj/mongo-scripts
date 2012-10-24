@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{group['name']}} - JIRA Tool - {{super()}}{% endblock %}
+
+{% block morescripts %}
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('a.confirm').click(function() {
+      var msg = $(this).attr('msg') || 'Are you sure?';
+      return confirm(msg);
+    });
+
+    $('table.datatable').dataTable({
+      bPaginate: false
+    });
+  });
+</script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{{group['name']}}</h1>
+
+<div class="horiz" style="float:left">
+  <dl>
+    <dt>Is CS</dt>
+    <dd>
+      {% if group['is_cs'] %}
+      <a class="confirm" msg="Make this group not Commercial Support?" href="{{link('jira.togglecsjiragroup', group.name)}}">Yes</a>
+      {% else %}
+      <a class="confirm" msg="Make this group Commercial Support?" href="{{link('jira.togglecsjiragroup', group.name)}}">No</a>
+      {% endif %}
+      <span class="helper" style="font-size:85%">click to toggle</span>
+      &mdash; <a href="{{link('jira.jirarefresh', next=web_ctx.fullpath)}}" style="font-style:italic;font-size:85%">refresh</a>
+    </dd>
+    {% if related_clients %}
+    <dt>Client(s)</dt>
+    <dd>
+    {% for client in related_clients %}
+    <a href="{{link('client.clientview', client._id)}}">{{client.name}}</a>
+    {%- if not loop.last %},{% endif %}
+    {% endfor %}
+    </dd>
+    {% endif %}
+    {% if not group.users %}
+    <dt></dt>
+    <dd><a class="confirm" msg="Delete this group?" href="{{link('jira.deletejiragroup', group.name)}}">Delete {{group.name}}</a></dd>
+    {% endif %}
+  </dl>
+</div>
+<div class="new">
+  <a href="{{link('jira.addjirausertogroup', group['name'])}}"><img src="{{'/static/admin/images/add.png'|staticurl}}" /> Add a user</a>
+</div>
+<table class="datatable tablesorter" style="clear:both">
+  <thead>
+    <th>Name</th>
+    <th>Username</th>
+    <th>Email</th>
+    <th>Remove</th>
+  </thead>
+  <tbody>
+    {% for user in group.users %}
+    <tr>
+      <td><a href="https://jira.mongodb.org/secure/ViewProfile.jspa?name={{user.name}}">{{user.fullname}}</a></td>
+      <td><a href="https://jira.mongodb.org/secure/ViewProfile.jspa?name={{user.name}}">{{user.name}}</a></td>
+      <td><a href="https://jira.mongodb.org/secure/ViewProfile.jspa?name={{user.name}}">{{user.email}}</a></td>
+      <td>
+        <a class="confirm" msg="Are you sure you want to remove {{user.fullname}} from this group?" href="{{link('jira.removejirauserfromgroup', group.name, user.name)}}"><img src="{{'/static/admin/images/delete.png'|staticurl}}" alt="Remove from group" title="Remove from group"/></a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="4">
+        Cached until {{expiry}}. <a href="{{link('jira.refreshjiragroup', group.name)}}">Refresh now</a>.
+      </th>
+    </tr>
+  </tfoot>
+</table>
+
+{% endblock %}
+

@@ -1,0 +1,206 @@
+
+<!doctype html>
+<html>
+  <head>
+  {% block optimizely %}
+  <script src="//cdn.optimizely.com/js/21135121.js"></script>
+  {% endblock %}
+    <script type="text/javascript">var _sf_startpt=(new Date()).getTime()</script>
+    <meta charset="utf-8">
+    {% block description %}{% endblock %}
+    <title>
+      {% if environment and environment != 'prod' %}[[{{environment.upper()}}]]{% endif %}
+      {% block title %}10gen{% endblock %}
+    </title>
+    <!--[if lt IE 9]>
+      <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+      <link rel="stylesheet" href="{{ '/static/css/ie8.css' | staticurl }}" />
+    <![endif]-->
+
+    <!--[if IE 9]>
+    <link rel="stylesheet" href="{{ '/static/css/ie9.css' | staticurl }}" />
+    <![endif]-->
+
+    <link rel="shortcut icon" href="{{ '/static/images/favicon.ico' | staticurl }}" />
+    <link rel="stylesheet" href="{{ '/static/css/reset.css' | staticurl }}" />
+    <link rel="stylesheet" href="{{ '/static/css/desktop.css' | staticurl }}" />
+    <link rel="stylesheet" href="{{ '/static/css/navigation.css' | staticurl }}" />
+
+    <!--[if IE 6]>
+    <link rel="stylesheet" href="{{ '/static/css/ie.css' | staticurl }}" />
+    <![endif]-->
+    {% block styles %}{% endblock %}
+    {% block facebook %}{% endblock %}
+
+    <script type="text/javascript" src="{{'/static/js/css_browser_selector.js'|staticurl}}"></script>
+    <script type="text/javascript">
+      document.write(unescape("%3Cscript src='" + document.location.protocol + "//use.typekit.com/nkd3roz.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+    <script type="text/javascript" src="{{ '/static/js/jquery-1.6.2.min.js' | staticurl }}"></script>
+    <script type="text/javascript" src="{{ '/static/js/navigation.js' | staticurl }}"></script>
+    <script type="text/javascript" src="{{ '/static/js/jquery.ui.core.js' | staticurl }}"></script>
+    <script type="text/javascript" src="{{ '/static/js/jquery.ui.widget.js' | staticurl }}"></script>
+    <script type="text/javascript" src="{{ '/static/js/jquery.ui.tabs.js' | staticurl }}"></script>
+
+    <script>
+    	$(function() {
+    		$( "#tabs" ).tabs();
+    	});
+    </script>
+<!-- start Mixpanel --><script type="text/javascript">var mpq=[];mpq.push(["init","84b0ba17dfc1942acd72ef56578b017e"]);(function(){var b,a,e,d,c;b=document.createElement("script");b.type="text/javascript";b.async=true;b.src=(document.location.protocol==="https:"?"https:":"http:")+"//api.mixpanel.com/site_media/js/api/mixpanel.js";a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(b,a);e=function(f){return function(){mpq.push([f].concat(Array.prototype.slice.call(arguments,0)))}};d=["init","track","track_links","track_forms","register","register_once","identify","name_tag","set_config"];for(c=0;c<d.length;c++){mpq[d[c]]=e(d[c])}})();
+</script><!-- end Mixpanel -->
+
+<script type="text/javascript">
+  $(function(){
+   $('#mktFrmSubmit').click(function(){
+     var formname = $(this).parents('form').attr('name')
+     mpq.track("Registration", {'formnam':formname  });
+   })
+  });
+
+</script>
+
+{% block mixpanel %}{% endblock %}
+
+<script type="text/javascript">
+var TRACK_EVENT = {% block mix_track_event %}"" {% endblock mix_track_event %}
+var MIXPANEL_TARGET = {% block mix_target %}"" {% endblock mix_target %}
+
+var on_button_click = function(){
+  mpq.track(TRACK_EVENT)
+}
+$(function(){
+  $(MIXPANEL_TARGET).click(on_button_click)
+})
+</script>
+
+  </head>
+  <body>
+    <div id="wrapper" class="{{web_ctx.current_section}} {{web_ctx.current_page}}">
+      <header>
+        <h1><a href="/">10gen</a></h1>
+        <p><a href="http://www.mongodb.org/">Creators of MongoDB</a></p>
+      </header>
+      <nav>
+        <ul>
+          {% include 'hdnav.html' %}
+        </ul>
+      </nav>
+      {% block main %}{% endblock %}
+      <div class="sitemap">
+        <div class="footer-nav">
+            <div class="column">
+                <h3>Products &amp; Services</h3>
+                <ul>
+                    <li class="first"><a href="/subscription#support" class="first">MongoDB Support &amp; Services</a></li>
+                    <li><a href="/subscription#commercial-license">MongoDB Commercial Licenses</a></li>
+                    <li><a href="/subscription#support">MongoDB Commercial Support</a></li>
+                    <li><a href="/training">MongoDB Training</a></li>
+                    <li><a href="/consulting">MongoDB Consulting</a></li>
+                    <li class="last"><a href="/mongodb-monitoring-service" class="last">MongoDB Monitoring Service</a></li>
+                </ul>
+                <h3>Partners</h3>
+                <ul>
+                  <li class="first"><a href="/partners" class="first">MongoDB Partner Program</a></li>
+                  <li><a href="/partners/cloudhosting" class="first">Cloud Services</a></li>
+                  <li><a href="/partners/technology">Technology</a></li>
+                  <li><a href="/partners/services">Services &amp; Consulting</a></li>
+                  <li class="last"><a href="/partners/partner-with-10gen-mongodb" class="last">Become a Partner</a></li>
+                </ul>
+            </div>
+            <div class="column">
+                <h3>Community</h3>
+                <ul>
+                    <li class="first"><a href="/user-groups" class="first">Local Meetups</a></li>
+                            <li class="last"><a href="/office-hours" class="last">Office Hours</a></li>
+                            <li><a href="http://groups.google.com/group/mongodb-user" class="first">User Forum</a></li>
+                </ul>
+                <h3>Client Portal</h3>
+                <ul>
+                      <li class="first"><a href="https://mms.10gen.com/" class="first" target="_blank">MMS Login</a></li>
+                              <li class="last"><a href="https://jira.mongodb.org/browse/CS" class="last" target="_blank">JIRA Login</a></li>
+                </ul>
+            </div>
+            <div class="column">
+                <h3>Learn</h3>
+                <ul>
+                    <li class="first"><a href="/what-is-mongodb" class="first">What Is MongoDB?</a></li>
+                            <li><a href="/why-mongodb">Why MongoDB?</a></li>
+                            <li><a href="/events">Events &amp; Webinars</a></li>
+                            <li><a href="/presentations">Presentations</a></li>
+                            <li><a href="/customers">Customers</a></li>
+                            <li><a href="/books">Books</a></li>
+                            <li><a href="/reference">Quick Reference Cards</a></li>
+                            <li><a href="/white-papers">White Papers</a></li>
+                            <li><a href="/analyst-reports" class="last">Analyst Reports</a></li>
+                            <li class="last"><a href="http://www.mongodb.org/display/DOCS/Home" class="last">Documentation</a></li>
+                </ul>
+            </div>
+            <div class="column">
+                <h3>Company</h3>
+                <ul>
+                    <li class="first"><a href="/about" class="first">About</a></li>
+                            <li><a href="/team">Team</a></li>
+                            <li><a href="/investors">Investors</a></li>
+                            <li><a href="/news">News</a></li>
+                            <li><a href="/careers">Careers</a></li>
+                            <li><a href="/contact" class="last">Contact</a></li>
+                            <li><a href="/privacy-policy" class="last">Privacy Policy</a></li>
+                            <li><a href="http://blog.10gen.com/">10gen Blog</a></li>
+                            <li class="last"><a href="http://blog.mongodb.org/" class="last">MongoDB Blog</a></li>
+                </ul>
+            </div>
+      </div>
+      </div>
+      <footer>
+        <p class="copyright">Copyright © 2012 10gen, Inc. <a href="/legal-notices">Legal Notices</a></p>
+        <p class="contact">Contact us at
+          {% if web_ctx.country_code == 'gb' %}
+          0800-014-8958, +1 (650) 440-4474
+          {% elif web_ctx.country_code == 'ie' %}
+          0800-014-8958, +1 (650) 440-4474
+          {% elif web_ctx.country_code == 'de' %}
+          0800-189-0198, +1 (650) 440-4474
+          {% else %}
+          (866) 237-8815, (650) 440-4474
+          {% endif %}
+          or <a href="mailto:info@10gen.com">info@10gen.com</a>
+        </p>
+      </footer>
+    </div>
+
+
+    {% block scripts %}{% endblock %}
+
+    {% if not disabletrackers %} {# used by admin, clienthub #}
+    <script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">try { _gat._getTracker("UA-7301842-2")._trackPageview(); } catch(e) {}</script>
+    <script type="text/javascript">
+      var _sf_async_config={uid:6101,domain:"10gen.com"};
+      (function(){
+        function loadChartbeat() {
+        window._sf_endpt=(new Date()).getTime();
+        var e = document.createElement('script');
+        e.setAttribute('language', 'javascript');
+        e.setAttribute('type', 'text/javascript');
+        e.setAttribute('src',
+           (("https:" == document.location.protocol) ? "https://s3.amazonaws.com/" : "http://") +
+           "static.chartbeat.com/js/chartbeat.js");
+        document.body.appendChild(e);
+        }
+        var oldonload = window.onload;
+        window.onload = (typeof window.onload != 'function') ?
+         loadChartbeat : function() { oldonload(); loadChartbeat(); };
+      })();
+    </script>
+    <script type="text/javascript">
+      document.write(unescape("%3Cscript src='" + document.location.protocol + "//munchkin.marketo.net/munchkin.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script>try { mktoMunchkin("017-HGS-593"); } catch(e) {}</script>
+    {% endif %}
+  </body>
+</html>

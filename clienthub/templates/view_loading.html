@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Loading {{client.name}} - {{super()}}{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  $(document).ready(function() {
+    window.location.href = window.location.href + "?loadcache=1";
+  });
+</script>
+{% endblock %}
+
+{% block content %}
+<h1>{{client['name']}}</h1>
+
+<p>Loading client data into cache, please wait...</p>
+{% endblock %}
+

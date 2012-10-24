@@ -1,0 +1,27 @@
+<html>
+  <body>
+    Login for 10gen corp system<br>
+    Unauthorized access prohibited<br>
+    <div class="error">
+        {{error}}
+    </div>
+    Login
+    
+    <br>
+    
+    <form method="POST" action="login">
+      <table >
+        <tr>
+          <td>Username</td>
+          <td><input name="user"></td>
+        </tr>
+        <tr>
+          <td>Password</td>
+          <td><input name="password" type="password"></td>
+        </tr>
+      </table>
+      <input type="submit">
+    </form>
+
+  </body>
+</html>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule {{report.display_name}} - {{super()}}{% endblock %}
+
+{% block content %}
+
+<h1>Scheudule a Report</h1>
+
+<form method="post">
+<dl>
+  <dt>Schedule a run for</dt>
+  <dd>{{report.display_name}}</dd>
+
+  <dt>Notify Users</dt>
+  <dd>
+    <input type="text" name="notify"/>
+    <div class="helper">comma-separated list of email addresses</div>
+  </dd>
+
+  <dt>&nbsp;</dt>
+  <dd><input type="submit" value="Schedule"/></dd>
+</dl>
+</form>
+
+{% endblock %}
+

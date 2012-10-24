@@ -1,0 +1,78 @@
+nav ul, nav li, nav a {
+  float: none!important;
+  display: block!important;
+  padding: 0!important;
+  margin: 0!important;
+  height: auto!important;
+  line-height: auto!important;
+  color: white!important;
+  background: transparent!important;
+  border: none!important;
+}
+
+nav ul {
+  width: 960px!important;
+  background: #5a7595!important;
+}
+
+nav ul li ul {
+  display: none!important;
+}
+
+nav ul {
+  margin: 0 auto!important;
+  border-top: solid 1px #435d6e!important;
+  border-bottom: solid 1px #25354e!important;
+  border-left: solid 1px #435d6e!important;
+  border-right: solid 1px #435d6e!important;
+}
+
+nav ul li {
+  display: block!important;
+  float: left!important;
+}
+
+nav ul li a {
+  color: white!important;
+  text-decoration: none!important;
+  font-size: 15px!important;
+  letter-spacing: -0.02em !important;
+  background: #5a7595!important;
+  cursor: pointer!important;
+  display: block!important;
+  height: 35px!important;
+  line-height: 35px!important;
+  float: left!important;
+  border-right: solid 1px #45607c!important;
+  border-left: solid 1px #84a4be!important;
+  padding-left: 33px!important;
+  padding-right: 33px!important;
+}
+
+nav ul li.first a {
+  padding-left: 35px!important;
+  border-left: none!important;
+}
+
+nav ul li.last a {
+  padding-right: 34px!important;
+  border-right: none!important;
+}
+
+nav ul li a:hover {
+  background: #6587ab!important;
+}
+
+/* events */
+.event {
+  border: none !important;
+}
+
+#marketo-form-newslettersignup #mktFrmSubmit {
+  margin-top: -19px;
+}
+
+#marketo-form-newslettersignup label.error-message {
+  top: 64px !important;
+  position: relative;
+}

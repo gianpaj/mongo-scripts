@@ -1,0 +1,127 @@
+{% extends "doc.html" %}
+
+{% block title %}Onboarding Checklist - {{super()}}{% endblock %}
+
+{% block doctitle %}
+<h2>Onboarding Checklist</h2>
+<p><strong>Purpose of this call:</strong><br>
+This call is an introduction to the 10gen engineering/support team and serves two primary purposes.
+<ul><li>First, to record a high-level overview of the customer's application architecture and, specifically, their MongoDB cluster.  During this process, you should attempt to identify any high-level problems (e.g. using version 2.0.1 when 2.0.4 is available) and encourage the client to get their details in MMS.</li>
+<li>The second purpose is to ensure that the customer is familiar with our support infrastructure and best practices for requesting help during business hours (https://jira.mongodb.org/browse/CS) and after-hours (+1 646-201-9247 / +44 (0)20 300 49321).</li></ul>
+</p>
+<p>Pre-requisites:</p>
+<ul>
+  <li>Check most recent JIRA tickets BEFORE calling</li>
+</ul>  
+<p>In order to update this doc please go to: https://github.com/10gen/www/edit/master/templates/clienthub/docs/onboarding.html</p>
+<p>Once you have completed this doc please send an email to support@10gen.com.  The email should contain a link to this doc and notify the support team that the customer has been onboarded.</p>
+<p>You should also add the customer to the Hot Sites page on the wiki (https://wiki.10gen.com/display/cs/Hot+Sites) if they require extra attention.</p>
+{% endblock %}
+
+{% block extra_engagement_details %}
+      <dt>Customer Attendees</dt>
+      <dd><textarea name="customer_attendees"></textarea></dd>
+{% endblock %}
+
+{% import 'docs/_macros.html' as macros %}
+
+{% block details %}
+  <fieldset>
+    <legend>Project Summary</legend>
+    <textarea name="proj_description" class="short">
+## High level overview and go-live dates
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Application, Platform, and Language</legend>
+    <textarea name="application">
+## Database Server
+
+* Hardware: 
+* OS and Version: 
+* Storage: 
+* RAID: (include # spindles)
+* Filesystem: 
+
+### Notes:
+
+
+## Client
+
+* Language:
+* Driver: (official, community, version)
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>MongoDB Setup</legend>
+    <textarea name="mongo_setup">
+## DB Info
+
+* Version:
+* Replication:
+* Sharding:
+* Journaling:
+
+### Notes:
+
+
+### Schema
+* Collection notes:
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Administration</legend>
+    <textarea name="mongo_admin" class="short">
+* Monitoring strategy:
+* Using MMS:
+* Monitoring tools: 
+* Backup strategy:
+
+### Questions:
+* Knows how to run and interpret mongostats?
+* Has a test/development cluster?
+* Written up and tested ops playbook?
+* Has the customer read the MongoDB Production Notes - http://www.mongodb.org/display/DOCS/Production+Notes?
+* Can you confirm your "Primary Contact" and if possible, all contacts who should be in your Jira Group?
+
+### Notes:
+    </textarea>
+    <div class="helper">Use <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown syntax</a>.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Future</legend>
+    <dl>
+      <dt>Advance Notification</dt>
+      <dd>
+        <div class="helper">Request advance notice of "significant" changes.</div>
+        <textarea name="advance_notification">
+### Notes:
+
+* Inform the customer that the advance notification should be via a JIRA CS ticket outlining their upcoming change.
+        </textarea>
+      </dd>
+      <dt>Application</dt>
+      <dd>
+        <div class="helper">Notes about application's future growth, go live dates, etc.</div>
+        <textarea name="app_future"></textarea>
+      </dd>
+      <dt>Follow-Up</dt>
+      <dd>
+        <div class="helper">Notes on things like training requirements, etc. Displays on Client Detail page.</div>
+        <textarea name="follow_up"></textarea>
+      </dd>
+    </dl>
+  </fieldset>
+
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}ClientHub Reports - {{super()}}{% endblock %}
+
+{% block morestyles %}
+<style type="text/css">
+  .content .main dl dd {
+    border-bottom:1px dotted #ccc;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>ClientHub Reports</h1>
+
+<dl>
+  {% for report in reports %}
+  <dt>{{report.display_name}}</dt>
+  <dd>
+    {{report.description}}
+    {% set scheduled = report.get_next() %}
+    {% if not scheduled or scheduled['status'] == 'finished' %}
+    <p><a href="{{link('report.clienthubschedulereport', report.name)}}">Schedule a Run</a></p>
+    {% else %}
+    <p>Next run scheduled on {{scheduled['scheduled']|datetimeformat('%Y-%m-%d %H:%M')}}, current status <code>{{scheduled['status']}}</code></p>
+    {% endif %}
+    {% set last = report.get_last() %}
+    {% if last %}
+    <p><a href="{{link('report.clienthubviewreport', last['_id'])}}">View Results from {{last['finished']|datetimeformat('%Y-%m-%d %I:%M')}}</a></p>
+    {% endif %}
+  </dd>
+  {% endfor %}
+</dl>
+
+
+{% endblock %}
+

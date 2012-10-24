@@ -1,0 +1,32 @@
+{% for section in navbar %}
+   {% set lastlink = "" %}
+   <li class="section{% if section.slug == web_ctx.current_section %} current{% endif %} {% if loop.first %} first{% endif %}{% if loop.last %} last{% endif %}"> <a href="{{section.link}}"> {{section.title}} </a>
+  {% if section.sublinks %}
+    <ul>
+    {% for item in section.sublinks %}
+       {% if item.link %}
+       {% set link=item.link %}
+       {% if loop.last %}{% set nextlink='' %}{% else %}{% set nextlink=section.sublinks[loop.index].link %} {% endif %}
+       {% if not loop.first and (not link.startswith('/') and lastlink.startswith('/')) %}
+        <li><h3>See Also</h3></li>
+        {% endif %}
+        <li {% if loop.first -%}
+               class="first"
+            {%- elif loop.last or (link.startswith('/') and not nextlink.startswith('/')) -%}
+               class="last"
+            {%- endif -%}>
+            <a {% if loop.first or (not link.startswith('/') and lastlink.startswith('/')) -%}
+             class="first"
+             {%- elif loop.last or (link.startswith('/') and not nextlink.startswith('/')) -%}
+             class="last"
+             {%- endif %}
+             href="{{link}}">{{item.title}}</a>
+         </li>
+    {% set lastlink = link %}
+    {% endif %}
+    {% endfor %}
+    </ul>
+    {% endif %}
+</li>
+{% endfor %}
+
