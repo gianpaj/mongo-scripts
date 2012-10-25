@@ -358,10 +358,14 @@ class ggs:
                     continue
 
                 if issue is None:
-                    issue = j.getIssue(key)
-                    assignee = issue["assignee"]
-                    debug("\t https://jira.mongodb.org/browse/%s" % key)
-                    debug("\t currently assigned to [%s]" % assignee)
+                    try:
+                        issue = j.getIssue(key)
+                        assignee = issue["assignee"]
+                        debug("\t https://jira.mongodb.org/browse/%s" % key)
+                        debug("\t currently assigned to [%s]" % assignee)
+                    except Exception:
+                        continue
+                        #ignore this issue if there is a permissions problem
 
                 cmt = "%s\n%s\n" % (m["from"], m["date"])
 
