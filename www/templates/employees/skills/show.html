@@ -19,10 +19,10 @@
 
 
 {% if "HUMAN LANGUAGE" in pp['skill']['group_names'] %}
-    {% for x in range(4, -1, -1) %}
+    {% for x in range(2, -1, -1) %}
         {% if pp['employees'][x][0]%}
             <dl class="dl-horizontal">
-            {% if x > 2 %} <dt>Presentational [* * *] </dt>
+            {% if x == 2 %} <dt>Presentational [* * *] </dt>
             {% elif x == 1 %} <dt>Conversational [* *] </dt>
             {% elif x == 0 %} <dt>Interpret Written / Orally [*] </dt>
             {% endif %}
@@ -34,26 +34,22 @@
 
     {% endfor %}
 {% else %}
-
-
-		{% for x in range(4, -1, -1) %}
-            {% if pp['employees'][x][0]%}
-            	<dl class="dl-horizontal">
-                {% if x == 4 %} <dt>Architect Features [* * * * *] </dt>
-                {% elif x == 3 %} <dt>Add Improvements [* * * *] </dt>
-                {% elif x == 2 %} <dt>Fix Bugs in Code [* * *] </dt>
-                {% elif x == 1 %} <dt>Discuss with Customer [* *] </dt>
-                {% elif x == 0 %} <dt>Describe to Fellow Engineer [*] </dt>
-                {% endif %}
-                <dd>{% for employee in pp['employees'][x] %}
-                    <p><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee['last_name']}}</a></p>
-                {% endfor %}</dd>
-                </dl>
+	{% for x in range(4, -1, -1) %}
+        {% if pp['employees'][x][0]%}
+        	<dl class="dl-horizontal">
+            {% if x == 4 %} <dt>Architect Features [* * * * *] </dt>
+            {% elif x == 3 %} <dt>Add Improvements [* * * *] </dt>
+            {% elif x == 2 %} <dt>Fix Bugs in Code [* * *] </dt>
+            {% elif x == 1 %} <dt>Discuss with Customer [* *] </dt>
+            {% elif x == 0 %} <dt>Describe to Fellow Engineer [*] </dt>
             {% endif %}
+            <dd>{% for employee in pp['employees'][x] %}
+                <p><a href="/employees/{{ employee['jira_uname']}}">{{ employee['first_name']}} {{employee['last_name']}}</a></p>
+            {% endfor %}</dd>
+            </dl>
+        {% endif %}
 
-        {% endfor %}
+    {% endfor %}
 {% endif %}
-	
-	</dl>
 
 {% endblock %}
