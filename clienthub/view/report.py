@@ -14,6 +14,7 @@ import web
 import config
 from config import app
 from config import env
+from config import environment
 import filters
 
 from corplibs.authenticate import authenticated
@@ -73,7 +74,7 @@ class Report(object):
         if self.name is None:
             raise Exception('name must not be None when scheduling reports')
 
-        config.auxdb.reports.save({
+        environment['auxdb'].reports.save({
             'name': self.name,
             'scheduled': datetime.datetime.utcnow(),
             'status': 'new',
@@ -85,7 +86,7 @@ class Report(object):
         # return the db record of the last run, or
         # None if no run of this report has even
         # been finished
-        curs = config.auxdb.reports.find({
+        curs = environment['auxdb'].reports.find({
             'name': self.name,
             'status': 'finished',
             'error': {'$exists': False}
@@ -103,7 +104,7 @@ class Report(object):
         # run (which may be an in-progress run) or
         # None if no run of this report has even
         # been scheduled
-        curs = config.auxdb.reports.find({'name': self.name, 'status': {'$in': ['new', 'started']}})
+        curs = environment['auxdb'].reports.find({'name': self.name, 'status': {'$in': ['new', 'started']}})
         curs.sort('scheduled', pymongo.ASCENDING)
         curs.limit(1)
 
@@ -120,7 +121,7 @@ class Report(object):
         # record if successful, or None if
         # no reports were in the "new" state
         try:
-            run_record = config.auxdb.reports.find_and_modify(
+            run_record = environment['auxdb'].reports.find_and_modify(
                 query={'status': 'new'},
                 sort={'scheduled': pymongo.ASCENDING},
                 update={'$set': {'status': 'started'}},
@@ -147,14 +148,14 @@ class Report(object):
             run_record['run_time'] = (e - s)
             failure = traceback.format_exc()
             run_record['error'] = failure
-            config.auxdb.reports.save(run_record)
+            environment['auxdb'].reports.save(run_record)
             raise
         finally:
             e = time.time()
             run_record['run_time'] = (e - s)
             run_record['status'] = 'finished'
             run_record['finished'] = datetime.datetime.utcnow()
-            config.auxdb.reports.save(run_record)
+            environment['auxdb'].reports.save(run_record)
 
             # do notifications
             if run_record['notify']:
@@ -273,7 +274,7 @@ class CSConfig(Report):
             'fields': fields,
             'rows': rows
         }
-        config.auxdb.reports.save(run_record)
+        environment['auxdb'].reports.save(run_record)
 
 class CountClients(Report):
     name = 'countclients'
@@ -313,7 +314,7 @@ class CountClients(Report):
             'fields': fields,
             'rows': rows,
         }
-        config.auxdb.reports.save(run_record)
+        environment['auxdb'].reports.save(run_record)
 
 class ClientCheckins(Report):
     name = 'clientcheckins'
@@ -439,7 +440,7 @@ class ClientCheckins(Report):
             'fields': fields,
             'rows': rows,
         }
-        config.auxdb.reports.save(run_record)
+        environment['auxdb'].reports.save(run_record)
 
 
 REPORTS = (CSConfig, CountClients, ClientCheckins)
@@ -485,7 +486,7 @@ class ClientHubScheduleReport(object):
 class ClientHubViewReport(object):
 
     def GET(self, report_run_id):
-        result = config.auxdb.reports.find_one({'_id': ObjectId(report_run_id)})
+        result = environment['auxdb'].reports.find_one({'_id': ObjectId(report_run_id)})
         if not result:
             raise web.seeother(link(app, 'report.clienthubreports'))
 

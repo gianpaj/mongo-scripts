@@ -10,7 +10,7 @@
     <div class="subnav">
       <h2>Welcome {{current_user()}}</h2>
       <ul>
-        <li><a href="{{link('logout')}}">Log Out</a></li>
+        <li><a href="{{link('system.logout')}}">Log Out</a></li>
         <li{% if page_is('client.clienthub') %} class="current"{% endif %}><a href="{{link('client.clienthub')}}">My Clients</a></li>
         <li{% if page_is('client.allclients') %} class="current"{% endif %}><a href="{{link('client.allclients')}}">Full Client List</a></li>
         <li{% if page_is('doc.documentsearch') %} class="current"{% endif %}><a href="{{link('doc.documentsearch')}}">Document Search</a></li>

@@ -1,6 +1,5 @@
 local:
-    du_host: localhost
-    clienthub_fts_host: localhost
+    logging_config: config/logging/local.conf
     crowd:
         user: corp
         password: eng718corp

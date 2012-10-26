@@ -1,5 +1,6 @@
 from functools import wraps
 from datetime import datetime
+import logging
 import urllib
 import urllib2
 try:
@@ -11,11 +12,14 @@ from bson.objectid import ObjectId
 import web
 
 import config
+from config import environment
 
 from corplibs import xgencrowd
 from corplibs import jira_suds
 from corplibs import salesforce
 from corplibs.integration import makesafe, call_safely
+
+_logger = logging.getLogger(__name__)
 
 salesforce_api = salesforce.SalesforceAPI()
 jira_api = jira_suds.JiraAPI()
@@ -116,7 +120,7 @@ class Client(object):
                 setattr(self, f, default)
 
         if id not in (None, 'new', 'None'):
-            record = config.get_db().clients.find_one({'_id': ObjectId(id)})
+            record = environment['db'].clients.find_one({'_id': ObjectId(id)})
             if record is None:
                 return
             self._from_db(record)
@@ -200,7 +204,7 @@ class Client(object):
             helper_name = self.expire_helpers[key]
             helper = getattr(self, helper_name, lambda self: None)
             if helper():
-                config.get_db().clients.save(self._fields_dict())
+                environment['db'].clients.save(self._fields_dict())
 
     def update_account_contact(self):
         needs_save = False
@@ -298,7 +302,7 @@ class Client(object):
         needs_save = self.update_account_contact()
 
         if needs_save:
-            config.get_db().clients.save(self._fields_dict())
+            environment['db'].clients.save(self._fields_dict())
 
 
     def expire_all(self):

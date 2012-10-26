@@ -9,6 +9,7 @@ import web
 import urllib
 
 from config import env
+from config import environment
 
 def filter(func):
     name = func.__name__
@@ -35,12 +36,8 @@ def isfuture(value, extra_hours=0):
     else:
         return date.today() < value
 
-
-#TODO: git hash for caching?  That makes some sense - but I think a timestamp is
-# probably just as effective.
 @filter
-def staticurl(url, paramname='_ds', deploy_stamp='a'):
-#def staticurl(url, paramname='_ds', deploy_stamp=xgen.settings.GITHASH):
+def staticurl(url, paramname='_ds', deploy_stamp=None):
 
     '''
     Adds ``deploy_stamp`` as the ``paramname`` query string parameter of the
@@ -49,11 +46,11 @@ def staticurl(url, paramname='_ds', deploy_stamp='a'):
     >>> staticurl('/static/foo', deploy_stamp='0')
     '/static/foo?_ds=0'
     '''
-    if deploy_stamp:
-        if '?' in url:
-            return '%s&%s=%s' % (url, paramname, deploy_stamp)
-        return '%s?%s=%s' % (url, paramname, deploy_stamp)
-    return url
+    if not deploy_stamp:
+        deploy_stamp = environment["setup_time"]
+    if '?' in url:
+        return '%s&%s=%s' % (url, paramname, deploy_stamp)
+    return '%s?%s=%s' % (url, paramname, deploy_stamp)
 
 @filter
 def abbrev(value, maxlen=150):

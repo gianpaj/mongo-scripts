@@ -8,7 +8,6 @@ import gridfs
 from BeautifulSoup import BeautifulSoup
 
 from corplibs.authenticate import authenticated
-from corplibs.webutils import link
 from models import Client
 
 from corplibs.xgencrowd import CrowdAPI
@@ -24,6 +23,8 @@ from pymongo.errors import OperationFailure
 
 import config
 from config import env
+from config import link
+from config import environment
 
 _logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class ClientDocView(object):
     def GET(self, client_id, doc_type, doc_id):
         client = Client(client_id)
         if not client._id:
-            raise web.seeother(link(config.app, 'client.clienthub'))
+            raise web.seeother(link('client.clienthub'))
 
         xgenners = crowd_api.get_users_for_group('10gen')
         xgenners.sort(key=lambda x: x['displayName'])
@@ -81,16 +82,16 @@ class ClientDocView(object):
             )
             return htmlfill.render(html, defaults=doc, force_defaults=False)
 
-        doc = config.get_db().clients.docs.find_one({'_id': ObjectId(doc_id), 'client_id': client._id})
+        doc = environment['db'].clients.docs.find_one({'_id': ObjectId(doc_id), 'client_id': client._id})
         if not doc:
-            raise web.seeother(link(config.app, 'client.clientview', client._id))
+            raise web.seeother(link('client.clientview', client._id))
 
         tparams = {}
         # TODO: handle more than 1 attachment
         if 'attachment' in doc and doc['attachment']['content_type'].startswith('text'):
             # stick the content directly into the template
             file_id = doc['attachment']['file_id']
-            fp = gridfs.GridFS(config.get_db(), 'clients.uploads').get(file_id)
+            fp = gridfs.GridFS(environment['db'], 'clients.uploads').get(file_id)
             tparams['attachment_content'] = fp.read()
 
         template = 'docs/' + doc_type + '.html'
@@ -145,7 +146,7 @@ class ClientDocView(object):
                 # not a real MIME type, but good enough
                 content_type = 'application/binary'
 
-            storage = gridfs.GridFS(config.get_db(), 'clients.uploads')
+            storage = gridfs.GridFS(environment['db'], 'clients.uploads')
             # it's ok if filename is not unique, since
             # we only look up files by file._id
             fp_out = storage.new_file(
@@ -174,7 +175,7 @@ class ClientDocView(object):
     def POST(self, client_id, doc_type, doc_id):
         client = Client(client_id)
         if not client._id:
-            raise web.seeother(link(config.app, 'client.clienthub'))
+            raise web.seeother(link('client.clienthub'))
 
         params = web.input(author=[])
 
@@ -191,7 +192,7 @@ class ClientDocView(object):
             doc['created'] = datetime.datetime.utcnow()
             notify = True
         else:
-            doc = config.get_db().clients.docs.find_one({'_id': ObjectId(doc_id), 'client_id': client._id})
+            doc = environment['db'].clients.docs.find_one({'_id': ObjectId(doc_id), 'client_id': client._id})
             doc.update(params)
             notify = False
 
@@ -212,7 +213,7 @@ class ClientDocView(object):
         for field_name in unset_checkboxes.split(','):
             doc.pop(field_name, None)
 
-        doc_id = config.get_db().clients.docs.save(doc)
+        doc_id = environment['db'].clients.docs.save(doc)
 
         if notify:
             recipients = set()
@@ -256,14 +257,14 @@ class ClientDocView(object):
                     'participants': ', '.join(
                         name_by_username.get(u, u) for u in doc['author'] if u != doc['web_user']),
                     'summary': doc.get('summary', ''),
-                    'link': web.ctx.homedomain + link(config.app, 'client.clientdocview', client._id, doc['_type'], doc['_id'])
+                    'link': web.ctx.homedomain + link('client.clientdocview', client._id, doc['_type'], doc['_id'])
                 }
                 web.utils.sendmail('info@10gen.com', recipients, subject, body)
 
         if save_and_stay:
-            raise web.seeother(link(config.app, 'client.clientdocview', client_id, doc['_type'], doc_id))
+            raise web.seeother(link('client.clientdocview', client_id, doc['_type'], doc_id))
         else:
-            raise web.seeother(link(config.app, 'client.clientview', client_id))
+            raise web.seeother(link('client.clientview', client_id))
 
 
 class ClientUploadView(object):
@@ -272,7 +273,7 @@ class ClientUploadView(object):
     def GET(self, client_id, file_id, filename):
         try:
             file_id = ObjectId(file_id)
-            fp = gridfs.GridFS(config.get_db(), 'clients.uploads').get(file_id)
+            fp = gridfs.GridFS(environment['db'], 'clients.uploads').get(file_id)
         except gridfs.NoFile:
             raise app.notfound()
 
@@ -299,7 +300,7 @@ class DocumentSearch(object):
 
         if terms:
             try:
-                output = config.get_ftsdb().command('fts', 'clients.docs', search=terms)
+                output = environment['ftsdb'].command('fts', 'clients.docs', search=terms)
             except OperationFailure, of:
                 error = str(of)
             else:
@@ -309,7 +310,7 @@ class DocumentSearch(object):
                 for result in results:
                     client_ids.add(result['client_id'])
 
-                clients = config.get_db().clients.find({'_id': {'$in': list(client_ids)}})
+                clients = environment['db'].clients.find({'_id': {'$in': list(client_ids)}})
                 clients = dict((c['_id'], Client()._from_db(c)) for c in clients)
 
                 for result in results:
@@ -330,17 +331,17 @@ class ClientDocDelete(object):
     @authenticated
     def GET(self, client_id, doc_type, doc_id):
         doc_id = ObjectId(doc_id)
-        doc = config.get_db().clients.docs.find_one({'_id': doc_id})
+        doc = environment['db'].clients.docs.find_one({'_id': doc_id})
         if not doc:
-            raise web.seeother(link(config.app, 'client.clientview', client_id))
+            raise web.seeother(link('client.clientview', client_id))
 
         # delete attachments, if any
         if 'attachment' in doc:
             id = ObjectId(doc['attachment']['file_id'])
-            config.get_db().clients.uploads.chunks.remove({'files_id': id})
-            config.get_db().clients.uploads.files.remove({'_id': id})
+            environment['db'].clients.uploads.chunks.remove({'files_id': id})
+            environment['db'].clients.uploads.files.remove({'_id': id})
 
-        config.get_db().clients.docs.remove({'_id': doc_id})
-        raise web.seeother(link(config.app, 'client.clientview', client_id))
+        environment['db'].clients.docs.remove({'_id': doc_id})
+        raise web.seeother(link('client.clientview', client_id))
 
 

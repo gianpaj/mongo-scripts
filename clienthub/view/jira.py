@@ -11,12 +11,13 @@ from models import Client
 
 from corplibs.xgencrowd import CrowdAPI
 from corplibs.jira_suds import JiraAPI
-from corplibs.webutils import link
 from corplibs.authenticate import authenticated
 from corplibs.integration import set_cache_usage
 
 import config
 from config import env
+from config import link
+from config import environment
 
 _logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ jira_api = JiraAPI()
 crowd_api = CrowdAPI()
 
 def invalidate_clienthub_cache(group_name):
-    for record in config.get_db().clients.find({'jira_group': group_name}):
+    for record in environment['db'].clients.find({'jira_group': group_name}):
         client = Client()._from_db(record)
         client.expire('contacts')
 
@@ -161,7 +162,7 @@ class JiraGroup(object):
         cs_groups = set([g['name'] for g in cs_groups])
         group['is_cs'] = bool(group['name'] in cs_groups)
 
-        related_clients = config.get_db().clients.find({'jira_group': group_name})
+        related_clients = environment['db'].clients.find({'jira_group': group_name})
         related_clients = [Client()._from_db(r) for r in related_clients]
 
         web.header('Content-Type', 'text/html')
@@ -205,7 +206,7 @@ class NewJiraGroup(object):
         crowd_api.get_all_groups.expire()
         jira_api.getGroupsInProjectRole.expire('Customer', 'CS')
 
-        raise web.seeother(link(config.app, 'jira.jiragroup', clean['group_name']))
+        raise web.seeother(link('jira.jiragroup', clean['group_name']))
 
 class AddJiraUserToGroup(object):
 
@@ -244,7 +245,7 @@ class AddJiraUserToGroup(object):
         jira_api.getGroupDetails.expire(group_name)
         invalidate_clienthub_cache(group_name)
 
-        raise web.seeother(link(config.app, 'jira.jiragroup', group_name))
+        raise web.seeother(link('jira.jiragroup', group_name))
 
 
 class RemoveJiraUserFromGroup(object):
@@ -257,7 +258,7 @@ class RemoveJiraUserFromGroup(object):
         jira_api.getGroupDetails.expire(group_name)
         invalidate_clienthub_cache(group_name)
 
-        raise web.seeother(link(config.app, 'jira.jiragroup', group_name))
+        raise web.seeother(link('jira.jiragroup', group_name))
 
 
 class JiraRefresh(object):
@@ -270,7 +271,7 @@ class JiraRefresh(object):
         if web.input().get('next'):
             raise web.seeother(web.input().get('next'))
 
-        raise web.seeother(link(config.app, 'jira.jiratool'))
+        raise web.seeother(link('jira.jiratool'))
 
 class DeleteJiraGroup(object):
 
@@ -278,7 +279,7 @@ class DeleteJiraGroup(object):
     def GET(self, group_name):
         group = jira_api.getGroupDetails(group_name)
         if group['users']:
-            raise web.seeother(link(config.app, 'jira.jiragroup', group_name))
+            raise web.seeother(link('jira.jiragroup', group_name))
 
         # have to delete from both; in some cases,
         # deleting from JIRA doesn't delete from Crowd
@@ -293,7 +294,7 @@ class DeleteJiraGroup(object):
         crowd_api.get_all_groups.expire()
         jira_api.getGroupsInProjectRole.expire('Customer', 'CS')
 
-        raise web.seeother(link(config.app, 'jira.jiratool'))
+        raise web.seeother(link('jira.jiratool'))
 
 class RefreshJiraGroup(object):
 
@@ -303,7 +304,7 @@ class RefreshJiraGroup(object):
         jira_api.getGroupDetails.expire(group_name)
         invalidate_clienthub_cache(group_name)
 
-        raise web.seeother(link(config.app, 'jira.jiragroup', group_name))
+        raise web.seeother(link('jira.jiragroup', group_name))
 
 class ToggleCSJiraGroup(object):
 
@@ -317,5 +318,5 @@ class ToggleCSJiraGroup(object):
             jira_api.addGroupToProjectRole('Customer', 'CS', group_name)
 
         jira_api.getGroupsInProjectRole.expire('Customer', 'CS')
-        raise web.seeother(link(config.app, 'jira.jiragroup', group_name))
+        raise web.seeother(link('jira.jiragroup', group_name))
 

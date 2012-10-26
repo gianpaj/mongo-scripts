@@ -2,8 +2,9 @@ import web
 
 import config
 from config import env
+from config import environment
+from config import link
 
-from corplibs.webutils import link
 from corplibs.authenticate import authenticated
 
 class AdminHeartbeat(object):
@@ -30,9 +31,9 @@ class Login(object):
     def POST(self):
         params = web.input()
         if 'user' in params and 'password' in params:
-            res = config.auth.login(params.user, params.password)
+            res = environment['auth'].login(params.user, params.password)
             if res["ok"]:
-                raise web.seeother(link(config.app, "client.clienthub"))
+                raise web.seeother(link("client.clienthub"))
             return env.get_template("login.html").render(error=res["err"])
         else:
             return env.get_template("login.html").render(
@@ -40,7 +41,7 @@ class Login(object):
 
 class Logout(object):
     def GET(self):
-        config.auth.logout()
+        environment['auth'].logout()
         return env.get_template("login.html").render()
 
 
@@ -49,9 +50,9 @@ class ClienthubRedirector(object):
     @authenticated
     def GET(self, identifier_type, identifier):
         if identifier_type in ('jira', 'jira_group'):
-            clients = config.get_db().clients.find({'jira_group': identifier})
+            clients = environment['db'].clients.find({'jira_group': identifier})
         elif identifier_type == 'name':
-            clients = config.get_db().clients.find({'name': identifier})
+            clients = environment['db'].clients.find({'name': identifier})
         else:
             # redirect to the search page
             raise web.seeother(link('client.allclients', q=identifier))

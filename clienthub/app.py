@@ -1,71 +1,69 @@
 # -*- coding: utf-8 -*-
 import os
+import site
+
+root_dir = os.path.abspath(os.path.dirname(__file__))
+site.addsitedir(root_dir)
+site.addsitedir(os.path.join(root_dir, "venv/lib/python2.7/site-packages/"))
+
 import logging
 import argparse
 import sys
 import web
 
-import corplibs.integration
-import corplibs.authenticate
-
 import config
 
+import filters
 _logger = logging.getLogger(__name__)
 
 system_urls = (
-'/login', 'view.system.Login',
-'/logout', 'view.system.Logout',
-'/api/heartbeat', 'view.system.AdminHeartbeat',
-'/link/(.+)/(.+)', 'view.system.ClienthubRedirector',
+'/clienthub/login', 'view.system.Login',
+'/clienthub/logout', 'view.system.Logout',
+'/clienthub/api/heartbeat', 'view.system.AdminHeartbeat',
+'/clienthub/link/(.+)/(.+)', 'view.system.ClienthubRedirector',
 )
 
 client_urls = (
-'/', 'view.client.ClientHub',
-'/all', 'view.client.AllClients',
-'/view/([^/]+)', 'view.client.ClientView',
-'/edit/([^/]+)', 'view.client.ClientEdit',
-'/delete/([^/]+)', 'view.client.ClientDelete',
-'/view/([^/]+)/refreshcache/([^/]+)', 'view.client.ClientCacheRefresh',
-'/view/([^/]+)/export/', 'view.client.ExportClientView',
+'/clienthub/', 'view.client.ClientHub',
+'/clienthub/all', 'view.client.AllClients',
+'/clienthub/view/([^/]+)', 'view.client.ClientView',
+'/clienthub/edit/([^/]+)', 'view.client.ClientEdit',
+'/clienthub/delete/([^/]+)', 'view.client.ClientDelete',
+'/clienthub/view/([^/]+)/refreshcache/([^/]+)', 'view.client.ClientCacheRefresh',
+'/clienthub/view/([^/]+)/export/', 'view.client.ExportClientView',
 )
 
 client_doc_urls = (
-'/view/([^/]+)/docs/([^/]+)/([^/]+)', 'view.doc.ClientDocView',
-'/view/([^/]+)/uploads/([^/]+)/([^/]+)', 'view.doc.ClientUploadView',
-'/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', 'view.doc.ClientDocDelete',
-'/docsearch', 'view.doc.DocumentSearch',
+'/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)', 'view.doc.ClientDocView',
+'/clienthub/view/([^/]+)/uploads/([^/]+)/([^/]+)', 'view.doc.ClientUploadView',
+'/clienthub/view/([^/]+)/docs/([^/]+)/([^/]+)/delete', 'view.doc.ClientDocDelete',
+'/clienthub/docsearch', 'view.doc.DocumentSearch',
 )
 
 client_contact_urls = (
-'/view/([^/]+)/contact/([^/]+)/([^/]+)', 'view.contact.ClientContactUpdate',
+'/clienthub/view/([^/]+)/contact/([^/]+)/([^/]+)', 'view.contact.ClientContactUpdate',
 )
 
 report_urls = (
-'/reports', 'view.report.ClientHubReports',
-'/reports/([^/]+)/schedule', 'view.report.ClientHubScheduleReport',
-'/reports/([^/]+)/view', 'view.report.ClientHubViewReport',
+'/clienthub/reports', 'view.report.ClientHubReports',
+'/clienthub/reports/([^/]+)/schedule', 'view.report.ClientHubScheduleReport',
+'/clienthub/reports/([^/]+)/view', 'view.report.ClientHubViewReport',
 )
 
 jira_urls = (
-'/jira', 'view.jira.JiraTool',
-'/jira/_refresh', 'view.jira.JiraRefresh',
-'/jira/([^/]+)/_refresh', 'view.jira.RefreshJiraGroup',
-'/jira/([^/]+)/adduser', 'view.jira.AddJiraUserToGroup',
-'/jira/new', 'view.jira.NewJiraGroup',
-'/jira/([^/]+)', 'view.jira.JiraGroup',
-'/jira/([^/]+)/remove/([^/]+)', 'view.jira.RemoveJiraUserFromGroup',
-'/jira/([^/]+)/togglecs', 'view.jira.ToggleCSJiraGroup',
-'/jira/([^/]+)/delete', 'view.jira.DeleteJiraGroup'
-)
-
-api_urls = (
-'/api/echo', 'view.api.ClientHubEcho',
-'/api/contacts/(.+)', 'view.api.ClientHubApiContacts',
-'/api/upload/(.+)/(.+)', 'view.api.ClientHubApiUpload',
+'/clienthub/jira', 'view.jira.JiraTool',
+'/clienthub/jira/_refresh', 'view.jira.JiraRefresh',
+'/clienthub/jira/([^/]+)/_refresh', 'view.jira.RefreshJiraGroup',
+'/clienthub/jira/([^/]+)/adduser', 'view.jira.AddJiraUserToGroup',
+'/clienthub/jira/new', 'view.jira.NewJiraGroup',
+'/clienthub/jira/([^/]+)', 'view.jira.JiraGroup',
+'/clienthub/jira/([^/]+)/remove/([^/]+)', 'view.jira.RemoveJiraUserFromGroup',
+'/clienthub/jira/([^/]+)/togglecs', 'view.jira.ToggleCSJiraGroup',
+'/clienthub/jira/([^/]+)/delete', 'view.jira.DeleteJiraGroup'
 )
 
 urls = system_urls + client_urls + client_doc_urls + jira_urls
-urls += report_urls + client_contact_urls + api_urls
+urls += report_urls + client_contact_urls
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=
@@ -79,8 +77,9 @@ if __name__ == "__main__":
                         dest="port", help="port to listen on")
     args = parser.parse_args()
     args = vars(args)
-    config.setup(args)
-
-    corplibs.integration.Configure(config.get_db())
-    config.setup_app(urls)
-    config.app.run()
+    app = config.setup(args, urls)
+    app.run()
+else:
+    args = {"environment": "local"}
+    application = config.setup(args, urls)
+    application = application.wsgifunc()

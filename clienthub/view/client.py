@@ -19,12 +19,12 @@ from functools import wraps
 
 from corplibs.authenticate import authenticated
 
-from config import app
 from config import env
+from config import link
+from config import environment
 from corplibs.jira_suds import JiraAPI
 from corplibs.xgencrowd import CrowdAPI
 from corplibs.salesforce import SalesforceAPI
-from corplibs.webutils import link
 from models import Client
 
 import datetime
@@ -44,10 +44,11 @@ class ClientList(object):
 
     @authenticated
     def GET(self):
-        clients = [Client()._from_db(rec) for rec in config.get_db().clients.find()]
+        _logger.error("MOSDFHLSDMKFHJDSFKSJDFL")
+        clients = [Client()._from_db(rec) for rec in environment['db'].clients.find()]
         cs_groups = jira_api.getGroupsInProjectRole('Customer', 'CS')
         cs_groups = set(g['name'] for g in cs_groups)
-
+        
         web.header('Content-type','text/html')
         return env.get_template('index.html').render(
             clients=clients,
@@ -84,9 +85,9 @@ class ClientView(object):
             )
         elif 'loadcache' in web.input():
             client.load_caches()
-            raise web.seeother(link(app, 'client.clientview', client._id))
+            raise web.seeother(link('client.clientview', client._id))
 
-        docs = list(config.get_db().clients.docs.find({'client_id': client._id}).sort([('updated', pymongo.DESCENDING)]))
+        docs = list(environment['db'].clients.docs.find({'client_id': client._id}).sort([('updated', pymongo.DESCENDING)]))
         web.header('Content-type', 'text/html')
         return env.get_template('view.html').render(
             client=client,
@@ -187,8 +188,8 @@ class ClientEdit(object):
                 del client_doc[key]
 
         client_doc['updated'] = datetime.datetime.utcnow()
-        _id = config.get_db().clients.save(client_doc)
-        raise web.seeother(link(config.app, 'client.clientview', _id))
+        _id = environment['db'].clients.save(client_doc)
+        raise web.seeother(link('client.clientview', _id))
 
 class ClientForm(formencode.Schema):
     allow_extra_fields = True
@@ -228,10 +229,10 @@ class ClientDelete(object):
         if not client._id:
             raise web.seeother(link('clienthub'))
 
-        config.get_db().clients.docs.remove({'client_id': client._id})
-        config.get_db().clients.remove({'_id': client._id})
+        environment['db'].clients.docs.remove({'client_id': client._id})
+        environment['db'].clients.remove({'_id': client._id})
 
-        raise web.seeother(link(config.app, 'clienthub'))
+        raise web.seeother(link('clienthub'))
 
 
 class ExportClientView(object):
