@@ -1077,10 +1077,22 @@ class Skills(CorpBase):
                 pp['skill_groups'] = []
                 pp['employees'] = []
                 pp['skill_groups'] = corpdb.skill_groups.find({"_id" : { "$in" : pp['skill']['groups']}})
-                for x in range(1, 6):  
-                    pp['employees'].insert(x-1, corpdb.employees.find({"skills."+ str(pp['skill']['_id']): x, "employee_status" : {"$ne": "Former"}}))
+
+                for x in range(1, 3):
+                   pp['employees'].insert(x-1, corpdb.employees.find({"skills."+ str(pp['skill']['_id']): x, "employee_status" : {"$ne": "Former"}}))
+
+                # For human language skill display, we want to map all skill levels >= 3 stars to 3 stars.
+                if "HUMAN LANGUAGE" in pp['skill']['group_names']:
+                    pp['employees'].insert(2, [])
+                    for x in range(3, 6):
+                        pp['employees'][2].extend(list(corpdb.employees.find({"skills." + str(pp['skill']['_id']): x, "employee_status" : {"$ne": "Former"}})))
+                else:
+                    for x in range(3, 6):
+                        pp['employees'].insert(x-1, corpdb.employees.find({"skills."+ str(pp['skill']['_id']): x, "employee_status" : {"$ne": "Former"}}))
+
                 # Sort employees by their skill level
-#pp['employees'] = sorted(pp['employees'], key=lambda employee: -employee['skills'][str(pp['skill']['_id'])])
+                #pp['employees'] = sorted(pp['employees'], key=lambda employee: -employee['skills'][str(pp['skill']['_id'])])
+
                 return env.get_template('employees/skills/show.html').render(pp=pp)
 
             else:
