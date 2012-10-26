@@ -2,7 +2,7 @@
 
 This extension adds MMS and Clienthub Customer links
 
-![screenshot](https://raw.github.com:10gen/corp/chrome-ext/jira-ext/screenshot.png])
+![screenshot](https://raw.github.com/10gen/corp/master/chrome-ext/jira-ext/screenshot.png])
 
 ## How to Install it
 
