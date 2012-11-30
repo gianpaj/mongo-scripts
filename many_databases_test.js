@@ -1,5 +1,10 @@
 var numDbs = 2000;
 var numOps = 100;
+var numDocs = 10000;
+var numCols = 10;
+
+// 100 = 10000 / 100
+var numDocsPerColl = numDocs / numDbs / numCols;
 
 var complexDoc = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
 
@@ -7,7 +12,7 @@ var ops = [];
 
 // Create databases, insert one document
 // and prepare 2 operations to benchmark on that last document
-for ( i=0; i<numDbs; i++ ) {
+for ( i = 0; i < numDbs; i++ ) {
     var find_op =  {
         "op" : "findOne"
     };
@@ -16,23 +21,29 @@ for ( i=0; i<numDbs; i++ ) {
         "op" : "update",
         "update" : { "$inc" : { "weight" : 1 } }
     };
-    var coll = db.getSisterDB('boom-' + i)['boom'];
-    // drop every database
-    db.getSisterDB('boom-' + i).dropDatabase();
+    var db = db.getSisterDB('boom-' + i);
+    // drop every database 'boom-*'
+    db.dropDatabase();
 
-    find_op.ns = coll.toString();
+    for (var y = 0; y < numCols; y++) {
+        
+        coll = db['boom-'+ y];
 
-    update_op.ns = coll.toString();
+        find_op.ns = coll.toString();
+        update_op.ns = coll.toString();
 
-    // insert 1000 docs in each db
-    complexDoc._id = new ObjectId();
-    coll.insert(complexDoc);
-
-    var query = { "_id" : complexDoc._id };
-    find_op.query = query;
-    ops.push(find_op);
-    update_op.query = query;
-    ops.push(update_op);
+        // this should loop 2000000 times
+        for (var j = 0; j < numDocsPerColl; j++) {
+            // insert docs in each db
+            complexDoc._id = new ObjectId();
+            coll.insert(complexDoc);
+            var query = { "_id" : complexDoc._id };
+            find_op.query = query;
+            ops.push(find_op);
+            update_op.query = query;
+            ops.push(update_op);
+        }
+    }
 }
 
 // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
