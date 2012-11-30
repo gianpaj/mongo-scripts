@@ -47,9 +47,12 @@ for ( i = 0; i < numDbs; i++ ) {
 }
 
 // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
-while (ops.length > numOps) {
-    rnd = Math.floor(Math.random() * numDbs * 2);
-    ops.splice(rnd,1);
+var newarray=[];
+while (newarray.length < 100) {
+    rnd = Math.floor(Math.random() * totalNoOfDocs);
+    // should only delete (split) operations in pairs (ie. 0 and 1, 2 and 3 - not 1 and 4)
+    newarray.push(ops.splice(rnd,1)[0]);
+    newarray.push(ops.splice(rnd,1)[0]);
 }
 
 // actual benchmark function
