@@ -12,9 +12,8 @@ var opsColl = db.getSisterDB('manydbtest')['ops'];
 
 // Create databases, insert documents
 // and prepare 2 operations to benchmark on that last document
-function insert_and_form_operations (argument) {
-    var tempOpsDb = db.getSisterDB('manydbtest');
-    tempOpsDb.dropDatabase();
+function insert_and_form_operations () {
+    opsColl.drop();
 
     for ( i = 0; i < numDbs; i++ ) {
         var find_op =  {
@@ -54,7 +53,7 @@ function insert_and_form_operations (argument) {
 
 // this function finds the operations saved in our temporary 'manydbtest.ops' db.collection
 // and add the to ops array
-function retrieve_operations (argument) {
+function retrieve_operations () {
     // prepare operations to benchmark
     return opsColl.find().toArray();
 }
