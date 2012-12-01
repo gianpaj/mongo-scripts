@@ -45,18 +45,21 @@ for ( i = 0; i < numDbs; i++ ) {
         }
     }
 }
-
-// remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
-var newarray=[];
-while (newarray.length < 100) {
-    rnd = Math.floor(Math.random() * totalNoOfDocs);
-    // should only delete (split) operations in pairs (ie. 0 and 1, 2 and 3 - not 1 and 4)
-    newarray.push(ops.splice(rnd,1)[0]);
-    newarray.push(ops.splice(rnd,1)[0]);
-}
+var original_ops = ops;
 
 // actual benchmark function
-function bench1 () {
+function benchmark () {
+    // start from the original operations array and find other x (numOps) no. random of ops
+    ops = original_ops.slice(0);
+
+    // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
+    var newarray=[];
+    while (newarray.length < numOps) {
+        rnd = Math.floor(Math.random() * totalNoOfDocs);
+        newarray.push(ops.splice(rnd,1)[0]);
+        newarray.push(ops.splice(rnd,1)[0]);
+    }
+
     for ( x = 1; x<=128; x*=2){
         res = benchRun( {
             parallel : x ,
