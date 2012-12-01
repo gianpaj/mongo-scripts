@@ -21,7 +21,8 @@ function insert_and_form_operations (mongodb) {
         };
         var update_op = {
             "op" : "update",
-            "update" : { "$inc" : { "weight" : 1 } }
+            // field names cannot start with $
+            // "update" : { "$inc" : { "weight" : 1 } }
         };
 
         var db = mongodb.getSisterDB('boom-' + i);
@@ -55,7 +56,15 @@ function insert_and_form_operations (mongodb) {
 // and add the to ops array
 function retrieve_operations () {
     // prepare operations to benchmark
-    return opsColl.find().toArray();
+    var operations = opsColl.find().toArray();
+
+    // because field names cannot start with $ - add it here
+    for (var i = 0; i < operations.length; i++) {
+        if ( operations[i]['op'] == "update" ) {
+            operations[i] = operations[i]['update'] = { "$inc" : { "weight" : 1 } };
+        }
+    }
+    return operations;
 }
 
 // actual benchmark function
