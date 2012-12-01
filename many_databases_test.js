@@ -16,10 +16,10 @@ function insert_and_form_operations (mongodb) {
     opsColl.drop();
 
     for ( i = 0; i < numDbs; i++ ) {
-        var findOp =  {
+        var find_op =  {
             "op" : "findOne"
         };
-        var updateOp = {
+        var update_op = {
             "op" : "update"
             // field names cannot start with $
             // "update" : { "$inc" : { "weight" : 1 } }
@@ -35,8 +35,8 @@ function insert_and_form_operations (mongodb) {
             
             coll = db['boom-'+ y];
 
-            findOp.ns = coll.toString();
-            updateOp.ns = coll.toString();
+            find_op.ns = coll.toString();
+            update_op.ns = coll.toString();
 
             for (var j = 0; j < numDocsPerColl; j++) {
                 // insert docs in each db
@@ -45,10 +45,10 @@ function insert_and_form_operations (mongodb) {
 
                 var query = { "_id" : complexDoc._id };
 
-                findOp.query = query;
-                updateOp.query = query;
-                bulkOpsInsert.push(findOp);
-                bulkOpsInsert.push(updateOp);
+                find_op.query = query;
+                update_op.query = query;
+                bulkOpsInsert.push(find_op);
+                bulkOpsInsert.push(update_op);
             }
             opsColl.insert(bulkOpsInsert);
             coll.insert(bulkInsert);
