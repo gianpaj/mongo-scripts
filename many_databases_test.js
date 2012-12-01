@@ -64,7 +64,7 @@ function benchmark () {
         res = benchRun( {
             parallel : x ,
             seconds : 5 ,
-            ops : ops
+            ops : newarray
         } );
         print( "threads: " + x + "\t queries/sec: " + res.query );
     }
