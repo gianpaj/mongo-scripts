@@ -1,9 +1,9 @@
-var numDbs = 2000;
-var numOps = 100;
-var numDocs = 10000;
+var numDbs = 5000;
+var numOps = 500;
+var numDocs = 1000000;
 var numCols = 10;
 
-// 100 = 10000 / 100
+// 20 = 1000000 / 5000 / 10
 var numDocsPerColl = numDocs / numDbs / numCols;
 
 var complexDoc = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
