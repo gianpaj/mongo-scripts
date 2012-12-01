@@ -12,7 +12,7 @@ var opsColl = db.getSisterDB('manydbtest')['ops'];
 
 // Create databases, insert documents
 // and prepare 2 operations to benchmark on that last document
-function insert_and_form_operations () {
+function insert_and_form_operations (mongodb) {
     opsColl.drop();
 
     for ( i = 0; i < numDbs; i++ ) {
@@ -24,7 +24,7 @@ function insert_and_form_operations () {
             "update" : { "$inc" : { "weight" : 1 } }
         };
 
-        var db = db.getSisterDB('boom-' + i);
+        var db = mongodb.getSisterDB('boom-' + i);
         // drop every database 'boom-*'
         db.dropDatabase();
 
