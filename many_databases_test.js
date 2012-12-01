@@ -8,49 +8,61 @@ var numDocsPerColl = numDocs / numDbs / numCols;
 
 var complexDoc = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
 
-var ops = [];
+var opsColl = db.getSisterDB('manydbtest')['ops'];
 
-// Create databases, insert one document
+// Create databases, insert documents
 // and prepare 2 operations to benchmark on that last document
-for ( i = 0; i < numDbs; i++ ) {
-    var find_op =  {
-        "op" : "findOne"
-    };
+function insert_and_form_operations (argument) {
+    var tempOpsDb = db.getSisterDB('manydbtest');
+    tempOpsDb.dropDatabase();
 
-    var update_op = {
-        "op" : "update",
-        "update" : { "$inc" : { "weight" : 1 } }
-    };
-    var db = db.getSisterDB('boom-' + i);
-    // drop every database 'boom-*'
-    db.dropDatabase();
+    for ( i = 0; i < numDbs; i++ ) {
+        var find_op =  {
+            "op" : "findOne"
+        };
+        var update_op = {
+            "op" : "update",
+            "update" : { "$inc" : { "weight" : 1 } }
+        };
 
-    for (var y = 0; y < numCols; y++) {
-        
-        coll = db['boom-'+ y];
+        var db = db.getSisterDB('boom-' + i);
+        // drop every database 'boom-*'
+        db.dropDatabase();
 
-        find_op.ns = coll.toString();
-        update_op.ns = coll.toString();
+        for (var y = 0; y < numCols; y++) {
+            
+            coll = db['boom-'+ y];
 
-        // this should loop 2000000 times
-        for (var j = 0; j < numDocsPerColl; j++) {
-            // insert docs in each db
-            complexDoc._id = new ObjectId();
-            coll.insert(complexDoc);
-            var query = { "_id" : complexDoc._id };
-            find_op.query = query;
-            ops.push(find_op);
-            update_op.query = query;
-            ops.push(update_op);
+            find_op.ns = coll.toString();
+            update_op.ns = coll.toString();
+
+            for (var j = 0; j < numDocsPerColl; j++) {
+                // insert docs in each db
+                complexDoc._id = new ObjectId();
+                coll.insert(complexDoc);
+
+                var query = { "_id" : complexDoc._id };
+
+                find_op.query = query;
+                update_op.query = query;
+                opsColl.insert(find_op);
+                opsColl.insert(update_op);
+            }
         }
     }
 }
-var original_ops = ops;
+
+// this function finds the operations saved in our temporary 'manydbtest.ops' db.collection
+// and add the to ops array
+function retrieve_operations (argument) {
+    // prepare operations to benchmark
+    return opsColl.find().toArray();
+}
 
 // actual benchmark function
 function benchmark () {
     // start from the original operations array and find other x (numOps) no. random of ops
-    ops = original_ops.slice(0);
+    ops = retrieve_operations();
 
     // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
     var newarray=[];
