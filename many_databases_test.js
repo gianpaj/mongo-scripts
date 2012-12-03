@@ -60,12 +60,12 @@ function insert_and_form_operations (mongodb) {
 // and add the to ops array
 function retrieve_operations (limit) {
     // prepare operation to benchmark
-    var operations = opsColl.find().limit(limit).toArray();
+    var operations = opsColl.find({},{_id: 0}).limit(limit).toArray();
 
     // because field names cannot start with $ - add it here
     for (var i = 0; i < operations.length; i++) {
-        if ( operations['op'] == "update" ) {
-            operations = operations['update'] = { "$inc" : { "weight" : 1 } };
+        if ( operations[i]['op'] == "update" ) {
+            operations[i]['update'] = { "$inc" : { "weight" : 1 } };
         }
     }
     return operations;
