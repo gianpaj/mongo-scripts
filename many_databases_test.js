@@ -80,7 +80,7 @@ function benchmark () {
     // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
     var newarray=[];
     while (newarray.length < numOps) {
-        rnd = Math.floor(Math.random() * thisnumOps);
+        rnd = Math.floor(Math.random() * ops.length);
         newarray.push(ops.splice(rnd,1)[0]);
         newarray.push(ops.splice(rnd,1)[0]);
     }
