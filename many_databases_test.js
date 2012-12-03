@@ -74,7 +74,7 @@ function retrieve_operations (limit) {
 // actual benchmark function
 function benchmark () {
     // start from the original operations array and find other x (numOps) no. random of ops
-    thisnumOps = numDocs / 1000;
+    thisnumOps = (opsColl.count()) / 10;
     var ops = retrieve_operations(thisnumOps);
 
     // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
