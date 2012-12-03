@@ -8,7 +8,7 @@ var numDocsPerColl = numDocs / numDbs / numCols;
 
 var complexDoc = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
 
-var opsColl = db.getSisterDB('manydbtest')['ops'];
+var opsColl = db.getSisterDB('manydbtest')[numDbs+'dbops'];
 
 // Create databases, insert documents
 // and prepare 2 operations to benchmark on that last document
