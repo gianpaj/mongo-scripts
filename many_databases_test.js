@@ -58,14 +58,14 @@ function insert_and_form_operations (mongodb) {
 
 // this function finds the operations saved in our temporary 'manydbtest.ops' db.collection
 // and add the to ops array
-function retrieve_operations () {
-    // prepare operations to benchmark
-    var operations = opsColl.find().toArray();
+function retrieve_operations (limit) {
+    // prepare operation to benchmark
+    var operations = opsColl.find().limit(limit).toArray();
 
     // because field names cannot start with $ - add it here
     for (var i = 0; i < operations.length; i++) {
-        if ( operations[i]['op'] == "update" ) {
-            operations[i] = operations[i]['update'] = { "$inc" : { "weight" : 1 } };
+        if ( operations['op'] == "update" ) {
+            operations = operations['update'] = { "$inc" : { "weight" : 1 } };
         }
     }
     return operations;
@@ -74,15 +74,17 @@ function retrieve_operations () {
 // actual benchmark function
 function benchmark () {
     // start from the original operations array and find other x (numOps) no. random of ops
-    ops = retrieve_operations();
+    thisnumOps = numDocs / 1000;
+    var ops = retrieve_operations(thisnumOps);
 
     // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
     var newarray=[];
     while (newarray.length < numOps) {
-        rnd = Math.floor(Math.random() * totalNoOfDocs);
+        rnd = Math.floor(Math.random() * thisnumOps);
         newarray.push(ops.splice(rnd,1)[0]);
         newarray.push(ops.splice(rnd,1)[0]);
     }
+
 
     for ( x = 1; x<=128; x*=2){
         res = benchRun( {
