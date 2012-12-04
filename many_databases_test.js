@@ -60,7 +60,7 @@ function insert_and_form_operations (mongodb) {
 // and add the to ops array
 function retrieve_operations (limit) {
     // prepare operation to benchmark
-    var operations = opsColl.find({},{_id: 0}).limit(limit).toArray();
+    var operations = opsColl.find({},{_id: 0}).skip(skip).limit(limit).toArray();
 
     // because field names cannot start with $ - add it here
     for (var i = 0; i < operations.length; i++) {
@@ -74,8 +74,14 @@ function retrieve_operations (limit) {
 // actual benchmark function
 function benchmark () {
     // start from the original operations array and find other x (numOps) no. random of ops
-    thisnumOps = (opsColl.count()) / 10;
-    var ops = retrieve_operations(thisnumOps);
+    // get a random 10th of the generated ops
+    var thisnumOps = (opsColl.count()) / 10;
+
+    do {
+        skip = Math.floor(Math.random() * opsColl.count()) - thisnumOps;
+    } while ( skip < 0 );
+
+    var ops = retrieve_operations(skip, thisnumOps);
 
     // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
     var newarray=[];
