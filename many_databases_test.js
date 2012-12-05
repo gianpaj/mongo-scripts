@@ -71,21 +71,28 @@ function retrieve_operations (limit) {
         }
     }
 
-    // add extra 100 insert operations (complexDoc2 and complexDoc3)
-    for (var j = 0; j < 100; j++) {
-        var doc;
-        if (Math.floor(Math.random() * 2) % 2 === 0){
-            doc = complexDoc2;
+    
+    for ( i = 0; i < numDbs; i++ ) {
+        var db = mongodb.getSisterDB('boom-' + i);
+        for (var y = 0; y < numCols; y++) {
+            coll = db['boom-'+ y];
+            // add extra numDocsPerColl (20 default) insert operations (complexDoc2 and complexDoc3)
+            for (var j = 0; j < numDocsPerColl; j++) {
+                var doc;
+                if (Math.floor(Math.random() * 2) % 2 === 0) {
+                    doc = complexDoc2;
+                }
+                else {
+                    doc = complexDoc3;
+                }
+                var insert_op = {
+                    ns : coll.toString() ,
+                    op : "insert" ,
+                    doc : doc
+                };
+                operations.push(insert_op);
+            }
         }
-        else {
-            doc = complexDoc3;
-        }
-        var insert_op = {
-            ns : t.getFullName() ,
-            op : "insert" ,
-            doc : doc
-        };
-        operations.push(insert_op);
     }
     return operations;
 }
