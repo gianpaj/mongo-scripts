@@ -7,6 +7,7 @@ var numCols = numCols || 10;
 var numDocsPerColl = numDocs / numDbs / numCols;
 
 var complexDoc = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
+var complexDoc2 = {'product_name': 'Soap', 'weight': { "#RAND_INT" : [ 0 , 100 ] }, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}, {'title': 'pets', 'order': 19}, {'title': 'pets', 'order': 19}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}, {'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}]};
 
 var opsColl = db.getSisterDB('manydbtest')['ops'];
 
@@ -68,6 +69,26 @@ function retrieve_operations (limit) {
             operations[i]['update'] = { "$inc" : { "weight" : 1 } };
         }
     }
+    var insertOp = {
+        "op" : "insert",
+        "insert" : complexDoc
+    };
+    var insertOp2 = {
+        "op" : "insert",
+        "insert" : complexDoc2
+    };
+    // add extra insert operations
+    for (var j = 0; j < operations.length; j++) {
+
+        // add ns
+
+        if (j % 2 === 0) {
+            operations.push(insertOp2);
+        }
+        else {
+            operations.push(insertOp);
+        }
+    }
     return operations;
 }
 
@@ -92,6 +113,7 @@ function benchmark () {
             seconds : 5 ,
             ops : newarray
         } );
+        printjson( res );
         print( "threads: " + x + "\t queries/sec: " + res.query );
     }
 }
