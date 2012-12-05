@@ -101,7 +101,7 @@ function retrieve_operations (limit, mongodb) {
 function benchmark (mongodb) {
     // start from the original operations array and find other x (numOps) no. random of ops
     thisnumOps = (opsColl.count()) / 10;
-    var ops = retrieve_operations(thisnumOps);
+    var ops = retrieve_operations(thisnumOps, mongodb);
 
     // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
     var newarray=[];
