@@ -60,7 +60,7 @@ function insert_and_form_operations (mongodb) {
 
 // this function finds the operations saved in our temporary 'manydbtest.ops' db.collection
 // and add the to ops array
-function retrieve_operations (limit) {
+function retrieve_operations (limit, mongodb) {
     // prepare operation to benchmark
     var operations = opsColl.find({},{_id: 0}).limit(limit).toArray();
 
