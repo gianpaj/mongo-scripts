@@ -7,6 +7,8 @@ var numCols = numCols || 10;
 var numDocsPerColl = numDocs / numDbs / numCols;
 
 var complexDoc = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
+var complexDoc2 = {'product_name': 'Soap', 'weight': { "#RAND_INT" : [ 1, 100, 5 ] }, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}]};
+var complexDoc3 = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': { "#RAND_INT" : [ 1, 100, 5 ] }}, {'title': 'pets', 'order': { "#RAND_INT" : [ 1, 100, 5 ] }},{'title': 'pets', 'order': { "#RAND_INT" : [ 1, 100, 5 ] }}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': {"#RAND_STRING ": [30] },'message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
 
 var opsColl = db.getSisterDB('manydbtest')['ops'];
 
@@ -67,6 +69,23 @@ function retrieve_operations (limit) {
         if ( operations[i]['op'] == "update" ) {
             operations[i]['update'] = { "$inc" : { "weight" : 1 } };
         }
+    }
+
+    // add extra 100 insert operations (complexDoc2 and complexDoc3)
+    for (var j = 0; j < 100; j++) {
+        var doc;
+        if (Math.floor(Math.random() * 2) % 2 === 0){
+            doc = complexDoc2;
+        }
+        else {
+            doc = complexDoc3;
+        }
+        var insert_op = {
+            ns : t.getFullName() ,
+            op : "insert" ,
+            doc : doc
+        };
+        operations.push(insert_op);
     }
     return operations;
 }
