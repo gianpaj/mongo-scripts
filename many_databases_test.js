@@ -111,13 +111,12 @@ function benchmark (mongodb) {
         newarray.push(ops.splice(rnd,1)[0]);
     }
 
-
     for ( x = 1; x<=128; x*=2){
         res = benchRun( {
             parallel : x ,
             seconds : 5 ,
             ops : newarray
         } );
-        print( "threads: " + x + "\t queries/sec: " + res.query );
+        print( "threads: ", x, "\t queries/sec: ", res.query, "\t updates/sec: ", res.update, "\t inserts/sec: ", res.insert );
     }
 }
