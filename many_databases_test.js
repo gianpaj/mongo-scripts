@@ -74,10 +74,10 @@ function retrieve_operations (limit, mongodb) {
     
     for ( i = 0; i < numDbs; i++ ) {
         var db = mongodb.getSisterDB('boom-' + i);
-        for (var y = 0; y < numCols; y++) {
+        for (var y = 0; y < numCols/3; y++) {
             coll = db['boom-'+ y];
             // add extra numDocsPerColl (20 default) insert operations (complexDoc2 and complexDoc3)
-            for (var j = 0; j < numDocsPerColl; j++) {
+            for (var j = 0; j < numDocsPerColl/9; j++) {
                 var doc;
                 if (Math.floor(Math.random() * 2) % 2 === 0) {
                     doc = complexDoc2;
