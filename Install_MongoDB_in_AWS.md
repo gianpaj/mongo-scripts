@@ -9,6 +9,7 @@ Requirements
 -------
 
 * Amazon Linux AMI 2012.09 - 64bit
+* EBS volume attached on `/dev/sdf` device (which on linux is mapped as `/dev/xvdf`)
 
 Tutorial
 -------
