@@ -3,6 +3,8 @@ Install MongoDB in Amazon Web Services (AWS)
 
 Step by step tutorial based on this article on [docs.mongodb.org](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/)
 
+This has no RAID setup at the moment. Though consider this [guide](http://www.mongodb.org/display/DOCS/Amazon+EC2+Quickstart#AmazonEC2Quickstart-ConfigureStorage) to create and attach a RAID-10 ebs setup.
+
 Requirements
 -------
 
@@ -44,6 +46,7 @@ Mount the database path and set permissions for the group mongod process
 
     sudo mount /data
     sudo chown mongod:mongod /data
+
 
 Start mongod
 
