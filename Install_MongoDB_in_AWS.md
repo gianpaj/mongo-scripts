@@ -32,17 +32,17 @@ Format build a Linux file system
 
     sudo mkfs -t ext4 /dev/xvdf
 
-Set readahead
-
-    sudo blockdev --setra 128 /dev/xvdf
-
-See readahead value
+Check readahead value
 
     sudo blockdev --report
 
     sudo mkdir /data
     echo "/dev/xvdf   /data   auto    defaults,auto,noatime,noexec    0   0" | sudo tee -a /etc/fstab
 
+Set readahead
+
+    sudo blockdev --setra 128 /dev/xvdf
+    
 Mount the database path and set permissions for the group mongod process
 
     sudo mount /data
