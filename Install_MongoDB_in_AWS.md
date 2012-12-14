@@ -43,6 +43,15 @@ Set readahead
 
     sudo blockdev --setra 128 /dev/xvdf
     
+Check ulimit
+
+	ulimit -a
+Set ulimit values
+
+	echo -e "mongod          soft    nofile          64000
+	mongod          hard    nofile          64000
+	mongod          soft    nproc           32000" | sudo tee -a /etc/security/limits.conf
+
 Mount the database path and set permissions for the group mongod process
 
     sudo mount /data
