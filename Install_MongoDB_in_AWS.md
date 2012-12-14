@@ -46,6 +46,7 @@ Set readahead
 Check ulimit
 
 	ulimit -a
+	 
 Set ulimit values
 
 	echo -e "mongod          soft    nofile          64000
@@ -57,6 +58,9 @@ Mount the database path and set permissions for the group mongod process
     sudo mount /data
     sudo chown mongod:mongod /data
 
+Change the mongod.conf settings
+
+	dbpath=/data
 
 Start mongod
 
