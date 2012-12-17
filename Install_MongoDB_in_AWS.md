@@ -14,7 +14,7 @@ Requirements
 Tutorial
 -------
 
-Add yum repostory
+Add yum repository
 
     sudo nano /etc/yum.repos.d/10gen.repo
     echo -e "[10gen]\nname=10gen Repository\nbaseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\ngpgcheck=0\nenabled=1" | sudo tee /etc/yum.repos.d/10gen.repo
