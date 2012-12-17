@@ -60,10 +60,10 @@ Mount the database path and set permissions for the group mongod process
     sudo mount /data
     sudo chown mongod:mongod /data
 
-Change the mongod.conf settings
+Change the dbpath on mongod.conf
 
-	dbpath=/data
-
-Start mongod
+	sudo sed -i "s/dbpath=.*/dbpath=\/data/g" /etc/mongod.conf
+	
+Start mongod !
 
     sudo service mongod start
