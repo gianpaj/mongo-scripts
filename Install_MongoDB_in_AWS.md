@@ -32,18 +32,20 @@ Format/build the volume file system using ext4
 
     sudo mkfs -t ext4 /dev/xvdf
 
-Check readahead value
-
-    sudo blockdev --report
+Create the directory where the data will be mounted and append it to the file system configuration (fstab)
 
     sudo mkdir /data
     echo "/dev/xvdf   /data   auto    defaults,auto,noatime,noexec    0   0" | sudo tee -a /etc/fstab
+    
+Check readahead value
 
+    sudo blockdev --report
+    
 Set readahead
 
     sudo blockdev --setra 128 /dev/xvdf
     
-Check ulimit
+Check all current values of ulimit
 
 	ulimit -a
 	 
