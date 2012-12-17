@@ -26,8 +26,9 @@ Set mongod to start at startup
 
     sudo chkconfig mongod on
 
-Attach EBS volume to the EC2 instance
-Format build a Linux file system
+Attach EBS volume to the EC2 instance from the AWS console.
+
+Format/build the volume file system using ext4
 
     sudo mkfs -t ext4 /dev/xvdf
 
