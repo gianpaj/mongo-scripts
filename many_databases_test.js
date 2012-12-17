@@ -29,7 +29,9 @@ function insert_and_form_operations (mongodb) {
 
         var db = mongodb.getSisterDB('boom-' + i);
         // drop every database 'boom-*'
-        db.dropDatabase();
+        if (db.getCollectionNames().length !== 0 ) {
+            db.dropDatabase();
+        }
 
         for (var y = 0; y < numCols; y++) {
             var bulkInsert = [];
