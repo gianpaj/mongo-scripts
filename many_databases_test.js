@@ -7,7 +7,8 @@ var numCols = numCols || 10;
 var numDocsPerColl = numDocs / numDbs / numCols;
 
 var complexDoc = {'product_name': 'Soap', 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
-var complexDoc2 = {'product_name': 'Soap', 'weight': { "#RAND_INT" : [ 0 , 100 ] }, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}, {'title': 'pets', 'order': 19}, {'title': 'pets', 'order': 19}, {'title': 'pets', 'order': 19}, {'title': 'pets', 'order': 19}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}, {'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}]};
+var complexDoc2 = {'product_name': 'Soap', 'weight': { "#RAND_INT" : [ 1, 100, 5 ] }, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 29}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}]};
+var complexDoc3 = {'product_name': {"#RAND_STRING": [30]}, 'weight': 22, 'weight_unit': 'kilogram', 'unique_url': 'http://amazon.com/soap22', 'categories': [{'title': 'cleaning', 'order': 100}, {'title': 'pets', 'order': 102},{'title': 'pets', 'order': 101}], 'reviews': [{'author': 'Whisper Jack','message': 'my dog is still dirty, but i`m clean'}, {'author': "another author",'message': 'my dog is still dirty, but i`m clean'}, {'author': 'Happy Marry','message': 'my cat is never been this clean'}]};
 
 var opsColl = db.getSisterDB('manydbtest')['ops'];
 
@@ -28,7 +29,9 @@ function insert_and_form_operations (mongodb) {
 
         var db = mongodb.getSisterDB('boom-' + i);
         // drop every database 'boom-*'
-        db.dropDatabase();
+        if (db.getCollectionNames().length !== 0 ) {
+            db.dropDatabase();
+        }
 
         for (var y = 0; y < numCols; y++) {
             var bulkInsert = [];
@@ -59,7 +62,7 @@ function insert_and_form_operations (mongodb) {
 
 // this function finds the operations saved in our temporary 'manydbtest.ops' db.collection
 // and add the to ops array
-function retrieve_operations (limit) {
+function retrieve_operations (limit, mongodb) {
     // prepare operation to benchmark
     var operations = opsColl.find({},{_id: 0}).limit(limit).toArray();
 
@@ -69,34 +72,38 @@ function retrieve_operations (limit) {
             operations[i]['update'] = { "$inc" : { "weight" : 1 } };
         }
     }
-    var insertOp = {
-        "op" : "insert",
-        "insert" : complexDoc
-    };
-    var insertOp2 = {
-        "op" : "insert",
-        "insert" : complexDoc2
-    };
-    // add extra insert operations
-    for (var j = 0; j < operations.length; j++) {
 
-        // add ns
-
-        if (j % 2 === 0) {
-            operations.push(insertOp2);
-        }
-        else {
-            operations.push(insertOp);
+    
+    for ( i = 0; i < numDbs; i++ ) {
+        var db = mongodb.getSisterDB('boom-' + i);
+        for (var y = 0; y < numCols/3; y++) {
+            coll = db['boom-'+ y];
+            // add extra numDocsPerColl (20 default) insert operations (complexDoc2 and complexDoc3)
+            for (var j = 0; j < numDocsPerColl/9; j++) {
+                var doc;
+                if (Math.floor(Math.random() * 2) % 2 === 0) {
+                    doc = complexDoc2;
+                }
+                else {
+                    doc = complexDoc3;
+                }
+                var insert_op = {
+                    ns : coll.toString() ,
+                    op : "insert" ,
+                    doc : doc
+                };
+                operations.push(insert_op);
+            }
         }
     }
     return operations;
 }
 
 // actual benchmark function
-function benchmark () {
+function benchmark (mongodb) {
     // start from the original operations array and find other x (numOps) no. random of ops
     thisnumOps = (opsColl.count()) / 10;
-    var ops = retrieve_operations(thisnumOps);
+    var ops = retrieve_operations(thisnumOps, mongodb);
 
     // remove randomly operations that will be benchmarked until only the numOps remain (ie. 100)
     var newarray=[];
@@ -106,14 +113,12 @@ function benchmark () {
         newarray.push(ops.splice(rnd,1)[0]);
     }
 
-
     for ( x = 1; x<=128; x*=2){
         res = benchRun( {
             parallel : x ,
             seconds : 5 ,
             ops : newarray
         } );
-        printjson( res );
-        print( "threads: " + x + "\t queries/sec: " + res.query );
+        print( "threads: ", x, "\t queries/sec: ", res.query, "\t updates/sec: ", res.update, "\t inserts/sec: ", res.insert );
     }
 }
