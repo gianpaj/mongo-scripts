@@ -81,11 +81,11 @@ function retrieve_operations (limit, mongodb) {
     //     }
     // }
 
-    
+    // generate extra insert operations
     for ( i = 0; i < numDbs; i++ ) {
         var db = mongodb.getSisterDB('boom-' + i);
         for (var y = 0; y < numCols/3; y++) {
-            coll = db['boom-'+ y];
+            coll = db['boom-'+ y].toString();
             // add extra numDocsPerColl (20 default) insert operations (complexDoc2 and complexDoc3)
             for (var j = 0; j < numDocsPerColl/9; j++) {
                 var doc;
@@ -96,8 +96,8 @@ function retrieve_operations (limit, mongodb) {
                     doc = complexDoc3;
                 }
                 var insert_op = {
-                    ns : coll.toString() ,
-                    op : "insert" ,
+                    ns : coll,
+                    op : "insert",
                     doc : doc
                 };
                 operations.push(insert_op);
