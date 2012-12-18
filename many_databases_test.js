@@ -64,14 +64,22 @@ function insert_and_form_operations (mongodb) {
 // and add the to ops array
 function retrieve_operations (limit, mongodb) {
     // prepare operation to benchmark
-    var operations = opsColl.find({},{_id: 0}).limit(limit).toArray();
-
-    // because field names cannot start with $ - add it here
-    for (var i = 0; i < operations.length; i++) {
-        if ( operations[i]['op'] == "update" ) {
-            operations[i]['update'] = { "$inc" : { "weight" : 1 } };
+    // var operations = opsColl.find({},{_id: 0}).limit(limit).toArray();
+    var cur = opsColl.find({},{_id: 0}).limit(limit);
+    var operations = [];
+    while (cur.hasNext()) {
+        var op = cur.next();
+        if ( op['op'] == "update" ) {
+            op['update'] = { "$inc" : { "weight" : 1 } };
         }
+        operations.push(op);
     }
+    // because field names cannot start with $ - add it here
+    // for (var i = 0; i < operations.length; i++) {
+    //     if ( operations[i]['op'] == "update" ) {
+    //         operations[i]['update'] = { "$inc" : { "weight" : 1 } };
+    //     }
+    // }
 
     
     for ( i = 0; i < numDbs; i++ ) {
