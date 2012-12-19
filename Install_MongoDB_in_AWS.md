@@ -41,9 +41,15 @@ Check readahead value
 
     sudo blockdev --report
     
+Determine the best read ahead value
+
+	mongo --eval "db.stats().avgObjSize"
+
+Divide that by 512, with a minimum of 16
+
 Set readahead
 
-    sudo blockdev --setra 128 /dev/xvdf
+    sudo blockdev --setra READAHEAD /dev/xvdf
     
 Check all current values of ulimit
 
