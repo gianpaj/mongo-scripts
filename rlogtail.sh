@@ -4,7 +4,7 @@ logfile=$1
 
 if [ $logfile ] && [[ -e $logfile ]] ; then
   # if logfile exists:
-  XXX=$(grep -n 'RESTARTED' tailtest.log |tail -1|awk -F: '{print $1}')
+  XXX=$(grep -n 'RESTARTED' $logfile | tail -1 | awk -F: '{print $1}')
 
   tail -n +$XXX $logfile > $logfile-from_last_restart.log
 else
