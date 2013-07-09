@@ -36,8 +36,9 @@ function insert_and_form_operations (mongodb) {
         for (var y = 0; y < numCols; y++) {
             var bulkInsert = [];
             var bulkOpsInsert = [];
-            
+
             coll = db['boom-'+ y];
+            // coll.ensureIndex({_id:1});
 
             findOp.ns = coll.toString();
             updateOp.ns = coll.toString();
@@ -125,8 +126,12 @@ function benchmark (mongodb) {
         res = benchRun( {
             parallel : x ,
             seconds : 5 ,
-            ops : newarray
+            ops : newarray,
+            host : host
         } );
         print( "threads: ", x, "\t queries/sec: ", res.query, "\t updates/sec: ", res.update, "\t inserts/sec: ", res.insert );
     }
 }
+
+// insert_and_form_operations(db);
+// benchmark(db);
