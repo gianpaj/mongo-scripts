@@ -1,7 +1,7 @@
-var numDbs  = numDbs  || 5000;
-var numOps  = numOps  || 500;
-var numDocs = numDocs || 1000000;
-var numCols = numCols || 10;
+var numDbs  = (numDbs == null ? 500 : numDbs);
+var numOps  = (numOps == null ? 500 : numOps);
+var numDocs = (numDocs == null ? 1000000 : numDocs);
+var numCols = (numCols == null ? 10 : numCols);
 
 // by default   20 = 1000000 / 5000   / 10
 var numDocsPerColl = numDocs / numDbs / numCols;
