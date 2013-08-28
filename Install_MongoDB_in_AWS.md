@@ -18,7 +18,7 @@ Add yum repository
 
     echo -e "[mongodb]
     name=MongoDB Repository
-    nbaseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64
+    baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64
     gpgcheck=0
     enabled=1" | sudo tee /etc/yum.repos.d/mongodb.repo
 
