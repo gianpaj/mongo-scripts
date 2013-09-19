@@ -19,7 +19,11 @@ Tutorial
 
 Add yum repository
 
-    echo -e "[10gen]\nname=10gen Repository\nbaseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\ngpgcheck=0\nenabled=1" | sudo tee /etc/yum.repos.d/10gen.repo
+    echo -e "[mongodb]
+    name=MongoDB Repository
+    baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64
+    gpgcheck=0
+    enabled=1" | sudo tee /etc/yum.repos.d/mongodb.repo
 
 Install mongo and mongod
 
