@@ -127,7 +127,7 @@ function benchmark (mongodb) {
             parallel : x ,
             seconds : 5 ,
             ops : newarray,
-            host : host
+            host : db._mongo.host
         } );
         print( "threads: ", x, "\t queries/sec: ", res.query, "\t updates/sec: ", res.update, "\t inserts/sec: ", res.insert );
     }

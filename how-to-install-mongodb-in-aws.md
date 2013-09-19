@@ -1,7 +1,10 @@
-Install MongoDB in Amazon Web Services (AWS)
+How to Install MongoDB in Amazon Web Services (AWS)
 ======
 
-Step by step tutorial based on this article on [docs.mongodb.org](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/)
+Step by step tutorial based on these articles:
+
+- [Install MongoDB on Red Hat Enterprise, CentOS, or Fedora Linux](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/)
+- [Amazon EC2 platform](http://docs.mongodb.org/ecosystem/platforms/amazon-ec2/)
 
 This has no RAID setup at the moment. Though consider this [guide](http://www.mongodb.org/display/DOCS/Amazon+EC2+Quickstart#AmazonEC2Quickstart-ConfigureStorage) to create and attach a RAID-10 ebs setup.
 
@@ -37,11 +40,11 @@ Create the directory where the data will be mounted and append it to the file sy
     sudo mkdir /data
     echo "/dev/xvdf   /data   auto    defaults,auto,noatime,noexec    0   0" | sudo tee -a /etc/fstab
     
-Check readahead value
+Check readahead values
 
     sudo blockdev --report
     
-Determine the best read ahead value
+Determine the best read ahead value (where db is your most used database)
 
 	mongo --eval "db.stats().avgObjSize"
 
@@ -51,6 +54,10 @@ Set readahead
 
     sudo blockdev --setra READAHEAD /dev/xvdf
     
+Save read ahead setting (persistent after system boot)
+
+	echo 'ACTION=="add", KERNEL=="xvdf", ATTR{bdi/read_ahead_kb}="READAHEAD"' | sudo tee -a /etc/udev/rules.d/85-ebs.rules
+
 Check all current values of ulimit
 
 	ulimit -a
