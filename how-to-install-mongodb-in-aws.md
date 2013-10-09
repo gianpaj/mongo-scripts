@@ -11,7 +11,7 @@ This has no RAID setup at the moment. Though consider this [guide](http://www.mo
 Requirements
 -------
 
-* Amazon Linux AMI 2012.09 - 64bit
+* Amazon Linux AMI 2013.09 - 64bit
 * EBS volume attached on `/dev/sdf` device (which on linux is mapped as `/dev/xvdf`)
 
 Tutorial
