@@ -18,7 +18,9 @@ This script has been specifically written to test MongoDB (not benchmark) with a
 rlogtail.sh
 -------
 
-Script to tail a mongo(d|s) log file from the last Restart. It basically find the word RESTARTED and tails the oplog that line.
+Script to create a mongo(d|s) log file from the last Restart. It basically finds the word `RESTARTED` and tails the log from that line.
 
     usage:
     rlogtail.sh mongoX.log
+    
+This example would create file with name `mongoX-from_last_restart.log`
